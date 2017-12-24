@@ -1,0 +1,252 @@
+              strcmp(v10, "get_status")
+           && strcmp(v10, "get_map")
+           && strcmp(v10, "get_map_v1")
+           && strcmp(v10, "get_fresh_map_v1")
+           && strcmp(v10, "get_prop")
+           && strcmp(v10, "get_clean_summary")
+           && strcmp(v10, "get_clean_record")
+           && strcmp(v10, "get_clean_record_map")
+           && strcmp(v10, "get_clean_record_map_v2")
+           && strcmp(v10, "get_custom_mode")
+           && strcmp(v10, "miIO.get_ota_progress")
+           && strcmp(v10, "get_timer")
+           && strcmp(v10, "get_dnd_timer")
+           && strcmp(v10, "get_consumable")
+           && strcmp(v10, "get_serial_number")
+           && strcmp(v10, "get_log_upload_status")
+           && strcmp(v10, "miIO.ota")
+           && strcmp(v10, "get_sound_volume")
+           && strcmp(v10, "get_gateway")
+           && strcmp(v10, "get_sound_progress")
+           && strcmp(v10, "get_current_sound")
+           && strcmp(v10, "dnld_install_sound")
+           && strcmp(v10, "get_timezone")
+           && strcmp(v10, "set_timezone")
+           && strcmp(v10, "miIO.get_ota_state")) )
+    else if ( !strcmp(v5, "notify_upload_map") )
+    {
+      result = AppProxyServer::SendMapURLRequest((AppProxyServer *)v3, 0);
+    }
+    else if ( !strcmp(v5, "local.status") )
+    {
+      result = AppProxyServer::HandleConnectionStatus(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_clean_summary") )
+    {
+      result = AppProxyServer::QueryCleanSummary(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_clean_record") )
+    {
+      result = AppProxyServer::QueryCleanRecord(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_clean_record_map") )
+    {
+      result = AppProxyServer::HandleCleanRecordMap(v3, v2, 1);
+    }
+    else if ( !strcmp(v5, "get_clean_record_map_v2") )
+    {
+      result = AppProxyServer::HandleCleanRecordMap(v3, v2, 2);
+    }
+    else if ( !strcmp(v5, "app_start") )
+    {
+      result = AppProxyServer::AppStart((AppProxyServer *)v3);
+    }
+    else if ( !strcmp(v5, "app_pause") )
+    {
+      result = AppProxyServer::AppPause((AppProxyServer *)v3);
+    }
+    else if ( !strcmp(v5, "app_stop") )
+    {
+      result = AppProxyServer::AppStop((AppProxyServer *)v3);
+    }
+    else if ( !strcmp(v5, "app_charge") )
+    {
+      result = AppProxyServer::AppCharge((AppProxyServer *)v3);
+    }
+    else if ( !strcmp(v5, "app_spot") )
+    {
+      result = AppProxyServer::AppSpot((AppProxyServer *)v3);
+    }
+    else if ( !strcmp(v5, "app_rc_move") )
+    {
+      result = AppProxyServer::RemoteControlMove(v3, v2);
+    }
+    else if ( !strcmp(v5, "app_rc_forward") )
+    {
+      result = AppProxyServer::RemoteControlForward(v3, v2);
+    }
+    else if ( !strcmp(v5, "app_rc_left") )
+    {
+      result = AppProxyServer::RemoteControlLeft(v3, v2);
+    }
+    else if ( !strcmp(v5, "app_rc_right") )
+    {
+      result = AppProxyServer::RemoteControlRight(v3, v2);
+    }
+    else if ( !strcmp(v5, "app_rc_stop") )
+    {
+      result = AppProxyServer::RemoteControlStop(v3, v2);
+    }
+    else if ( !strcmp(v5, "app_rc_start") )
+    {
+      result = AppProxyServer::RemoteControlStart(v3, v2);
+    }
+    else if ( !strcmp(v5, "app_rc_end") )
+    {
+      result = AppProxyServer::RemoteControlEnd(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_timer") )
+    {
+      result = AppProxyServer::HandleGetTimer(v3, v2);
+    }
+    else if ( !strcmp(v5, "miIO.xset") || !strcmp(v5, "set_timer") )
+    {
+      result = AppProxyServer::HandleSetTimer(v3, v2);
+    }
+    else if ( !strcmp(v5, "miIO.xdel") || !strcmp(v5, "del_timer") )
+    {
+      result = AppProxyServer::HandleDelTimer(v3, v2);
+    }
+    else if ( !strcmp(v5, "upd_timer") )
+    {
+      result = AppProxyServer::HandleUpdTimer(v3, v2);
+    }
+    else if ( !strcmp(v5, "find_me") )
+    {
+      result = AppProxyServer::FindMe(v3, v2);
+    }
+    else if ( !strcmp(v5, "find_me_stop") )
+    {
+      result = AppProxyServer::FindMeStop(v3, v2);
+    }
+    else if ( !strcmp(v5, "set_custom_mode") )
+    {
+      result = AppProxyServer::HandleSetFanPower(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_custom_mode") )
+    {
+      result = AppProxyServer::HandleGetFanPower(v3, v2);
+    }
+    else if ( !strcmp(v5, "miIO.ota") )
+    {
+      result = SysUpdate::HandleSysUpdateOTA(*(_DWORD *)(v3 + 256), v2);
+    }
+    else if ( !strcmp(v5, "miIO.get_ota_progress") )
+    {
+      result = SysUpdate::HandleSysUpdateProgress(*(_DWORD *)(v3 + 256), v2);
+    }
+    else if ( !strcmp(v5, "miIO.get_ota_state") )
+    {
+      result = SysUpdate::HandleSysUpdateState(*(_DWORD *)(v3 + 256), v2);
+    }
+    else if ( !strcmp(v5, "set_log_level") )
+    {
+      result = AppProxyServer::HandleSetLogLevel(v3, v2);
+    }
+    else if ( !strcmp(v5, "set_dnd_timer") )
+    {
+      result = AppProxyServer::HandleSetDND(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_dnd_timer") )
+    {
+      result = AppProxyServer::HandleGetDND(v3, v2);
+    }
+    else if ( !strcmp(v5, "close_dnd_timer") )
+    {
+      result = AppProxyServer::HandleDisableDND(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_consumable") )
+    {
+      result = AppProxyServer::HandleGetConsumable(v3, v2);
+    }
+    else if ( !strcmp(v5, "reset_consumable") )
+    {
+      result = AppProxyServer::HandleResetConsumable(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_serial_number") )
+    {
+      result = AppProxyServer::HandleGetSerialNumber(v3, v2);
+    }
+    else if ( !strcmp(v5, "disable_log_upload") )
+    {
+      result = AppProxyServer::HandleDisableLogUpload(v3, v2);
+    }
+    else if ( !strcmp(v5, "enable_log_upload") )
+    {
+      result = AppProxyServer::HandleEnableLogUpload(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_log_upload_status") )
+    {
+      result = AppProxyServer::HandleGetLogUploadStatus(v3, v2);
+    }
+    else if ( !strcmp(v5, "miIO.restore") )
+    {
+      result = AppProxyServer::HandleMIIORestore(v3, v2);
+    }
+    else if ( !strcmp(v5, "set_log_upload_speed") )
+    {
+      result = AppProxyServer::HandleSetLogUploadSpeed(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_gateway") )
+    {
+      result = AppProxyServer::HandleGetGateway(v3, v2);
+    }
+    else if ( !strcmp(v5, "dnld_install_sound") )
+    {
+      result = AppProxyServer::HandleSoundPackage(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_sound_progress") )
+    {
+      result = AppProxyServer::HandleSoundPackageProgress(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_current_sound") )
+    {
+      result = AppProxyServer::HandleCurrentSoundPackage(v3, v2);
+    }
+    else if ( !strcmp(v5, "local.country") )
+    {
+      result = AppProxyServer::HandleNotifyCountryDomain(v3, v2);
+    }
+    else if ( !strcmp(v5, "local.time") )
+    {
+      result = AppProxyServer::HandleNotifyServerTime(v3, v2);
+    }
+    else if ( !strcmp(v5, "app_smart_charge") )
+    {
+      result = AppProxyServer::AppSmartCharge(v3, v2);
+    }
+    else if ( !strcmp(v5, "update_db") )
+    {
+      result = AppProxyServer::HandleUpdateDB(v3, v2);
+    }
+    else if ( !strcmp(v5, "get_timezone") )
+    {
+      result = AppProxyServer::HandleGetTimezone(v3, v2);
+    }
+    else if ( !strcmp(v5, "set_timezone") )
+    {
+      result = AppProxyServer::HandleSetTimezone(v3, v2);
+    }
+    else
+
+  if ( !strcasecmp(v6, "error") )
+    goto LABEL_19;
+LABEL_8:
+  if ( !strcasecmp(v6, "warn") )
+  {
+    v7 = 4;
+    goto LABEL_12;
+  }
+  if ( !strcasecmp(v6, "info") )
+  {
+    v7 = 6;
+    goto LABEL_12;
+  }
+  if ( !strcasecmp(v6, "debug") )
+  {
+    v7 = 7;
+    goto LABEL_12;
+  }
+  v7 = 8;
+  if ( !strcasecmp(v6, "verbose") )
+  {
