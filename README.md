@@ -1,7 +1,8 @@
+Initial submission, more tools and information will follow ;)
 
 # Contact
-* Dennis Giese <dgiese@seemoo.tu-darmstadt.de>
-* Daniel Wegemer <dwegemer@seemoo.tu-darmstadt.de>
+* Dennis Giese <dgi[at]posteo.de>
+* Daniel Wegemer <daniel[at]wegemer.com>
 
 # Acknowledgements:
 ### Prof. Matthias Hollick at Secure Mobile Networking Lab (SEEMOO)
