@@ -55,7 +55,7 @@ else
 	mkdir ./root/.ssh
 	chmod 700 ./root/.ssh
 	rm ./root/.ssh/authorized_keys
-	cp authorized_keys ./root/.ssh/
+	cp ../authorized_keys ./root/.ssh/
 	chmod 600 ./root/.ssh/authorized_keys
 	# comment out this section if you do not want do disable the xiaomi cloud
 	# or redirect it
