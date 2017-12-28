@@ -14,7 +14,7 @@ Preparation
 3) # mirobo discover --handshake true
 4) # mirobo --ip=192.168.8.1 --token=#Token_from_above# status
 	-> should return status
-5) # mirobo --ip=192.168.8.1 --token=#Token_from_above# raw_command miIO.ota '{"mode":"normal", "install":"1", "app_url":"https://#ipaddress-of-your-computer#/v11_#version#.pkg", "file_md5":"#md5#","proc":"dnld install"}'
+5) # mirobo --ip=192.168.8.1 --token=#Token_from_above# raw_command miIO.ota '{"mode":"normal", "install":"1", "app_url":"http://#ipaddress-of-your-computer#/v11_#version#.pkg", "file_md5":"#md5#","proc":"dnld install"}'
 + Check status with command from 4)
 + Wait 10 minutes (you should see an access on your http server)
 6) If update is complete: try ssh access on 192.168.8.1 with user root
