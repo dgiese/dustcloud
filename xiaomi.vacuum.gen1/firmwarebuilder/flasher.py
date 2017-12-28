@@ -15,6 +15,8 @@ def md5(fname):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
+def findIP():
+    return ((([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] or [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["no IP found"])[0])
 
 from prompt_toolkit import prompt
 print('Flasher for Xiaomi Vacuum')
@@ -33,7 +35,7 @@ output = process.stderr.read()
 try:
     m = re.search("b'(.+?)'", output)
     token = m.group(1)
-    m = re.search("IP (.+?)\:", output)
+    m = re.search("IP (.+?)[\: ]", output)
     ip = m.group(1)
 except:
     print('Vacuum not found...Check connection')
@@ -43,14 +45,15 @@ except:
 
 
 cmd = "mirobo --ip="+ip+" --token=" + token + " status"
-print("Execute following for status:" + cmd)
+print("Execute following for status:")
+print(cmd)
 #ret = os.system(cmd)
 #if ret != "status":
 #    print("Something gone wrong while getting status....")
 #    exit()
 
 
-localIP = socket.gethostbyname(socket.getfqdn())
+localIP = findIP()
 updatefile = "v11_003077.pkg"
 datajson = {
 "mode":"normal",
@@ -66,6 +69,9 @@ datajson = {
 cmd = "mirobo --ip="+ip+" --token=" + token
 cmd = cmd +  " raw_command miIO.ota "
 cmd = cmd + "'" + json.dumps(datajson) + "'"
-print("Use following Command to update:" + cmd)
-
+print("Use following Command to update:")
+print(cmd)
+cmd = "python -m SimpleHTTPServer 80"
+print("Use following Command to start a Webserver: ")
+print(cmd)
 
