@@ -1,5 +1,5 @@
 ## Preparation
-1. install python-mirobo (python3!)
+1. Install [python-mirobo](https://github.com/ultrara1n/python-mirobo) (python3!)
 1. Create custom image with imagebuilder.sh, Copy MD5 sum
 	* you need to create your own ssh keypair and create an authorized key file
 		* for Windows you might use PuttyGen to create the keypair
@@ -13,7 +13,7 @@
 
 ## Update
 1. Put vacuum robot in unprovisioned mode (press WiFi button)
-1. Connect to open WiFi
+1. Connect to open WiFi of the robot(rockrobo-XXXX)
 	* Do not connect to any other network (e.g. LAN)
 1. > mirobo discover --handshake true
 1. > mirobo --ip=192.168.8.1 --token=#Token_from_above# status
