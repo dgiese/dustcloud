@@ -45,7 +45,6 @@ else
 	ccrypt -d -K rockrobo v11_003077.pkg
 	echo "unpack firmware"
 	tar -xzvf v11_003077.pkg
-	mv v11_003077.pkg v11_003077.pkg.tar.gz
 	mkdir image
 	mount -o loop disk.img image
 	cd image
@@ -55,7 +54,7 @@ else
 	mkdir ./root/.ssh
 	chmod 700 ./root/.ssh
 	rm ./root/.ssh/authorized_keys
-	cp authorized_keys ./root/.ssh/
+	cp ../authorized_keys ./root/.ssh/
 	chmod 600 ./root/.ssh/authorized_keys
 	# comment out this section if you do not want do disable the xiaomi cloud
 	# or redirect it
@@ -75,8 +74,11 @@ else
 	rm -rf image
 	rm -rf sounds
 	tar -czvf v11_003077_patched.pkg disk.img
+	rm -f disk.img
 	ccrypt -e -K rockrobo v11_003077_patched.pkg
-	mv v11_003077_patched.pkg.cpt v11_003077.pkg
+	mkdir -p output
+	mv v11_003077_patched.pkg.cpt output/v11_003077.pkg
+	cd output
 	md5sum v11_003077.pkg > v11_003077.md5
 fi
 
