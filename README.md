@@ -1,5 +1,9 @@
 Initial submission, more tools and information will follow ;)
 
+You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/UPDATE-howto.md).
+
+Also: you can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/34c3-presentation/34c3_Staubi-current_split_animation.pdf).
+
 # Contact
 * Dennis Giese <dgi[at]posteo.de>
 * Daniel Wegemer <daniel[at]wegemer.com>
