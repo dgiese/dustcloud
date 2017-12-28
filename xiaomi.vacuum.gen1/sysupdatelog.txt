@@ -1,0 +1,36 @@
+root@rockrobo:~# tailf /run/shm/SYSUPD_normal.log
+478553 T16273 MountPartition:351 [info] Mounting '/dev/mmcblk0p9' to '/mnt/data/tmpbuf' ...
+478562 T16273 UnmountPartition:444 [info] Unmounting '/mnt/data/tmpbuf'
+478650 T16273 UnmountPartition:460 [info] Deleting '/mnt/data/tmpbuf' directory
+478651 T16273 CopyFile:185 [info] Copying from /mnt/data/.temp/Update.pkg to /mnt/data/.temp/Update.pkg.000 ...
+478651 T16273 InvokeSystem:30 [info] CMD> /bin/cp -a /mnt/data/.temp/Update.pkg /mnt/data/.temp/Update.pkg.000
+485790 T16273 DoUpdatePhase:62 [info] Do Update Phase (Phase_1)
+485791 T16273 UpDecryptPackage:516 [info] Verifying package MD5. Target MD5 = 840f4d294c488143e559d936ccac0646
+486970 T16273 UpDecryptPackage:526 [info] MD5 check OK!
+486970 T16273 UpDecryptPackage:527 [info] Decrypting package.
+486971 T16273 DecryptFile:103 [info] Decrypting /mnt/data/.temp/Update.pkg.000 ...
+511285 T16273 UpDecryptPackage:540 [info] Decryption OK!
+511285 T16273 ListFile:170 [info] Listing 'disk.img' in '/mnt/data/.temp/Update.pkg.000' ...
+523549 T16273 DoUpdatePhase:76 [info] Update package type = Package_Type_Full_OS
+523549 T16273 UpPrepareBuffer:762 [info] Wipe out Partition [U]
+523550 T16273 InvokeSystem:30 [info] CMD> mkfs.ext4 /dev/mmcblk0p10
+525311 T16273 ExtractImage:121 [info] Extracting image '/mnt/data/.temp/Update.pkg.000' to '/dev/mmcblk0p10' ...
+525311 T16273 InvokeSystem:30 [info] CMD> tar xzOf /mnt/data/.temp/Update.pkg.000 | dd of=/dev/mmcblk0p10 bs=8192
+594839 T16273 UpExtractPackage:624 [info] Extraction OK!
+594839 T16273 DoUpdatePhase:125 [info] Boot Partition = A, Offline Partition = B
+594840 T16273 UpDoUpdateCore:445 [info] Do updating (Package_Type_Full_OS)
+594841 T16273 InvokeSystem:30 [info] CMD> dd if=/dev/mmcblk0p10 of=/dev/mmcblk0p9 bs=8192 count=65536 iflag=fullblock
+641457 T16273 MountPartition:351 [info] Mounting '/dev/mmcblk0p9' to '/mnt/offbuf' ...
+641535 T16273 ChangeShadowPassword:646 [info] Change password succeeded
+641537 T16273 pDoFullOsUpdate:266 [info] Full OS Update succeeded!
+641537 T16273 DoUpdatePhase:170 [info] Set partition flag = UpdateInProgress for offline partition
+641539 T16273 DoUpdatePhase:185 [info] Update Phase (Phase_1) completed.
+641539 T16273 UnmountPartition:438 [info] No partition is mounted on '/mnt/updbuf'.
+641540 T16273 UnmountPartition:444 [info] Unmounting '/mnt/offbuf'
+641610 T16273 UnmountPartition:460 [info] Deleting '/mnt/offbuf' directory
+641698 T16273 IpNotifyComplete:454 [info] Notify WatchDog (Phase_1) completed. Result = SUCCEEDED
+641698 T16273 IpNotifyComplete:467 [info] Notify Controller (Phase_1) completed. Result = SUCCEEDED
+641699 T16273 DoPhase_1:578 [info] Phase_1 exit with 0x0
+641699 T16273 Uninitialize:250 [info] Destroying listener...
+641701 T16273 Uninitialize:253 [info] Destroying state notification object...
+641701 T16273 FinalCleanUp:262 [info] Entering final cleanup routine
