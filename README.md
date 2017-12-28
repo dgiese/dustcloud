@@ -16,7 +16,10 @@ No, you can push the firmwareupdate to the robot without opening it. See the Upd
 ### Does the root also work for Gen2?
 There might be a way to root also Gen2. However as I (Dennis) do not have access to a Gen2 vacuum, i cannot give you more information on that. As soon as i will get my own Gen2 vacuum, i will update the information. [P.S.: you have a Gen2 vacuum and are on the 34C3? Then we should meet ;)  ]
 ### Why there is still no custom patched firmware available (with SSH)?
-While you can build your own firmware with SSH, we are not sure if we want to provide a prerooted version with some default SSH keys. As we know you (and us) some people might not change the keys afterwards. So instead of giving just you access to the vacuum, other people would have also access to your vacuum. We would like to make the world safer and not more vulnerable. Therefore we are thinking of some solution for that.
+While you can build your own firmware with SSH, we are not sure if we want to provide a pre-rooted version with some default SSH keys. As we know you (and us) some people might not change the keys afterwards. So instead of giving just you access to the vacuum, other people would have also access to your vacuum. We would like to make the world safer and not more vulnerable. Therefore we are thinking of some solution for that.
+### Ist Dustcloud breaking the HTTPS connection / any SSL connection?
+No, dustcloud requires the symmetric key (extracted from /mnt/default/device.conf) to decrypt the AES connection to the cloud. The same key is used to encrypt the forwarded messages to the cloud.
+Note: I personally think that Xiaomis approach of device's unique AES key solves a lot of cloud problems: authentication, integrity (over hmac) and confidentiality.
 
 # Contact
 * Dennis Giese <dgi[at]posteo.de>
