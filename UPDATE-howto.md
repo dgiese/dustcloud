@@ -34,7 +34,7 @@
 	 * e.g. `export PATH=$PATH:/Users/<yourUsername>/Library/Python/3.6/bin`
 	 * set correct locales for pipenv, e.g. ```export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8```
-1. Install [python-mirobo](https://github.com/ultrara1n/python-mirobo) by going to the project folder of this repo and type `pipenv install requests` which will install all necessary requirements for python3
+1. Install [python-miio](https://github.com/rytilahti/python-miio) by going to the project folder of this repo and type `pipenv install requests` which will install all necessary requirements for python3. python-mirobo is outdated and isn't updated anymore.
 1. Install ccrypt: `brew install ccrypt`
 1. Create a ssh keypair: `ssh-keygen -f ~/.ssh/id_rsa_xiaomi`
 1. Create an `authorized_keys` file and place the content of ~/.ssh/id_rsa_xiaomi.pub in there: `cat ~/.ssh/id_rsa_xiaomi.pub > <this-repo-path>/xiaomi.vacuum.gen1/firmwarebuilder/authorized_keys`
