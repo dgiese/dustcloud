@@ -9,6 +9,7 @@ name = "pypi"
 
 requests = "*"
 python-mirobo = "*"
+prompt-toolkit = "*"
 
 
 [dev-packages]
