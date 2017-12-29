@@ -18,7 +18,6 @@
 # place english.pkg and v11_<fw_version>.pkg (e.g. v11_003077.pkg) in this folder
 # place your authorized_keys in this folder
 #
-MD5_TOOL="md5sum"
 IS_MAC=false
 FIRMWARE_VERSION=$1
 
@@ -29,7 +28,6 @@ fi
 
 if [[ $OSTYPE == darwin* ]]; then
 	# Mac OSX
-	MD5_TOOL="md5"
 	IS_MAC=true
 	echo "Running on a Mac, adjusting commands accordingly"
 fi
@@ -152,6 +150,13 @@ else
 	ccrypt -e -K rockrobo v11_$FIRMWARE_VERSION_patched.pkg
 	mkdir -p output
 	mv v11_$FIRMWARE_VERSION_patched.pkg.cpt output/v11_$FIRMWARE_VERSION.pkg
-	$MD5_TOOL output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
+
+	if [ IS_MAC ]; then
+		md5 output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
+	else
+		md5sum output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
+	fi
+
+	cat output/v11_$FIRMWARE_VERSION.md5
 fi
 
