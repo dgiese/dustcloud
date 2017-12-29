@@ -113,6 +113,6 @@ else
 	mkdir -p output
 	mv v11_003077_patched.pkg.cpt output/v11_003077.pkg
 	cd output
-	md5sum v11_003077.pkg > output/v11_003077.md5
+	md5sum v11_003077.pkg > v11_003077.md5
 fi
 
