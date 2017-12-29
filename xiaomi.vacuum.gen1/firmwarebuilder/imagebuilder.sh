@@ -106,11 +106,21 @@ else
 	cat ../ssh_host_ed25519_key > ./etc/ssh/ssh_host_ed25519_key
 	cat ../ssh_host_ed25519_key.pub > ./etc/ssh/ssh_host_ed25519_key.pub
 	echo "disable SSH firewall rule"
-	sed -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' -i ./opt/rockrobo/watchdog/rrwatchdoge.conf
+	if [ IS_MAC ]; then
+		# see https://stackoverflow.com/a/21243111
+		sed -i -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' ./opt/rockrobo/watchdog/rrwatchdoge.conf
+	else
+		sed -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' -i ./opt/rockrobo/watchdog/rrwatchdoge.conf
+	fi
 	echo "integrate SSH authorized_keys"
 	mkdir ./root/.ssh
 	chmod 700 ./root/.ssh
-	rm ./root/.ssh/authorized_keys
+
+	if [ -f ./root/.ssh/authorized_keys ]; then
+		echo "removing obsolete authorized_keys from Xiaomi image"
+		rm ./root/.ssh/authorized_keys
+	fi
+
 	cp ../authorized_keys ./root/.ssh/
 	chmod 600 ./root/.ssh/authorized_keys
 	echo "reconfiguring network traffic to xiaomi"
