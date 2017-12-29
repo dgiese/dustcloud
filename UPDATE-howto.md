@@ -32,7 +32,7 @@ export LANG=en_US.UTF-8```
 	* `brew install ext4fuse`
 	* The first time you'll mount an ext4 fs with fuse, it will prompt you to allow the extension (at least on High Sierra). Allow and retry the script, otherwise you'll need to use a Linux VM
 1. execute `xiomi.vacuum.gen1/firmwarebuilder/imagebuilder.sh` with a version number. The version number must be the same as the fw image you've copied to the folder. e.g. `./imagebuilder.sh 003094`
-1. note the returned MD5 sum. You can see the md5 sum also in the output folder under v11_<fw-version>.md5
+1. note the returned MD5 sum. You can see the md5 sum also in the output folder under v11_xxxxxx.md5
 
 ## Update
 1. Put vacuum robot in unprovisioned mode (press WiFi button)
