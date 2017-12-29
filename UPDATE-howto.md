@@ -54,8 +54,16 @@ export LANG=en_US.UTF-8```
 1. Execute `mirobo discover --handshake true` and note the returned token 
 1. Execute `mirobo --ip=192.168.8.1 --token=#Token_from_above# status`
 	* should return status
-1. Execute `mirobo --ip=192.168.8.1 --token=#Token_from_above# raw_command miIO.ota '{"mode":"normal", "install":"1", "app_url":"http://#ipaddress-of-your-computer#/v11_#version#.pkg", "file_md5":"#md5#","proc":"dnld install"}'`
+1. Go to the output folder where you've created your new firmware. Do this in a new terminal without `pipenv shell` as we'll want to use the integrated SimpleHTTPServer provided by Python. It is installed by default on your Mac.
+	* Open new terminal
+	* Go to the output folder with the new firmware
+	* Execute `python -m SimpleHTTPServer`
+	* The content of the current folder is now reachable on port 8000
+1. Place your robot in the charging station for the next step
+1. Execute `mirobo --ip=192.168.8.1 --token=#Token_from_above# raw_command miIO.ota '{"mode":"normal", "install":"1", "app_url":"http://#ipaddress-of-your-computer#:8000/v11_#version#.pkg", "file_md5":"#md5#","proc":"dnld install"}'`
 	* replace ipaddress, version and md5 with your data
+	* The robot will notify you about the update. You should see outgoing traffic on your mac. You should see a request from the robot in the terminal where you've started the SimpleHTTPServer, e.g. `192.168.8.1 - - [29/Dec/2017 22:11:15] "GET /v11_003094.pkg HTTP/1.1" 200 -`
+	* The robot will start to flash its white led indicating the update process
 	* Check status with command from 4)
-	* Wait 10 minutes (you should see an access on your http server)
-1. If update is complete: try ssh access on 192.168.8.1 with user root
+	* Wait 10 minutes until you hear the startup chime of the robot. You should hear the english voice now.
+1. If update is complete: try ssh access on 192.168.8.1 with user root. Make sure you use your ssh private key corresponding to the one in the authorized_keys file
