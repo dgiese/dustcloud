@@ -8,8 +8,8 @@ name = "pypi"
 [packages]
 
 requests = "*"
-python-mirobo = "*"
 prompt-toolkit = "*"
+python-miio = "*"
 
 
 [dev-packages]
