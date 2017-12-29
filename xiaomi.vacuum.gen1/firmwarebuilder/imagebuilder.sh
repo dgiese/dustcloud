@@ -15,20 +15,42 @@
 #You should have received a copy of the GNU General Public License
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 # Preparation:
-# place english.pkg and v11_003077.pkg in this folder
+# place english.pkg and v11_<fw_version>.pkg (e.g. v11_003077.pkg) in this folder
 # place your authorized_keys in this folder
 #
-if [ ! -f /usr/bin/ccrypt ]; then
+MD5_TOOL="md5sum"
+IS_MAC=false
+FIRMWARE_VERSION=$1
+
+if [[ ! -n "$FIRMWARE_VERSION" ]]; then
+	echo "You need to specify a firmware version, e.g. 003094"
+	exit 1
+fi
+
+if [[ $OSTYPE == darwin* ]]; then
+	# Mac OSX
+	MD5_TOOL="md5"
+	IS_MAC=true
+	echo "Running on a Mac, adjusting commands accordingly"
+fi
+
+if [ ! -f /usr/bin/ccrypt ] && [ ! IS_MAC ]; then
     echo "Ccrypt not found! Please install it (e.g. by apt-get install ccrypt)"
 	exit 1
 fi
+
+if [ ! -f /usr/local/bin/ccrypt ] && [ IS_MAC ]; then
+    echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
+	exit 1
+fi
+
 if [ ! -f english.pkg ]; then
     echo "File english.pkg not found!"
 	exit 1
 fi
 
-if [ ! -f v11_003077.pkg ]; then
-    echo "File v11_003077.pkg not found!"
+if [ ! -f v11_$FIRMWARE_VERSION.pkg ]; then
+    echo "File v11_$FIRMWARE_VERSION.pkg not found!"
 	exit 1
 fi
 
@@ -57,15 +79,22 @@ else
 	tar -xzf ../english.pkg
 	cd ..
 	echo "decrypt firmware"
-	ccrypt -d -K rockrobo v11_003077.pkg
+	ccrypt -d -K rockrobo v11_$FIRMWARE_VERSION.pkg
 	echo "unpack firmware"
-	tar -xzf v11_003077.pkg
+	tar -xzf v11_$FIRMWARE_VERSION.pkg
 	if [ ! -f disk.img ]; then
 		echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
 		exit 1
 	fi
 	mkdir image
-	mount -o loop disk.img image
+
+	if [ IS_MAC ]; then
+		#ext4fuse doesn't support write properly
+		#ext4fuse disk.img image -o force
+		fuse-ext2 disk.img image -o rw+
+	else
+		mount -o loop disk.img image
+	fi
 	cd image
 	echo "patch ssh host keys"
 	cat ../ssh_host_rsa_key > ./etc/ssh/ssh_host_rsa_key
@@ -84,6 +113,7 @@ else
 	rm ./root/.ssh/authorized_keys
 	cp ../authorized_keys ./root/.ssh/
 	chmod 600 ./root/.ssh/authorized_keys
+	echo "reconfiguring network traffic to xiaomi"
 	# comment out this section if you do not want do disable the xiaomi cloud
 	# or redirect it
 	echo "0.0.0.0       awsbj0-files.fds.api.xiaomi.com" >> ./etc/hosts
@@ -102,17 +132,16 @@ else
 	rm -rf image
 	rm -rf sounds
 	echo "pack new firmware"
-	tar -czf v11_003077_patched.pkg disk.img
-	if [ ! -f v11_003077_patched.pkg ]; then
-		echo "File v11_003077_patched.pkg not found! Packing the firmware was unsuccessful."
+	tar -czf v11_$FIRMWARE_VERSION_patched.pkg disk.img
+	if [ ! -f v11_$FIRMWARE_VERSION_patched.pkg ]; then
+		echo "File v11_$FIRMWARE_VERSION_patched.pkg not found! Packing the firmware was unsuccessful."
 		exit 1
 	fi
 	rm -f disk.img
 	echo "encrypt firmware"
-	ccrypt -e -K rockrobo v11_003077_patched.pkg
+	ccrypt -e -K rockrobo v11_$FIRMWARE_VERSION_patched.pkg
 	mkdir -p output
-	mv v11_003077_patched.pkg.cpt output/v11_003077.pkg
-	cd output
-	md5sum v11_003077.pkg > output/v11_003077.md5
+	mv v11_$FIRMWARE_VERSION_patched.pkg.cpt output/v11_$FIRMWARE_VERSION.pkg
+	$MD5_TOOL output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
 fi
 

@@ -12,6 +12,28 @@
 	* You may use also the integrated Python3-HTTP-Server
 1. Connect the vacuum robot to the charging station
 
+### Instructions on Mac OS
+1. Install [homebrew package manager](https://brew.sh/)
+1. Install python3: `brew install python3`
+1. Install a python3 package manager like [pipenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/): `python3 pip install- -user pipenv`
+	 * You need to add the python3 installation to your system's PATH like it is recommended on the pipenv page
+	 * e.g. `export PATH=$PATH:/Users/<yourUsername>/Library/Python/3.6/bin`
+	 * set correct locales for pipenv, e.g. ```export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8```
+1. Install [python-mirobo](https://github.com/ultrara1n/python-mirobo) by going to the project folder of this repo and type `pipenv install requests` which will install all necessary requirements for python3
+1. Install ccrypt: `brew install ccrypt`
+1. Create a ssh keypair: `ssh-keygen -f ~/.ssh/id_rsa_xiaomi`
+1. Create an `authorized_keys` file and place the content of ~/.ssh/id_rsa_xiaomi.pub in there: `cat ~/.ssh/id_rsa_xiaomi.pub > <this-repo-path>/xiaomi.vacuum.gen1/firmwarebuilder/authorized_keys`
+1. Make the imagebuilder.sh script executable: `chmod +x <this-repo-path>/xiomi.vacuum.gen1/firmwarebuilder/imagebuilder.sh`
+1. Install fuse and ext4 support to open the firmware images
+	* `brew cask install osxfuse`
+	* `brew install m4 autoconf automake libtool e2fsprogs`
+	* follow [these instructions](https://docs.j7k6.org/mount-ext4-macos/).
+	* `brew install ext4fuse`
+	* The first time you'll mount an ext4 fs with fuse, it will prompt you to allow the extension (at least on High Sierra). Allow and retry the script, otherwise you'll need to use a Linux VM
+1. execute `xiomi.vacuum.gen1/firmwarebuilder/imagebuilder.sh` with a version number. The version number must be the same as the fw image you've copied to the folder. e.g. `./imagebuilder.sh 003094`
+1. note the returned MD5 sum. You can see the md5 sum also in the output folder under v11_<fw-version>.md5
+
 ## Update
 1. Put vacuum robot in unprovisioned mode (press WiFi button)
 1. Connect to open WiFi of the robot(rockrobo-XXXX)
