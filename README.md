@@ -1,10 +1,12 @@
-Initial submission, more tools and information will follow ;)
+Welcome to our repository for hacking and rooting of the Xiaomi Vacuum Robot. We provide you methods how to root your device without opening it or breaking the warranty seal.
 
 You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/UPDATE-howto.md).
 
-Our presenation was designed for 35 minutes, however our time was cut to 20 minutes. Therefore we had to reduce the content in our presentation.
+Our presentation was designed for 35 minutes (+10 min FAQ) , however our available time was cut to 20 minutes(+10 min FAQ). Therefore we had to reduce the content in our presentation.
 You can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/34c3-presentation/34c3_Staubi-current_split_animation.pdf).
 More technical information you find [here (techinfo.pdf)](https://github.com/dgiese/dustcloud/raw/master/xiaomi.vacuum.gen1/techinfo.pdf).
+
+Recording of our talk at 34C3: https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking
 
 ## FAQ
 ### Can you hack all Xiaomi vacuum cleaners connected to the internet?
@@ -14,7 +16,7 @@ Actually we think that Xiaomi did a good job in designing their cloud protocol (
 ### Is it required to open the robot / break the warranty seals to root it?
 No, you can push the firmwareupdate to the robot without opening it. See the Update howto.
 ### Does the root also work for Gen2?
-There might be a way to root also Gen2. However as I (Dennis) do not have access to a Gen2 vacuum, i cannot give you more information on that. As soon as i will get my own Gen2 vacuum, i will update the information. [P.S.: you have a Gen2 vacuum and are on the 34C3? Then we should meet ;)  ]
+There might be a way to root also Gen2. However as I (Dennis) do not have access to a Gen2 vacuum, i cannot give you more information on that. As soon as i will get my own Gen2 vacuum, i will update the information.
 ### Why there is still no custom patched firmware available (with SSH)?
 While you can build your own firmware with SSH, we are not sure if we want to provide a pre-rooted version with some default SSH keys. As we know you (and us) some people might not change the keys afterwards. So instead of giving just you access to the vacuum, other people would have also access to your vacuum. We would like to make the world safer and not more vulnerable. Therefore we are thinking of some solution for that.
 ### Ist Dustcloud breaking the HTTPS connection / any SSL connection?
@@ -30,3 +32,10 @@ Note: I personally think that Xiaomis approach of device's unique AES key solves
 <a href="https://www.seemoo.tu-darmstadt.de">![SEEMOO logo](https://github.com/dgiese/dustcloud/raw/master/gfx/seemoo.png)</a>
 ### Prof. Guevara Noubir (CCIS, Northeastern University)
 <a href="http://www.ccs.neu.edu/home/noubir/Home.html">![CCIS logo](https://github.com/dgiese/dustcloud/raw/master/gfx/CCISLogo_S_gR.png)</a>
+
+# Media coverage:
+https://www.golem.de/news/xiaomi-mit-einem-stueck-alufolie-autonome-staubsauger-rooten-1712-131883.html
+http://www.zeit.de/digital/datenschutz/2017-12/34c3-hack-staubsauger-iot
+https://hackaday.com/2017/12/27/34c3-the-first-day-is-a-doozy/
+https://m.heise.de/newsticker/meldung/34C3-Vernetzter-Staubsauger-Roboter-aus-China-gehackt-3928360.html
+https://derstandard.at/2000071134392/Sicherheitsforscher-hacken-Staubsaugerroboter-und-finden-Bedenkliches (at some points very inaccurate)
