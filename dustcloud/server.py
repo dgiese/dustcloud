@@ -13,6 +13,8 @@
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 
+#TODO: change myCloudserverIP to your CloudserverIP (the IP where this script is running)
+
 import socketserver, subprocess, sys, socket
 import threading
 from pprint import pprint
@@ -115,6 +117,7 @@ class CloudClient():
 			return {"id": -1}
 
 	def process_data(self, mysocket,data):
+		myCloudserverIP = "10.0.0.1"
 		clienthello = bytes.fromhex("21310020ffffffffffffffff0000000000000000000000000000000000000000")
 		timestamp = binascii.hexlify(struct.pack('>I', round(time.time()))).decode("utf-8")
 		serverhello = bytes.fromhex("21310020ffffffffffffffff" + timestamp + "00000000000000000000000000000000")
@@ -195,8 +198,8 @@ class CloudClient():
 							self.do_log(did, m.data.value, "from_client")
 							cmd = {
 								"id": packetid,
-								"result": {"otc_list":[{"ip":"130.83.183.236","port":80}],
-										   "otc_test":{"list":[{"ip":"130.83.183.236","port":8053}],
+								"result": {"otc_list":[{"ip":myCloudserverIP,"port":80}],
+										   "otc_test":{"list":[{"ip":myCloudserverIP,"port":8053}],
 										   "interval":1800, "firsttest":769}}
 							}
 							if ((mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1)):
