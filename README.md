@@ -19,9 +19,11 @@ No, you can push the firmwareupdate to the robot without opening it. See the Upd
 There might be a way to root also Gen2. However as I (Dennis) do not have access to a Gen2 vacuum, i cannot give you more information on that. As soon as i will get my own Gen2 vacuum, i will update the information.
 ### Why there is still no custom patched firmware available (with SSH)?
 While you can build your own firmware with SSH, we are not sure if we want to provide a pre-rooted version with some default SSH keys. As we know you (and us) some people might not change the keys afterwards. So instead of giving just you access to the vacuum, other people would have also access to your vacuum. We would like to make the world safer and not more vulnerable. Therefore we are thinking of some solution for that.
-### Ist Dustcloud breaking the HTTPS connection / any SSL connection?
+### Is Dustcloud breaking the HTTPS connection / any SSL connection?
 No, dustcloud requires the symmetric key (extracted from /mnt/default/device.conf) to decrypt the AES connection to the cloud. The same key is used to encrypt the forwarded messages to the cloud.
 Note: I personally think that Xiaomis approach of device's unique AES key solves a lot of cloud problems: authentication, integrity (over hmac) and confidentiality.
+### Is there a risk that Xiaomi do a force update and disable the root?
+Technically there is, but i do not believe so. In any case you can disable updates (yours and Xiaomi's) by renaming the ccrypt command. See [disable-UPDATES.md](https://github.com/dgiese/dustcloud/blob/master/disable-UPDATES.md) for additional information. 
 
 # Contact
 * Dennis Giese <dgi[at]posteo.de>
@@ -34,8 +36,8 @@ Note: I personally think that Xiaomis approach of device's unique AES key solves
 <a href="http://www.ccs.neu.edu/home/noubir/Home.html">![CCIS logo](https://github.com/dgiese/dustcloud/raw/master/gfx/CCISLogo_S_gR.png)</a>
 
 # Media coverage:
-https://www.golem.de/news/xiaomi-mit-einem-stueck-alufolie-autonome-staubsauger-rooten-1712-131883.html
-http://www.zeit.de/digital/datenschutz/2017-12/34c3-hack-staubsauger-iot
-https://hackaday.com/2017/12/27/34c3-the-first-day-is-a-doozy/
-https://m.heise.de/newsticker/meldung/34C3-Vernetzter-Staubsauger-Roboter-aus-China-gehackt-3928360.html
-https://derstandard.at/2000071134392/Sicherheitsforscher-hacken-Staubsaugerroboter-und-finden-Bedenkliches (at some points very inaccurate)
+* https://www.golem.de/news/xiaomi-mit-einem-stueck-alufolie-autonome-staubsauger-rooten-1712-131883.html
+* http://www.zeit.de/digital/datenschutz/2017-12/34c3-hack-staubsauger-iot
+* https://hackaday.com/2017/12/27/34c3-the-first-day-is-a-doozy/
+* https://m.heise.de/newsticker/meldung/34C3-Vernetzter-Staubsauger-Roboter-aus-China-gehackt-3928360.html
+* https://derstandard.at/2000071134392/Sicherheitsforscher-hacken-Staubsaugerroboter-und-finden-Bedenkliches (at some points very inaccurate)
