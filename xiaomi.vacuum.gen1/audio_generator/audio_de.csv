@@ -39,12 +39,12 @@ no_spot_on_dock.wav,Platzieren Sie den Staubsaugerroboter im Zielbereich bevor S
 pause.wav,Pausiert.
 power_off_rejected.wav,"Bewegen Sie den Roboter von der Docking Station weg, um diesen auszuschalten."
 power_off.wav,Schalte aus.
-power_resume_clean.wav,Betterie geladen. Setze Reinigung fort.
+power_resume_clean.wav,Batterie geladen. Setze Reinigung fort.
 remote_complete.wav,Verwende Fernsteuerung.
 remote.wav,Verwendung der Fernsteuerung abgeschlossen.
 restart_clean.wav,Position unbekannt. Starte neue Reinigung.
 resume_clean.wav,Setze Reinigung fort.
-resume_home.wav,Lade.
+resume_home.wav,Kehre zurück zur Docking Station.
 return_no.wav,Konnte nicht zu dem Startpunkt zurückkehren.
 return_yes.wav,Konnte Dockingstation nicht finden. Platzieren Sie den Roboter näher an der Dockingstation und versuchen Sie es erneut.
 spot.wav,Starte Punktreinigung.
