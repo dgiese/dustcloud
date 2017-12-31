@@ -46,9 +46,9 @@ class CloudClient():
 		try:
 			self.cursor.execute("Insert into statuslog(did, data, direction) VALUES(%s, %s, %s)",(did,data,direction))
 			self.db.commit()
-		except:
+		except Exception as e:
 			# Rollback in case there is any error
-			print (self.cursor._last_executed)
+			print(self.cursor._last_executed)
 			print("!!! (eee) SQL rollback : %s" % str(e))
 			self.db.rollback()
 			
@@ -57,7 +57,7 @@ class CloudClient():
 		try:
 			self.cursor.execute("Insert into raw(did, raw, direction) VALUES(%s, %s, %s)",(did,data,direction))
 			self.db.commit()
-		except:
+		except Exception as e:
 			# Rollback in case there is any error
 			print("!!! (eee) SQL rollback : %s" % str(e))
 			self.db.rollback()
@@ -67,7 +67,7 @@ class CloudClient():
 		try:
 			self.cursor.execute("UPDATE devices SET last_contact = now(), last_contact_from = %s, last_contact_via = %s WHERE did = %s", (client_address, connmode, ddid))
 			self.db.commit()
-		except:
+		except Exception as e:
 			# Rollback in case there is any error
 			print("!!! (eee) SQL rollback : %s" % str(e))
 			self.db.rollback()
@@ -76,7 +76,7 @@ class CloudClient():
 		try:
 			self.cursor.execute("UPDATE cmdqueue SET confirmed = %s WHERE did = %s AND cmdid = %s",(code,ddid,packetid))
 			self.db.commit()
-		except:
+		except Exception as e:
 			# Rollback in case there is any error
 			print("!!! (eee) SQL rollback : %s" % str(e))
 			self.db.rollback()
@@ -105,7 +105,7 @@ class CloudClient():
 				else:
 					params = ast.literal_eval(params)
 				# Now print fetched result
-				print (" ### Command for did = %s, method = %s, params = %s" % (ddid,method,params))
+				print(" ### Command for did = %s, method = %s, params = %s" % (ddid,method,params))
 				return {
 								"id": id,
 								"method":'%s' % method,
@@ -113,7 +113,7 @@ class CloudClient():
 								"from" : '4'
 							}
 		else:
-			#print (" !! no commands")
+			#print(" !! no commands")
 			return {"id": -1}
 
 	def process_data(self, mysocket,data):
@@ -149,15 +149,15 @@ class CloudClient():
 							forward_to_cloud = row[3]
 							full_cloud_forward = row[4]
 							# Now print fetched result
-							print ("ddid = %s, dname = %s, denckey = %s, full_cloud_forward = %d, forward_to_cloud = %d" % (ddid,dname,denckey,forward_to_cloud,full_cloud_forward))
+							print("ddid = %s, dname = %s, denckey = %s, full_cloud_forward = %d, forward_to_cloud = %d" % (ddid,dname,denckey,forward_to_cloud,full_cloud_forward))
 					else:
 						fail = 1
-						print ("Error: unable to fetch data for did %s. Device unknown?" % did)
+						print("Error: unable to fetch data for did %s. Device unknown?" % did)
 						return 1
 				except Exception as e:
 					fail = 1
 					raise
-					print ("Error: unable to fetch data for did %s" % did)
+					print("Error: unable to fetch data for did %s" % did)
 					return 1
 				if fail == 0:
 					enckey = denckey
@@ -165,7 +165,7 @@ class CloudClient():
 					ctx = {'token': enckey.encode()}
 					m = Message.parse(data, ctx)
 					if mysocket.ddid != ddid:
-						print ("(!!!) Warning, did missmatch: %d != %d" % (mysocket.ddid, ddid))
+						print("(!!!) Warning, did missmatch: %d != %d" % (mysocket.ddid, ddid))
 					mysocket.ddid = ddid
 					mysocket.ctx = ctx
 					mysocket.dname = dname
