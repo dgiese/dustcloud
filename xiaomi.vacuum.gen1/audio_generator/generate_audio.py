@@ -5,7 +5,7 @@ import csv
 output_directory = "generated"
 input_file = "audio_de.csv"
 language = "de"
-# text to speech engine (gtts or espeak)
+# text to speech engine (gtts, espeak or macos)
 engine = "gtts"
 
 # import engine
@@ -31,3 +31,7 @@ for filename, text in filereader:
         os.remove(path + ".mp3")
     elif engine == "espeak":
         os.system("espeak-ng -v " + language + " '" + text + "' -w " + path)
+    elif engine == "macos":
+        # remove "-v Anna" if you want to use your system language, leave this as german default
+        # format is recommendation from https://stackoverflow.com/a/9732070
+        os.system("say -v Anna -o " + path + " --data-format=LEF32@22050 " + text)
