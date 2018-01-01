@@ -20,6 +20,7 @@
 #
 IS_MAC=false
 FIRMWARE_VERSION=$1
+SOUNDFILE=english.pkg
 
 if [[ ! -n "$FIRMWARE_VERSION" ]]; then
 	echo "You need to specify a firmware version, e.g. 003094"
@@ -42,8 +43,8 @@ if [ ! -f /usr/local/bin/ccrypt ] && $IS_MAC; then
 	exit 1
 fi
 
-if [ ! -f english.pkg ]; then
-    echo "File english.pkg not found!"
+if [ ! -f $SOUNDFILE ]; then
+    echo "File $SOUNDFILE not found!"
 	exit 1
 fi
 
@@ -70,11 +71,11 @@ else
 	ssh-keygen -N "" -t ecdsa -f ssh_host_ecdsa_key
 	ssh-keygen -N "" -t ed25519 -f ssh_host_ed25519_key
 	echo "decrypt soundfile"
-	ccrypt -d -K r0ckrobo#23456 english.pkg
+	ccrypt -d -K r0ckrobo#23456 $SOUNDFILE
 	mkdir sounds
 	cd sounds
 	echo "unpack soundfile"
-	tar -xzf ../english.pkg
+	tar -xzf ../$SOUNDFILE
 	cd ..
 	echo "decrypt firmware"
 	ccrypt -d -K rockrobo v11_$FIRMWARE_VERSION.pkg
