@@ -23,6 +23,7 @@
 	* replace ipaddress, version and md5 with your data
 	* Check status with command from 4)
 	* Wait 10 minutes (you should see an access on your http server)
+1. In case you get a warning about battery needs to be at least 20% charged: connect the robot with your charging station and charge it while updating. This warning can appear even if your robot is charged more then 20%.
 1. If update is complete: try ssh access on 192.168.8.1 with user root
 
 
