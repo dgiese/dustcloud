@@ -10,3 +10,4 @@ ssh_host_rsa_key.pub
 *.md5
 config.php
 settings.json
+xiaomi.vacuum.gen1/audio_generator/generated
