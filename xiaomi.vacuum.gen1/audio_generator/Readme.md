@@ -7,7 +7,7 @@ You'll notice that each engine has its problems with mixed langauges (e.g. germa
 
 # Requirements
 1. python3
-1. ffmpeg (to convert generated files into mp3)
+1. ffmpeg (to convert generated files into wav)
 
 # Installation
 You can either install the python3 requirements manually or you install and use them with pipenv:
