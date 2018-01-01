@@ -20,6 +20,7 @@
 #
 IS_MAC=false
 FIRMWARE_VERSION=$1
+SOUNDFILE=english.pkg
 
 if [[ ! -n "$FIRMWARE_VERSION" ]]; then
 	echo "You need to specify a firmware version, e.g. 003094"
@@ -32,18 +33,18 @@ if [[ $OSTYPE == darwin* ]]; then
 	echo "Running on a Mac, adjusting commands accordingly"
 fi
 
-if [ ! -f /usr/bin/ccrypt ] && [ ! IS_MAC ]; then
+if [ ! -f /usr/bin/ccrypt ] && ! $IS_MAC; then
     echo "Ccrypt not found! Please install it (e.g. by apt-get install ccrypt)"
 	exit 1
 fi
 
-if [ ! -f /usr/local/bin/ccrypt ] && [ IS_MAC ]; then
+if [ ! -f /usr/local/bin/ccrypt ] && $IS_MAC; then
     echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
 	exit 1
 fi
 
-if [ ! -f english.pkg ]; then
-    echo "File english.pkg not found!"
+if [ ! -f $SOUNDFILE ]; then
+    echo "File $SOUNDFILE not found!"
 	exit 1
 fi
 
@@ -70,11 +71,11 @@ else
 	ssh-keygen -N "" -t ecdsa -f ssh_host_ecdsa_key
 	ssh-keygen -N "" -t ed25519 -f ssh_host_ed25519_key
 	echo "decrypt soundfile"
-	ccrypt -d -K r0ckrobo#23456 english.pkg
+	ccrypt -d -K r0ckrobo#23456 $SOUNDFILE
 	mkdir sounds
 	cd sounds
 	echo "unpack soundfile"
-	tar -xzf ../english.pkg
+	tar -xzf ../$SOUNDFILE
 	cd ..
 	echo "decrypt firmware"
 	ccrypt -d -K rockrobo v11_$FIRMWARE_VERSION.pkg
@@ -86,7 +87,7 @@ else
 	fi
 	mkdir image
 
-	if [ IS_MAC ]; then
+	if $IS_MAC; then
 		#ext4fuse doesn't support write properly
 		#ext4fuse disk.img image -o force
 		fuse-ext2 disk.img image -o rw+
@@ -104,7 +105,7 @@ else
 	cat ../ssh_host_ed25519_key > ./etc/ssh/ssh_host_ed25519_key
 	cat ../ssh_host_ed25519_key.pub > ./etc/ssh/ssh_host_ed25519_key.pub
 	echo "disable SSH firewall rule"
-	if [ IS_MAC ]; then
+	if $IS_MAC; then
 		# see https://stackoverflow.com/a/21243111
 		sed -i -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' ./opt/rockrobo/watchdog/rrwatchdoge.conf
 	else
@@ -151,7 +152,7 @@ else
 	mkdir -p output
 	mv v11_$FIRMWARE_VERSION_patched.pkg.cpt output/v11_$FIRMWARE_VERSION.pkg
 
-	if [ IS_MAC ]; then
+	if $IS_MAC; then
 		md5 output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
 	else
 		md5sum output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
