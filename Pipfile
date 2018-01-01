@@ -10,6 +10,7 @@ name = "pypi"
 requests = "*"
 prompt-toolkit = "*"
 python-miio = "*"
+gtts = "*"
 
 
 [dev-packages]
