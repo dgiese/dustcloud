@@ -1,5 +1,5 @@
 ## Preparation
-1. Install [python-mirobo](https://github.com/ultrara1n/python-mirobo) (python3!)
+1. Install [python-miio](https://github.com/rytilahti/python-miio) (python3!)
 1. Install ccrypt(apt-get install ccrypt)
 1. Create custom image with imagebuilder.sh, Copy MD5 sum
 	* you need to create your own ssh keypair and create an authorized key file
