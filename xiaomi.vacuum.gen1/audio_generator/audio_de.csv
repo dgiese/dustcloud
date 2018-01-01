@@ -46,7 +46,7 @@ restart_clean.wav,"Position unbekannt. Starte neue Reinigung."
 resume_clean.wav,"Setze Reinigung fort."
 resume_home.wav,"Kehre zurück zur Docking Station."
 return_no.wav,"Konnte nicht zu dem Startpunkt zurückkehren."
-return_yes.wav,"Konnte Dockingstation nicht finden. Platzieren Sie den Roboter näher an der Dockingstation und versuchen Sie es erneut.
+return_yes.wav,"Konnte Dockingstation nicht finden. Platzieren Sie den Roboter näher an der Dockingstation und versuchen Sie es erneut."
 spot.wav,"Starte Punktreinigung."
 start.wav,"Starte Reinigung."
 stop_spot.wav,"Beende Punktreinigung."
