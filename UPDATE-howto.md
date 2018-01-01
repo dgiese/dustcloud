@@ -1,5 +1,5 @@
 ## Preparation
-1. Install [python-mirobo](https://github.com/ultrara1n/python-mirobo) (python3!)
+1. Install [python-miio](https://github.com/rytilahti/python-miio) (python3!)
 1. Install ccrypt(apt-get install ccrypt)
 1. Create custom image with imagebuilder.sh, Copy MD5 sum
 	* you need to create your own ssh keypair and create an authorized key file
@@ -23,6 +23,7 @@
 	* replace ipaddress, version and md5 with your data
 	* Check status with command from 4)
 	* Wait 10 minutes (you should see an access on your http server)
+1. In case you get a warning about battery needs to be at least 20% charged: connect the robot with your charging station and charge it while updating. This warning can appear even if your robot is charged more then 20%.
 1. If update is complete: try ssh access on 192.168.8.1 with user root
 
 

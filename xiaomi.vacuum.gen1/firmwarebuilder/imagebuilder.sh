@@ -18,110 +18,162 @@
 # place english.pkg and v11_<fw_version>.pkg (e.g. v11_003077.pkg) in this folder
 # place your authorized_keys in this folder
 #
-IS_MAC=false
-FIRMWARE_VERSION=$1
-SOUNDFILE=english.pkg
 
-if [[ ! -n "$FIRMWARE_VERSION" ]]; then
-	echo "You need to specify a firmware version, e.g. 003094"
+if [[ $EUID -ne 0 ]]; then
+	echo "You must be a root user" 2>&1
 	exit 1
 fi
 
+IS_MAC=false
 if [[ $OSTYPE == darwin* ]]; then
 	# Mac OSX
 	IS_MAC=true
 	echo "Running on a Mac, adjusting commands accordingly"
 fi
 
-if [ ! -f /usr/bin/ccrypt ] && ! $IS_MAC; then
-    echo "Ccrypt not found! Please install it (e.g. by apt-get install ccrypt)"
+if [ ! -f /usr/bin/ccrypt -a "$IS_MAC" = false ]; then
+    echo "Ccrypt not found! Please install it (e.g. by apt install ccrypt)"
 	exit 1
 fi
 
-if [ ! -f /usr/local/bin/ccrypt ] && $IS_MAC; then
+if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
     echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
 	exit 1
 fi
 
-if [ ! -f $SOUNDFILE ]; then
+if [[ $# -eq 0 ]]; then
+	cat << EOF
+usage: sudo ./firmwarebuilder -f v11_003094.pkg [-s english.pkg] [-k authorized_keys] [ -t Europe/Berlin ] [--disable-xiaomi]
+
+Options:
+  -f, --firmware            path to firmware file
+  -s, --soundfile           path to sound file
+  -k, --authorized-keys     path to authorized-keys file
+  -t, --timezone            timezone to be used in vacuum
+  --disable-xiaomi          disable xiaomi servers using hosts file
+
+Report bugs to: https://github.com/dgiese/dustcloud/issues
+EOF
+	exit 0
+fi
+
+DISABLE_XIAOMI=false
+while [[ $# -gt 0 ]]; do
+key="$1"
+
+case $key in
+    -f|--firmware)
+    FIRMWARE="$2"
+    shift
+    shift
+    ;;
+    -s|--soundfile)
+    SOUNDFILE="$2"
+    shift
+    shift
+    ;;
+    -k|--authorized-keys)
+    AUTHORIZED_KEYS="$2"
+    shift
+    shift
+    ;;
+    -t|--timezone)
+    TIMEZONE="$2"
+    shift
+    shift
+    ;;
+    --disable-xiaomi)
+    DISABLE_XIAOMI=true
+    shift
+    ;;
+    *)
+    shift
+    ;;
+esac
+done
+
+SOUNDFILE=${SOUNDFILE:-"english.pkg"}
+AUTHORIZED_KEYS=${AUTHORIZED_KEYS:-"authorized_keys"}
+TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
+PASSWORD_FW="rockrobo"
+PASSWORD_SND="r0ckrobo#23456"
+
+if [[ ! -f "$FIRMWARE" ]]; then
+	echo "You need to specify an existing firmware file, e.g. v11_003094.pkg"
+	exit 1
+fi
+FIRMWARE=$(readlink -f "$FIRMWARE")
+BASENAME=$(basename $FIRMWARE)
+FILENAME="${BASENAME%.*}"
+
+if [ ! -f "$SOUNDFILE" ]; then
     echo "File $SOUNDFILE not found!"
 	exit 1
 fi
+SOUNDFILE=$(readlink -f "$SOUNDFILE")
 
-if [ ! -f v11_$FIRMWARE_VERSION.pkg ]; then
-    echo "File v11_$FIRMWARE_VERSION.pkg not found!"
-	exit 1
-fi
-
-if [ ! -f authorized_keys ]; then
+if [ ! -f "$AUTHORIZED_KEYS" ]; then
     echo "File authorized_keys not found!"
 	exit 1
 fi
+AUTHORIZED_KEYS=$(readlink -f "$AUTHORIZED_KEYS")
 
-if [[ $EUID -ne 0 ]]; then
-	echo "You must be a root user" 2>&1
+# Generate SSH Host Keys
+echo "Generate SSH Host Keys"
+rm -f ssh_host_*
+ssh-keygen -N "" -t rsa -f ssh_host_rsa_key
+ssh-keygen -N "" -t dsa -f ssh_host_dsa_key
+ssh-keygen -N "" -t ecdsa -f ssh_host_ecdsa_key
+ssh-keygen -N "" -t ed25519 -f ssh_host_ed25519_key
+echo "decrypt soundfile"
+ccrypt -d -K "$PASSWORD_SND" "$SOUNDFILE"
+mkdir sounds
+cd sounds
+echo "unpack soundfile"
+tar -xzf "$SOUNDFILE"
+cd ..
+echo "decrypt firmware"
+ccrypt -d -K "$PASSWORD_FW" "$FIRMWARE"
+echo "unpack firmware"
+tar -xzf "$FIRMWARE"
+if [ ! -f disk.img ]; then
+	echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
 	exit 1
+fi
+mkdir image
+
+if [ "$IS_MAC" = true ]; then
+	#ext4fuse doesn't support write properly
+	#ext4fuse disk.img image -o force
+	fuse-ext2 disk.img image -o rw+
 else
-	# Generate SSH Host Keys
-	echo "Generate SSH Host Keys"
-	rm ssh_host_*
-	rm ssh_host_*.pub
-	ssh-keygen -N "" -t rsa -f ssh_host_rsa_key
-	ssh-keygen -N "" -t dsa -f ssh_host_dsa_key
-	ssh-keygen -N "" -t ecdsa -f ssh_host_ecdsa_key
-	ssh-keygen -N "" -t ed25519 -f ssh_host_ed25519_key
-	echo "decrypt soundfile"
-	ccrypt -d -K r0ckrobo#23456 $SOUNDFILE
-	mkdir sounds
-	cd sounds
-	echo "unpack soundfile"
-	tar -xzf ../$SOUNDFILE
-	cd ..
-	echo "decrypt firmware"
-	ccrypt -d -K rockrobo v11_$FIRMWARE_VERSION.pkg
-	echo "unpack firmware"
-	tar -xzf v11_$FIRMWARE_VERSION.pkg
-	if [ ! -f disk.img ]; then
-		echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
-		exit 1
-	fi
-	mkdir image
+	mount -o loop disk.img image
+fi
+cd image
+echo "patch ssh host keys"
+cat ../ssh_host_rsa_key > ./etc/ssh/ssh_host_rsa_key
+cat ../ssh_host_rsa_key.pub > ./etc/ssh/ssh_host_rsa_key.pub
+cat ../ssh_host_dsa_key > ./etc/ssh/ssh_host_dsa_key
+cat ../ssh_host_dsa_key.pub > ./etc/ssh/ssh_host_dsa_key.pub
+cat ../ssh_host_ecdsa_key > ./etc/ssh/ssh_host_ecdsa_key
+cat ../ssh_host_ecdsa_key.pub > ./etc/ssh/ssh_host_ecdsa_key.pub
+cat ../ssh_host_ed25519_key > ./etc/ssh/ssh_host_ed25519_key
+cat ../ssh_host_ed25519_key.pub > ./etc/ssh/ssh_host_ed25519_key.pub
+echo "disable SSH firewall rule"
+sed -i -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' ./opt/rockrobo/watchdog/rrwatchdoge.conf
+echo "integrate SSH authorized_keys"
+mkdir ./root/.ssh
+chmod 700 ./root/.ssh
 
-	if $IS_MAC; then
-		#ext4fuse doesn't support write properly
-		#ext4fuse disk.img image -o force
-		fuse-ext2 disk.img image -o rw+
-	else
-		mount -o loop disk.img image
-	fi
-	cd image
-	echo "patch ssh host keys"
-	cat ../ssh_host_rsa_key > ./etc/ssh/ssh_host_rsa_key
-	cat ../ssh_host_rsa_key.pub > ./etc/ssh/ssh_host_rsa_key.pub
-	cat ../ssh_host_dsa_key > ./etc/ssh/ssh_host_dsa_key
-	cat ../ssh_host_dsa_key.pub > ./etc/ssh/ssh_host_dsa_key.pub
-	cat ../ssh_host_ecdsa_key > ./etc/ssh/ssh_host_ecdsa_key
-	cat ../ssh_host_ecdsa_key.pub > ./etc/ssh/ssh_host_ecdsa_key.pub
-	cat ../ssh_host_ed25519_key > ./etc/ssh/ssh_host_ed25519_key
-	cat ../ssh_host_ed25519_key.pub > ./etc/ssh/ssh_host_ed25519_key.pub
-	echo "disable SSH firewall rule"
-	if $IS_MAC; then
-		# see https://stackoverflow.com/a/21243111
-		sed -i -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' ./opt/rockrobo/watchdog/rrwatchdoge.conf
-	else
-		sed -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' -i ./opt/rockrobo/watchdog/rrwatchdoge.conf
-	fi
-	echo "integrate SSH authorized_keys"
-	mkdir ./root/.ssh
-	chmod 700 ./root/.ssh
+if [ -f ./root/.ssh/authorized_keys ]; then
+	echo "removing obsolete authorized_keys from Xiaomi image"
+	rm ./root/.ssh/authorized_keys
+fi
 
-	if [ -f ./root/.ssh/authorized_keys ]; then
-		echo "removing obsolete authorized_keys from Xiaomi image"
-		rm ./root/.ssh/authorized_keys
-	fi
+cp "$AUTHORIZED_KEYS" ./root/.ssh/authorized_keys
+chmod 600 ./root/.ssh/authorized_keys
 
-	cp ../authorized_keys ./root/.ssh/
-	chmod 600 ./root/.ssh/authorized_keys
+if [ "$DISABLE_XIAOMI" = true ]; then
 	echo "reconfiguring network traffic to xiaomi"
 	# comment out this section if you do not want do disable the xiaomi cloud
 	# or redirect it
@@ -129,35 +181,37 @@ else
 	echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
 	#echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
 	#echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
-	echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
-	echo "0.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
-	echo "1.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
-	echo "Europe/Berlin" > ./etc/timezone
-	# Replace chinese soundfiles with english soundfiles
-	cp ../sounds/*.wav ./opt/rockrobo/resources/sounds/prc/
-
-	cd ..
-	umount image
-	rm -rf image
-	rm -rf sounds
-	echo "pack new firmware"
-	tar -czf v11_$FIRMWARE_VERSION_patched.pkg disk.img
-	if [ ! -f v11_$FIRMWARE_VERSION_patched.pkg ]; then
-		echo "File v11_$FIRMWARE_VERSION_patched.pkg not found! Packing the firmware was unsuccessful."
-		exit 1
-	fi
-	rm -f disk.img
-	echo "encrypt firmware"
-	ccrypt -e -K rockrobo v11_$FIRMWARE_VERSION_patched.pkg
-	mkdir -p output
-	mv v11_$FIRMWARE_VERSION_patched.pkg.cpt output/v11_$FIRMWARE_VERSION.pkg
-
-	if $IS_MAC; then
-		md5 output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
-	else
-		md5sum output/v11_$FIRMWARE_VERSION.pkg > output/v11_$FIRMWARE_VERSION.md5
-	fi
-
-	cat output/v11_$FIRMWARE_VERSION.md5
 fi
 
+echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
+echo "0.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
+echo "1.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
+echo "$TIMEZONE" > ./etc/timezone
+# Replace chinese soundfiles with english soundfiles
+cp ../sounds/*.wav ./opt/rockrobo/resources/sounds/prc/
+
+cd ..
+umount image
+rm -rf image
+rm -rf sounds
+rm -f ssh_host_*
+echo "pack new firmware"
+PATCHED="${FILENAME}_patched.pkg"
+tar -czf "$PATCHED" disk.img
+if [ ! -f "$PATCHED" ]; then
+	echo "File $PATCHED not found! Packing the firmware was unsuccessful."
+	exit 1
+fi
+rm -f disk.img
+echo "encrypt firmware"
+ccrypt -e -K "$PASSWORD_FW" "$PATCHED"
+mkdir -p output
+mv "${PATCHED}.cpt" "output/${BASENAME}"
+
+if [ "$IS_MAC" = true ]; then
+	md5 "output/${BASENAME}" > "output/${FILENAME}.md5"
+else
+	md5sum "output/${BASENAME}" > "output/${FILENAME}.md5"
+fi
+
+cat "output/${FILENAME}.md5"
