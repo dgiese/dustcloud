@@ -51,6 +51,7 @@ Options:
   -k, --authorized-keys     path to authorized-keys file
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
+  --enable-minhttp          enable minimalistiv http server (:80)
 
 Report bugs to: https://github.com/dgiese/dustcloud/issues
 EOF
@@ -84,6 +85,10 @@ case $key in
     ;;
     --disable-xiaomi)
     DISABLE_XIAOMI=true
+    shift
+    ;;
+    --enable-minhttp)
+    ENABLE_MINHTTP=true
     shift
     ;;
     *)
@@ -181,6 +186,13 @@ if [ "$DISABLE_XIAOMI" = true ]; then
 	echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
 	#echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
 	#echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
+fi
+
+if [ "$ENABLE_MINHTTP" = true ]; then
+	cat ../rc.local > ./etc/rc.local
+	cp ../minimal-http-server.sh ./root/minimal-http-server.sh
+	chmod +x ./root/minimal-http-server.sh
+	cp ../minimal-http-server.sh ./root/minimal-http-server-content.sh
 fi
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
