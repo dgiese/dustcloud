@@ -1,0 +1,60 @@
+back_dock_nearby.wav,Nie można się dostać do stacji dokującej. Usuń przeszkody!
+bin_in.wav,Pojemnik na kurz został włożony.
+bin_out.wav,Pojemnik na kurz został usunięty.
+binout_error10.wav,Pojemnik na kurz został usunięty. Proszę wyczyścić filtr!
+bl_recovery_bootfailed.wav,Recovery Boot nie powiódł się.
+bl_recovery_failed.wav,Recovery nie powiódł się.
+bl_recovery_retry.wav,Recovery nowa próba.
+bl_recovery_start.wav,Recovery start.
+bl_recovery_updatefailed.wav,Recovery Update nie powiódł się.
+charging.wav,Ładowanie.
+clean_bin.wav,Proszę wyczyścić pojemnik na kurz.
+clean_finish.wav,Odkurzanie zakończone.
+error1.wav,"Błąd 1, spróbuj przekręcić pomarańczową głowicę lasera, aby upewnić się, że nie jest zablokowana."
+error2.wav,"Błąd 2, wyczyść zderzak i delikatnie go stuknij."
+error3.wav,"Błąd 3, spróbuj przenieść robot w inne miejsce."
+error4.wav,"Błąd 4, Oczyść czujnik przepasci i odsuń robot w inne miejsce."
+error5.wav,"Błąd 5, usuń i wyczyść główny pędzel."
+error6.wav,"Błąd 6, usuń i wyczyść boczne szczotki."
+error7.wav,"Błąd 7, Upewnij się, że koła nie są zablokowane i przenieś robot w inne miejsce."
+error8.wav,"Błąd 8, Upewnij się, że wokół robota nie ma żadnych przeszkód."
+error9.wav,"Błąd 9, Włóż pojemnik na kurz i filtr."
+error10.wav,"Błąd 10, Wyczyść lub zastąp filtr."
+error11.wav,"Błąd 11, Wykryto silne pole magnetyczne. Odsuń robot od wirtualnej ściany i spróbuj ponownie."
+error12.wav,"Błąd 12, Akumulator jest pusty. Załaduj robota."
+error13.wav,"Błąd 13, Ładowanie nie powiodło się. Upewnij się, że styki ładowania są czyste."
+error14.wav,"Błąd 14, Nieprawidłowe działanie baterii."
+error15.wav,"Błąd 15, Oczyść czujnik ścienny."
+error16.wav,"Błąd 16, Użyj robota na płaskiej poziomej powierzchni."
+error17.wav,"Błąd 17, Awaria szczotki bocznej. Uruchom ponownie system."
+error18.wav,"Błąd 18, Nieprawidłowe działanie dmuchawy. Uruchom ponownie system."
+error19.wav,"Błąd 19, Stacja dokująca nie jest podłączona do zasilania."
+error_internal.wav,Wystąpił błąd wewnętrzny. Zrestartuj system.
+findme.wav,"Hej, jestem tutaj."
+finish.wav,Odkurzanie zakończone.
+home.wav,Wróć do stacji dokującej.
+no_power_charging.wav,Poziom naładowania akumulatora jest niski. Potrzebujesz więcej czasu na załadowanie.
+no_power.wav,Poziom naładowania akumulatora jest niski. Wróć do stacji dokującej.
+no_spot_on_dock.wav,Umieść robota w obszarze docelowym przed rozpoczęciem czyszczenia punktowego.
+pause.wav,Przerwij.
+power_off_rejected.wav,"Usuń robota ze stacji dokującej, aby go wyłączyć."
+power_off.wav,Wyłącz.
+power_resume_clean.wav,Akumulator naładowany. Kontynuuj czyszczenie.
+remote_complete.wav,Użyj pilota zdalnego sterowania.
+remote.wav,Korzystanie z pilota zdalnego sterowania zakończone.
+restart_clean.wav,Pozycja nieznana. Rozpocznij nowe czyszczenie.
+resume_clean.wav,Kontynuuj czyszczenie.
+resume_home.wav,Wróć do stacji dokującej.
+return_no.wav,Nie można wrócić do punktu wyjścia.
+return_yes.wav,Nie można znaleźć stacji dokującej. Odłóż odkurzacz bliżej stacji dokującej i spróbuj ponownie.
+spot.wav,Rozpocznij czyszczenie punktowe.
+start.wav,Rozpocznij czyszczenie.
+stop_spot.wav,Zakończ czyszczenie punktowe.
+stop.wav,Zakończ czyszczenie.
+sysupd_complete.wav,Aktualizacja zakończona pomyślnie.
+sysupd_failed.wav,Aktualizacja oprogramowania nie powiodła się. Użyj starej wersji.
+sysupd_notready.wav,"Spróbuj zaktualizować, jeśli robot jest co najmniej do 20% naładowany ."
+sysupd_start.wav,Rozpocznij aktualizację oprogramowania. Może trwać od 5 do 10 minut.
+sysupd_wip.wav,"Poczekaj, aż aktualizacja zostanie zakończona."
+timed_clean.wav,Rozpocznij zaplanowane czyszczenie.
+wifi_reset.wav,Zresetuj Wi-Fi.
