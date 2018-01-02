@@ -2,9 +2,9 @@
 import os
 import csv
 
-output_directory = "generated"
 language = input("Write language according ISO-639-1 (ca, de, en, es): ")
 input_file = "audio_" + language + ".csv"
+output_directory = "generated_" + language
 # text to speech engine (gtts, espeak or macos)
 engine = "gtts"
 
