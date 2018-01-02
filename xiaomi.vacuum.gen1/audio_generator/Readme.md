@@ -7,6 +7,7 @@ You'll notice that each engine has its problems with mixed langauges (e.g. germa
 
 # Requirements
 1. python3
+1. [pipenv](https://github.com/pypa/pipenv) Install using: `pip install pipenv`
 1. ffmpeg (to convert generated files into wav)
 
 # Installation
@@ -15,9 +16,9 @@ You can either install the python3 requirements manually or you install and use 
 * install ffmpeg
 * change to this folder
 * `pipenv install`
-* `pipenv shell``
+* `pipenv shell`
 * `cd xiaomi.vacuum.gen1/audio_generator`
-* start script with `./generate_audio.py`
+* start script with `./generate_audio.py` program ask for your language selection
 
 # Supported engines
 ## gtts (Google Text To Speech)

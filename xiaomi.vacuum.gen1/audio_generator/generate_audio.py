@@ -3,8 +3,8 @@ import os
 import csv
 
 output_directory = "generated"
-input_file = "audio_de.csv"
-language = "de"
+language = input("Write language according ISO-639-1 (ca, de, en, es): ")
+input_file = "audio_" + language + ".csv"
 # text to speech engine (gtts, espeak or macos)
 engine = "gtts"
 
@@ -25,7 +25,7 @@ for filename, text in filereader:
     path = output_directory + "/" + filename
     if engine == "gtts":
         tts = gTTS(text=text, lang=language, slow=False)
-		# save mp3 and convert to mp3
+        # save mp3 and convert to mp3
         tts.save(path + ".mp3")
         os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
         os.remove(path + ".mp3")
