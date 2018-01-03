@@ -25,21 +25,21 @@ def select_item(welcome_text, items):
 
 
 output_directory = "generated"
-available_audio = glob.glob('audio_*.csv')
+available_audio = glob.glob('language/audio_*.csv')
 input_file = select_item('Available localized audio instructions:', available_audio)
 language = input_file.split('_')[-1].split('.')[0]
 
 tts_engines = ['gtts']
 if sys.platform == 'darwin':
     tts_engines.append('macos')
-if os.system('espeak --version') == 0:
+if os.system('espeak --version > /dev/null 2>&1') == 0:
     tts_engines.append('espeak')
-if os.system('espeak-ng --version') == 0:
+if os.system('espeak-ng --version > /dev/null 2>&1') == 0:
     tts_engines.append('espeak-ng')
 engine = select_item('Available TTS engines:', tts_engines)
 
 if engine == 'gtts':
-    if os.system('ffmpeg -version') != 0:
+    if os.system('ffmpeg -version > /dev/null 2>&1') != 0:
         print('gTTS engine requires ffmpeg for converting mp3 to wav. Install it by typing: `sudo apt install ffmpeg` in terminal.')
         exit(0)
     else:
