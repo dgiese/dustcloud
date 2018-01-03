@@ -57,4 +57,4 @@ sysupd_notready.wav,"Si us plau, intenteu reparar l'actualització i mira si el 
 sysupd_start.wav,"Inici de l'actualització del firmware. Pot trigar entre 5 i 10 minuts".
 sysupd_wip.wav,"espereu fins que hagi finalitzat l'actualització."
 timed_clean.wav,"Inicieu la neteja programada".
-wifi_reset.wav,"Restablir Wi-Fi.
+wifi_reset.wav,"Restablir Wi-Fi."
