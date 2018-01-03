@@ -16,7 +16,6 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 # Preparation:
 # place english.pkg and v11_<fw_version>.pkg (e.g. v11_003077.pkg) in this folder
-# place your authorized_keys in this folder
 #
 
 if [[ $EUID -ne 0 ]]; then
@@ -43,19 +42,25 @@ fi
 
 if [[ $# -eq 0 ]]; then
 	cat << EOF
-usage: sudo ./firmwarebuilder -f v11_003094.pkg [-s english.pkg] [-k authorized_keys] [ -t Europe/Berlin ] [--disable-xiaomi]
+usage: sudo ./firmwarebuilder -f v11_003094.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
 
 Options:
   -f, --firmware            path to firmware file
   -s, --soundfile           path to sound file
-  -k, --authorized-keys     path to authorized-keys file
+  -k, --public-key          path to ssh public key to be added to authorized_keys file
+                            if need to add multiple keys set -k as many times as you need:
+                            -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
+
+Each parameter that takes a file as an argument accepts path in any form
 
 Report bugs to: https://github.com/dgiese/dustcloud/issues
 EOF
 	exit 0
 fi
+
+PUBLIC_KEYS=()
 
 DISABLE_XIAOMI=false
 while [[ $# -gt 0 ]]; do
@@ -72,8 +77,13 @@ case $key in
     shift
     shift
     ;;
-    -k|--authorized-keys)
-    AUTHORIZED_KEYS="$2"
+    -k|--public-key)
+    if [ -f "$2" ]; then
+        PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink -f "$2")
+    else
+        echo "File $2 not found!"
+        exit 1
+    fi
     shift
     shift
     ;;
@@ -92,8 +102,12 @@ case $key in
 esac
 done
 
+if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
+    echo "No public keys selected!"
+    exit 1
+fi
+
 SOUNDFILE=${SOUNDFILE:-"english.pkg"}
-AUTHORIZED_KEYS=${AUTHORIZED_KEYS:-"authorized_keys"}
 TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
@@ -111,12 +125,6 @@ if [ ! -f "$SOUNDFILE" ]; then
 	exit 1
 fi
 SOUNDFILE=$(readlink -f "$SOUNDFILE")
-
-if [ ! -f "$AUTHORIZED_KEYS" ]; then
-    echo "File authorized_keys not found!"
-	exit 1
-fi
-AUTHORIZED_KEYS=$(readlink -f "$AUTHORIZED_KEYS")
 
 # Generate SSH Host Keys
 echo "Generate SSH Host Keys"
@@ -170,7 +178,9 @@ if [ -f ./root/.ssh/authorized_keys ]; then
 	rm ./root/.ssh/authorized_keys
 fi
 
-cp "$AUTHORIZED_KEYS" ./root/.ssh/authorized_keys
+for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
+    cat "${PUBLIC_KEYS[$i]}" >> ./root/.ssh/authorized_keys
+done
 chmod 600 ./root/.ssh/authorized_keys
 
 if [ "$DISABLE_XIAOMI" = true ]; then
