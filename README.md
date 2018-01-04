@@ -44,4 +44,5 @@ There are plans for that. But keep in mind that the devices were financed from m
 * http://www.zeit.de/digital/datenschutz/2017-12/34c3-hack-staubsauger-iot
 * https://hackaday.com/2017/12/27/34c3-the-first-day-is-a-doozy/
 * https://m.heise.de/newsticker/meldung/34C3-Vernetzter-Staubsauger-Roboter-aus-China-gehackt-3928360.html
+* https://www.notebookcheck.com/Security-Staubsauger-sammelt-neben-Staub-auch-Daten-ueber-die-Wohnung.275668.0.html
 * https://derstandard.at/2000071134392/Sicherheitsforscher-hacken-Staubsaugerroboter-und-finden-Bedenkliches (at some points very inaccurate)
