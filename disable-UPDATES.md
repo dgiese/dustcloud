@@ -7,7 +7,7 @@ By renaming it, you technically disable your vacuum's ability to update firmware
 
 > chmod +x /usr/bin/ccrypt
 
-=== Reverse (to install updates and soundpackages)
+### Reverse (to install updates and soundpackages again) 
 Check that /usr/bin/ccrypt_ exists (you do not want to delete your actual copy of ccrypt)
 
 > rm /usr/bin/ccrypt
