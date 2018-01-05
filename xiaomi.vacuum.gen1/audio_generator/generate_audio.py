@@ -1,19 +1,57 @@
 #!/usr/bin/env python3
 import os
 import csv
+import glob
+import sys
+
+
+def select_item(welcome_text, items):
+    print(welcome_text)
+    for i, item in enumerate(items):
+        print('{}. {}'.format(i+1, item))
+    try:
+        selected = input('Please select option by typing number (1-{}): '.format(len(items)))
+        result = items[int(selected)-1]
+        return result
+    except KeyboardInterrupt:
+        print('User requested to exit')
+        exit()
+    except ValueError:
+        print('Error! Please enter only one number')
+        exit()
+    except IndexError:
+        print('Error! Please enter one number between 1-{}'.format(len(items)))
+        exit()
+
 
 output_directory = "generated"
-input_file = "audio_de.csv"
-language = "de"
-# text to speech engine (gtts, espeak or macos)
-engine = "gtts"
+available_audio = glob.glob('language/audio_*.csv')
+input_file = select_item('Available localized audio instructions:', available_audio)
+language = input_file.split('_')[-1].split('.')[0]
 
-# import engine
-if engine == "gtts":
-    from gtts import gTTS
+tts_engines = ['gtts']
+if sys.platform == 'darwin':
+    tts_engines.append('macos')
+if os.system('espeak --version > /dev/null 2>&1') == 0:
+    tts_engines.append('espeak')
+if os.system('espeak-ng --version > /dev/null 2>&1') == 0:
+    tts_engines.append('espeak-ng')
+engine = select_item('Available TTS engines:', tts_engines)
+
+if engine == 'gtts':
+    if os.system('ffmpeg -version > /dev/null 2>&1') != 0:
+        print('gTTS engine requires ffmpeg for converting mp3 to wav. Install it by typing: `sudo apt install ffmpeg` in terminal.')
+        exit(0)
+    else:
+        # import engine
+        from gtts import gTTS
 
 # read input file
-filereader = csv.reader(open(input_file), delimiter=",")
+try:
+    filereader = csv.reader(open(input_file), delimiter=",")
+except:
+    print('Error opening file {}'.format(input_file))
+    exit()
 
 # create output folder
 if not os.path.exists(output_directory):
@@ -25,11 +63,13 @@ for filename, text in filereader:
     path = output_directory + "/" + filename
     if engine == "gtts":
         tts = gTTS(text=text, lang=language, slow=False)
-		# save mp3 and convert to mp3
+        # save mp3 and convert to mp3
         tts.save(path + ".mp3")
         os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
         os.remove(path + ".mp3")
     elif engine == "espeak":
+        os.system("espeak -v " + language + " '" + text + "' -w " + path)
+    elif engine == "espeak-ng":
         os.system("espeak-ng -v " + language + " '" + text + "' -w " + path)
     elif engine == "macos":
         # remove "-v Anna" if you want to use your system language, leave this as german default
