@@ -29,7 +29,7 @@ import time
 import pymysql
 import select
 import ast
-from mirobo.protocol import Message
+from miio.protocol import Message
 
 class CloudClient():
 
