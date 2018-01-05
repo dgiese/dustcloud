@@ -25,8 +25,14 @@ $name= isset($_POST['name']) ? $_POST['name'] : '';
 
 if ($did != "")
 {
+	if (filter_var($did, FILTER_VALIDATE_INT) === false) {
+		die('You must enter a valid integer for did!');
+	}
 	if ($enckey != "")
 	{
+		if (filter_var($enckey, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^[a-zA-Z0-9]+$/")))  === false) {
+			die('You must enter an alphanum string for enckey!');
+		}
 		$sql = "INSERT into devices(did,enckey,name) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($enckey)."','".$mysqli->real_escape_string($name)."')";
 		$res = $mysqli->query($sql);
 		if (!$res) {
