@@ -38,6 +38,9 @@ if (!isset($_GET['did']))
 {
 	die("no did set");
 }else{
+	if (filter_var($_GET['did'], FILTER_VALIDATE_INT) === false) {
+		die('You must enter a valid integer for did!');
+	}
 	$did = $_GET['did'];
 }
 
@@ -53,33 +56,34 @@ $forward_to_cloud=isset($_POST['forward_to_cloud']) ? $_POST['forward_to_cloud']
 $full_cloud_forward=isset($_POST['full_cloud_forward']) ? $_POST['full_cloud_forward'] : '';
 if ($did != "")
 {
-if ($cmd != "")
-{
-	$sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($cmd)."','".$mysqli->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 15 SECOND))";
-	$res = $mysqli->query($sql);
-	if (!$res) {
-		echo "<p>There was an error in query: $sql</p>";
-		echo $mysqli->error;
-    }
-}
-if ($forward_to_cloud == "1" || $forward_to_cloud == "0")
-{
-	$sql = "UPDATE devices set forward_to_cloud = '".$mysqli->real_escape_string($forward_to_cloud)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
-	$res = $mysqli->query($sql);
-	if (!$res) {
-	echo "<p>There was an error in query: $sql</p>";
-	echo $mysqli->error;
+	if ($cmd != "")
+	{
+		# add new cmd to cmdquere with 15 seconds expiration
+		$sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($cmd)."','".$mysqli->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 15 SECOND))";
+		$res = $mysqli->query($sql);
+		if (!$res) {
+			echo "<p>There was an error in query: $sql</p>";
+			echo $mysqli->error;
+		}
 	}
-}
-if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
-{
-	$sql = "UPDATE devices set full_cloud_forward = '".$mysqli->real_escape_string($full_cloud_forward)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
-	$res = $mysqli->query($sql);
-	if (!$res) {
+	if ($forward_to_cloud == "1" || $forward_to_cloud == "0")
+	{
+		$sql = "UPDATE devices set forward_to_cloud = '".$mysqli->real_escape_string($forward_to_cloud)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
+		$res = $mysqli->query($sql);
+		if (!$res) {
 		echo "<p>There was an error in query: $sql</p>";
 		echo $mysqli->error;
-    }
-}	
+		}
+	}
+	if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
+	{
+		$sql = "UPDATE devices set full_cloud_forward = '".$mysqli->real_escape_string($full_cloud_forward)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
+		$res = $mysqli->query($sql);
+		if (!$res) {
+			echo "<p>There was an error in query: $sql</p>";
+			echo $mysqli->error;
+		}
+	}	
 }
 
 
@@ -155,7 +159,9 @@ Params: <input type="input" name="params" size="100" value="">
 </form>
 <?php
 $options = "";
-$res = $mysqli->query("SELECT * FROM ota WHERE model = '".$model."'");
+$res = $mysqli->query("SELECT * FROM ota WHERE model = '".$mysqli->real_escape_string($model)."'");
+
+
 
 $res->data_seek(0);
 while ($row = $res->fetch_assoc()) {

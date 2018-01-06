@@ -57,4 +57,4 @@ sysupd_notready.wav,"Please try to fix the update if the vacuum cleaner robot is
 sysupd_start.wav,"Start firmware update. Can take 5 to 10 minutes."
 sysupd_wip.wav,"Please wait until the update is complete."
 timed_clean.wav,"Start scheduled cleaning."
-wifi_reset.wav,"Reset Wi-Fi.
+wifi_reset.wav,"Reset Wi-Fi."

@@ -1,0 +1,19 @@
+apt-get install apache2 php5 mysql-server python3 git
+sed -i -e 's/Listen 80/Listen 81/g' /etc/apache2/ports.conf
+sed -i -e 's/:80>/:81>/g' /etc/apache2/sites-enabled/000-default.conf
+pip3 install pymysql python-miio
+git clone --depth=1 https://github.com/dgiese/dustcloud.git
+cd dustcloud/dustcloud
+mysql -e "CREATE USER 'dustcloud'@'localhost' IDENTIFIED by 'dustcloudpw';"
+mysql -e "GRANT USAGE ON *.* TO 'dustcloud'@'localhost';"
+mysql -e "CREATE DATABASE IF NOT EXISTS `dustcloud`;"
+mysql -e "GRANT ALL PRIVILEGES ON `dustcloud`.* TO 'dustcloud'@'localhost';"
+cat dustcloud.sql | mysql dustcloud
+mkdir /var/www/html/dustcloud
+cp www/*.* /var/www/dustcloud/html/
+mv /var/www/dustcloud/config.php.dist /var/www/dustcloud/config.php
+sed -i -e 's/user123/dustcloud/g' /var/www/dustcloud/config.php
+sed -i -e "s/const DB_PASS = ''/const DB_PASS = 'dustcloudpw'/g" /var/www/dustcloud/config.php
+
+sed -i -e 's/pymysql.connect("localhost","dustcloud","","dustcloud")/pymysql.connect("localhost","dustcloud","dustcloudpw","dustcloud")/g' server.py
+sed -i -e 's/myCloudserverIP = "10.0.0.1"/myCloudserverIP = "123.123.123.123"/g' server.py
