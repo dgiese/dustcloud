@@ -37,6 +37,8 @@ if os.system('espeak --version > /dev/null 2>&1') == 0:
     tts_engines.append('espeak')
 if os.system('espeak-ng --version > /dev/null 2>&1') == 0:
     tts_engines.append('espeak-ng')
+if os.system('aws --version > /dev/null 2>&1') == 0:
+    tts_engines.append('aws')
 engine = select_item('Available TTS engines:', tts_engines)
 
 if engine == 'gtts':
@@ -66,6 +68,10 @@ for filename, text in filereader:
         tts = gTTS(text=text, lang=language, slow=False)
         # save mp3 and convert to mp3
         tts.save(path + ".mp3")
+        os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
+        os.remove(path + ".mp3")
+    elif engine == "aws":
+        os.system("aws polly synthesize-speech --output-format mp3 --voice-id Vicki --text '" + text + "' " + path + ".mp3")
         os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
         os.remove(path + ".mp3")
     elif engine == "espeak":
