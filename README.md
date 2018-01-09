@@ -24,6 +24,8 @@ While you can build your own firmware with SSH, we are not sure if we want to pr
 ### Is Dustcloud breaking the HTTPS connection / any SSL connection?
 No, dustcloud requires the symmetric key (extracted from /mnt/default/device.conf) to decrypt the AES connection to the cloud. The same key is used to encrypt the forwarded messages to the cloud.
 Note: I personally think that Xiaomis approach of device's unique AES key solves a lot of cloud problems: authentication, integrity (over hmac) and confidentiality.
+### Can i use the vacuum without connecting to any Wifi?
+Sure, however set a password to protect the Wifi AP of your vacuum robot. Edit the file /opt/rockrobo/wlan/wifi_start.sh and change this CMD="create_ap -c $channel -n wlan0 -g 192.168.8.1 $ssid_ap --daemon" to CMD="create_ap -c $channel -n wlan0 -g 192.168.8.1 $ssid_ap YourWPApassword --daemon". Then your unprovisioned vacuum has a protected Wifi and you are still able to connect (if you do not lose the password).
 ### Is there a risk that Xiaomi do a force update and disable the root?
 Technically there is, but i do not believe so. In any case you can disable updates (yours and Xiaomi's) by renaming the ccrypt command. See [disable-UPDATES.md](https://github.com/dgiese/dustcloud/blob/master/disable-UPDATES.md) for additional information. 
 ### Will you publish rooting methods for other devices (like other vacuums, smarthome-devices, etc)?
@@ -40,6 +42,7 @@ There are plans for that. But keep in mind that the devices were financed from m
 <a href="http://www.ccs.neu.edu/home/noubir/Home.html">![CCIS logo](https://github.com/dgiese/dustcloud/raw/master/gfx/CCISLogo_S_gR.png)</a>
 
 # Media coverage:
+* https://www.kaspersky.co.uk/blog/xiaomi-mi-robot-hacked/12567/
 * https://www.golem.de/news/xiaomi-mit-einem-stueck-alufolie-autonome-staubsauger-rooten-1712-131883.html
 * http://www.zeit.de/digital/datenschutz/2017-12/34c3-hack-staubsauger-iot
 * https://hackaday.com/2017/12/27/34c3-the-first-day-is-a-doozy/
