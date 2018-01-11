@@ -28,3 +28,5 @@ You can either install the python3 requirements manually or you install and use 
 ## macos (Mac OS X integrated Text To Speech)
 * https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/say.1.html
 * You may specify a voice directly after the say command in the documentation. You can get a complete list from the command `say -v ?`. If you do not specify a different voice with `-v VoiceName` Mac OS will use your current system language
+## aws (Amazon Polly)
+* https://docs.aws.amazon.com/polly/latest/dg/what-is.html
