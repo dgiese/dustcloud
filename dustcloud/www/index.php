@@ -17,7 +17,8 @@ $mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
 }
-
+echo "connected<br>";
+echo "<a href=\"newdevice.php\">Create new device</a><br><br>";
 $res = $mysqli->query("SELECT did,name,model,mac,fw,last_contact FROM devices ORDER BY model, id ASC");
 
 $res->data_seek(0);

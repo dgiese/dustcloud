@@ -4,6 +4,8 @@ do not use for production or reachable from the internet;)
 Contains known SQL injection vulnerability, which will be fixed soon.
 This tool is intended for reverse engineering of the cloud protocol.
 
+Todo: Replace SQL Queries with prepared statements.
+
 ## Requirements
 - MySQL/MariaDB Database server
 - Webserver with PHP
@@ -30,6 +32,16 @@ This tool is intended for reverse engineering of the cloud protocol.
 8. add your device to the database
 
   minimal required information: DID (integer), enckey (16 Byte String) (you find both in /mnt/default/device.conf)
-  > INSERT INTO `devices`(`id`, `did`, `name`, `enckey`) VALUES ('','12345678', 'myvacuum1', 'ABCDefgh12345678')
+  
+  open index.php and click on new device.
   
 9. change entries for ot.io.mi.com + ott.io.mi.com in /etc/hosts on vacuum robot to your "myCloudserverIP" (see point #5)
+
+## Install commands for Raspberry Pi
+
+1. See https://github.com/dgiese/dustcloud/blob/master/dustcloud/raspberrypi_installcommands.txt)
+> Change IP 123.123.123.123 to your server IP
+2. Open http://#yourserveripaddress#:81/dustcloud/index.php
+3. Add DID and Enckey (from device.conf on vacuum)
+4. change entries for ot.io.mi.com + ott.io.mi.com in /etc/hosts on vacuum robot to your "myCloudserverIP"
+5. start server.py by running server.sh

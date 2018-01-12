@@ -16,7 +16,17 @@ $longlog = isset($_GET['longlog']) ? $_GET['longlog'] : '0';
 if ($longlog == 0)
 {
     $url1=$_SERVER['REQUEST_URI'];
-    header("Refresh: 30; URL=$url1");
+    header("Refresh: 30; URL=$url1"); ### Be carefull, may contain some security risk
+}
+
+if (!isset($_GET['did']))
+{
+	die("no did set");
+}else{
+	if (filter_var($_GET['did'], FILTER_VALIDATE_INT) === false) {
+		die('You must enter a valid integer for did!');
+	}
+	$did = $_GET['did'];
 }
 
 require_once 'config.php';
@@ -25,7 +35,7 @@ if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
 }
 echo "<a href=\"index.php\">Index</a><br>";
-$res = $mysqli->query("SELECT * FROM devices WHERE did = '".$_GET["did"]."'");
+$res = $mysqli->query("SELECT * FROM devices WHERE did = '".$did."'");
 
 $res->data_seek(0);
 while ($row = $res->fetch_assoc()) {
@@ -40,10 +50,10 @@ echo "<a href=\"".$url1."&longlog=1\">2000 messages without refresh</a><br>";
 echo "<hr>";
 if ($longlog == 1)
 {
-	$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$_GET["did"]."' ORDER by id DESC LIMIT 2000");
+	$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' ORDER by id DESC LIMIT 2000");
 }else
 {
-	$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$_GET["did"]."' ORDER by id DESC LIMIT 100");
+	$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' ORDER by id DESC LIMIT 100");
 }
 $res->data_seek(0);
 while ($row = $res->fetch_assoc())
