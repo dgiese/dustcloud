@@ -1,4 +1,6 @@
-Welcome to our repository for hacking and rooting of the Xiaomi Vacuum Robot. We provide you methods how to root your device without opening it or breaking the warranty seal.
+Welcome to our repository for hacking and rooting of the Xiaomi Vacuum Robot Generation 1 (aka Rockrobo) and Generation 2 (aka Roborock S50). We provide you methods how to root your device without opening it or breaking the warranty seal.
+
+More information for Generation 2 will follow.
 
 You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/UPDATE-howto.md).
 
@@ -17,8 +19,8 @@ Actually we think that Xiaomi did a good job in designing their cloud protocol (
 No, you can push the firmwareupdate to the robot without opening it. See the Update howto.
 ### Do Xiaomi know the exact position of the vacuum (e.g. address)?
 The vacuum transfers its connected SSID, the gateway's MAC address and the RSS value every 30 minutes to the cloud. Theoretically you can pinpoint a address very precisely with that information, e.g. by using Google's geolocation API.
-### Does the root also work for Gen2?
-There might be a way to root also Gen2. However as I (Dennis) do not have access to a Gen2 vacuum, i cannot give you more information on that. As soon as i will get my own Gen2 vacuum, i will update the information.
+### Does the root also work for Gen2 (aka Roborock S50)?
+Yes, however you need to use the firmware of Gen2 for the rooting.
 ### Why there is still no custom patched firmware available (with SSH)?
 While you can build your own firmware with SSH, we are not sure if we want to provide a pre-rooted version with some default SSH keys. As we know you (and us) some people might not change the keys afterwards. So instead of giving just you access to the vacuum, other people would have also access to your vacuum. We would like to make the world safer and not more vulnerable. Therefore we are thinking of some solution for that.
 ### Is Dustcloud breaking the HTTPS connection / any SSL connection?
@@ -40,7 +42,6 @@ There are plans for that. But keep in mind that the devices were financed from m
 <a href="https://www.seemoo.tu-darmstadt.de">![SEEMOO logo](https://github.com/dgiese/dustcloud/raw/master/gfx/seemoo.png)</a>
 ### Prof. Guevara Noubir (CCIS, Northeastern University)
 <a href="http://www.ccs.neu.edu/home/noubir/Home.html">![CCIS logo](https://github.com/dgiese/dustcloud/raw/master/gfx/CCISLogo_S_gR.png)</a>
-
 # Media coverage:
 * https://www.kaspersky.co.uk/blog/xiaomi-mi-robot-hacked/12567/
 * https://www.golem.de/news/xiaomi-mit-einem-stueck-alufolie-autonome-staubsauger-rooten-1712-131883.html
