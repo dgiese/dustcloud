@@ -9,6 +9,7 @@ You can find a more detailed version of our 34c3 presentation with more details 
 More technical information you find [here (techinfo.pdf)](https://github.com/dgiese/dustcloud/raw/master/xiaomi.vacuum.gen1/techinfo.pdf). The cloud protocol is described [here (cloudprotocol.pdf)](https://github.com/dgiese/dustcloud/raw/master/cloudprotocol.pdf)
 
 Recording of our talk at 34C3: https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking
+
 We will have a talk at Recon BRX 2018 (https://recon.cx/2018/brussels/)
 
 ## FAQ
