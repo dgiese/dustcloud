@@ -169,8 +169,7 @@ class CloudClient():
 					mysocket.ddid = ddid
 					mysocket.ctx = ctx
 					mysocket.dname = dname
-					mysocket.devtype = m.header.value["devtype"]
-					mysocket.devserial = m.header.value["serial"]
+					mysocket.device_id = m.header.value["device_id"]
 					mysocket.forward_to_cloud = forward_to_cloud
 					mysocket.full_cloud_forward = full_cloud_forward
 					self.set_last_contact(ddid,mysocket.client_address[0],mysocket.connmode)
@@ -257,7 +256,7 @@ class CloudClient():
 						self.do_log(did,cmd,"from_dustcloud")
 						send_ts = m.header.value["ts"] + datetime.timedelta(seconds=1)
 						header = {'length': 0, 'unknown': 0x00000000,
-								  'devtype': m.header.value["devtype"], 'serial': m.header.value["serial"],
+								  'device_id': m.header.value["device_id"],
 								  'ts': send_ts}
 
 						msg = {'data': {'value': cmd},
@@ -317,8 +316,7 @@ class CloudClient():
 class SingleTCPHandler(socketserver.BaseRequestHandler):
 	ddid = 0
 	ctx = ""
-	devtype = ""
-	devserial = ""
+	device_id = ""
 	dname = ""
 	sended = 0
 	commandcounter = 0
@@ -396,7 +394,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
 						self.blocked_from_client_list.append(cmd["id"])  # add to blocklist to not forward results from my cmds to the cloud
 						send_ts = datetime.datetime.utcnow()  + datetime.timedelta(seconds=1)
 						header = {'length': 0, 'unknown': 0x00000000,
-							  'devtype': self.devtype, 'serial': self.devserial,
+							  'device_id': self.device_id,
 							  'ts': send_ts}
 						msg = {'data': {'value': cmd},
 							   'header': {'value': header},
@@ -506,8 +504,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 	clienthello = ""
 	ddid = 0
 	ctx = ""
-	devtype = ""
-	devserial = ""
+	device_id = ""
 	dname = ""
 	sended = 0
 	commandcounter = 0

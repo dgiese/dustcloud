@@ -6,6 +6,15 @@ This tool is intended for reverse engineering of the cloud protocol.
 
 Todo: Replace SQL Queries with prepared statements.
 
+## Note:
+You do not need to host the dustcloud on a public IP. You can just use any public address and then redirect the traffic on your vacuum robot.
+
+Example: MyCloudserverIP = "130.83.47.181"  # this is a Server of the TU Darmstadt, content does not matter
+
+Execute on vacuum: iptables -t nat -A OUTPUT -p tcp --dport 80 -d 130.83.47.181 -j DNAT --to-destination 192.168.xx.yy:80
+
+where xx.yy is the IP of your local instance (can technically run on a raspberry pi).
+
 ## Requirements
 - MySQL/MariaDB Database server
 - Webserver with PHP

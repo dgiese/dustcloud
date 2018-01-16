@@ -48,7 +48,7 @@ CREATE TABLE `devices` (
   `mac` varchar(17) DEFAULT NULL,
   `name` varchar(20) DEFAULT NULL,
   `enckey` varchar(16) DEFAULT NULL,
-  `vinda` varchar(16) NOT NULL,
+  `vinda` varchar(16) DEFAULT NULL,
   `token` varchar(32) DEFAULT NULL,
   `fw` varchar(50) DEFAULT NULL,
   `model` varchar(50) DEFAULT NULL,
