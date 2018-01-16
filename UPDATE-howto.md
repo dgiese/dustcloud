@@ -1,3 +1,6 @@
+## Hint:
+There is a automatic tool to do the rooting and flashing. Look in the subfolders.
+
 ## Preparation
 1. Install [python-miio](https://github.com/rytilahti/python-miio) (python3!)
 1. Install ccrypt(apt-get install ccrypt)
@@ -48,7 +51,7 @@ export LANG=en_US.UTF-8```
 	* The first time you'll mount an ext4 fs with fuse, it will prompt you to allow the extension (at least on High Sierra). Allow and retry the script, otherwise you'll need to use a Linux VM
 1. execute `xiomi.vacuum.gen1/firmwarebuilder/imagebuilder.sh` with a version number. The version number must be the same as the fw image you've copied to the folder. e.g. `./imagebuilder.sh 003094`
 1. note the returned MD5 sum. You can see the md5 sum also in the output folder under v11_xxxxxx.md5
-1. execute `pipenv shell` from the repo root folder to enable support for python-mirobo
+1. execute `pipenv shell` from the repo root folder to enable support for python-miio
 1. Put vacuum robot in unprovisioned mode (Reset Wifi by pressing Power and Dock button for a few seconds until you hear "resetting WiFi")
 1. Connect to open WiFi of the robot(rockrobo-XXXX)
 	* Do not connect to any other network (e.g. LAN)
