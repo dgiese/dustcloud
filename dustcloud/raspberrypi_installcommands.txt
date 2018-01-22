@@ -1,19 +1,36 @@
-apt-get install apache2 php5 mysql-server python3 git
+
+#You'll be asked to set a root password for mySQL
+apt-get install apache2 php5 mysql-server python3 python3-pip git
+
+#Set the default port for apache to 81
 sed -i -e 's/Listen 80/Listen 81/g' /etc/apache2/ports.conf
 sed -i -e 's/:80>/:81>/g' /etc/apache2/sites-enabled/000-default.conf
 pip3 install pymysql python-miio
 git clone --depth=1 https://github.com/dgiese/dustcloud.git
 cd dustcloud/dustcloud
+
+#If you set a password, you'll need to append "-p" to the mysql commands
 mysql -e "CREATE USER 'dustcloud'@'localhost' IDENTIFIED by 'dustcloudpw';"
 mysql -e "GRANT USAGE ON *.* TO 'dustcloud'@'localhost';"
-mysql -e "CREATE DATABASE IF NOT EXISTS `dustcloud`;"
-mysql -e "GRANT ALL PRIVILEGES ON `dustcloud`.* TO 'dustcloud'@'localhost';"
+mysql -e "CREATE DATABASE IF NOT EXISTS \`dustcloud\`;"
+mysql -e "GRANT ALL PRIVILEGES ON \`dustcloud\`.* TO 'dustcloud'@'localhost';"
 cat dustcloud.sql | mysql dustcloud
-mkdir /var/www/html/dustcloud
-cp www/*.* /var/www/dustcloud/html/
-mv /var/www/dustcloud/config.php.dist /var/www/dustcloud/config.php
-sed -i -e 's/user123/dustcloud/g' /var/www/dustcloud/config.php
-sed -i -e "s/const DB_PASS = ''/const DB_PASS = 'dustcloudpw'/g" /var/www/dustcloud/config.php
 
+#create a page on your apache server (accessible as "your_ip_or_domainname:81/dustcloud"
+mkdir /var/www/html/dustcloud
+cp www/* /var/www/html/dustcloud/
+mv /var/www/html/dustcloud/config.php.dist /var/www/html/dustcloud/config.php
+sed -i -e 's/user123/dustcloud/g' /var/www/html/dustcloud/config.php
+sed -i -e "s/const DB_PASS = ''/const DB_PASS = 'dustcloudpw'/g" /var/www/html/dustcloud/config.php
+
+#replace the 123.123.123.123 with your own external ip address
 sed -i -e 's/pymysql.connect("localhost","dustcloud","","dustcloud")/pymysql.connect("localhost","dustcloud","dustcloudpw","dustcloud")/g' server.py
 sed -i -e 's/myCloudserverIP = "10.0.0.1"/myCloudserverIP = "123.123.123.123"/g' server.py
+
+#create a folder for the server.py and the startscript
+chmod +x server.sh
+mkdir /dustcloud
+cp server.* /dustcloud/
+
+#allow python3 to create sockets in restricted range
+setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/python3.5
