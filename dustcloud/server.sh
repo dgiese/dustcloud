@@ -1,1 +1,1 @@
-su -c "python3 server.py" -s /bin/bash - www-data
+su -c "python3 /dustcloud/server.py" -s /bin/bash - www-data
