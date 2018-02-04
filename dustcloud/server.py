@@ -170,7 +170,7 @@ class CloudClient():
                     enckey = denckey
                     enckey = enckey + (16 - len(enckey)) * "\x00"  # extend key if its shorter than 16 bytes
                     ctx = {'token': enckey.encode()}
-                    m = Message.parse(data, ctx)
+                    m = Message.parse(data, **ctx)
                     if mysocket.ddid != ddid:
                         print("(!!!) Warning, did missmatch: %d != %d" % (mysocket.ddid, ddid))
                     mysocket.ddid = ddid
@@ -271,7 +271,7 @@ class CloudClient():
                         msg = {'data': {'value': cmd},
                                'header': {'value': header},
                                'checksum': 0}
-                        c = Message.build(msg, ctx)
+                        c = Message.build(msg, **ctx)
                         print("%s : prepare response" % dname)
                         print("%s : Value: %s" % (dname, cmd))
                         # print("< RAW: %s" % binascii.hexlify(c))
@@ -296,7 +296,7 @@ class CloudClient():
             self.do_log_raw(did, binascii.hexlify(data), "from_cloud")
 
             if did == mysocket.ddid:
-                m = Message.parse(data, mysocket.ctx)
+                m = Message.parse(data, **mysocket.ctx)
                 print("Headertime %s " % m.header.value["ts"])
                 print("Localtime %s " % datetime.datetime.utcnow())
 
@@ -416,7 +416,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                         self.Cloudi.do_log(self.ddid, cmd, "to_client(cmd)")
                         print("Sendtime %s " % send_ts)
                         print("Localtime %s " % datetime.datetime.utcnow())
-                        c = Message.build(msg, self.ctx)
+                        c = Message.build(msg, **self.ctx)
                         print("%s : prepare response (command)" % self.dname)
                         print("%s : Value: %s" % (self.dname, msg))
                         # print("< RAW: %s" % binascii.hexlify(c))
