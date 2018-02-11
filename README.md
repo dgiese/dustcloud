@@ -1,8 +1,9 @@
 Welcome to our repository for hacking and rooting of the Xiaomi Smart Home Devices. We provide you methods how to root your device without opening it or breaking the warranty seal (on your own risk).
 
-You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/devices/xiaomi.vacuum/UPDATE-howto.md).
+We moved the documentation of the devices (photos, datasheets, uart logs, etc) to a new repo [dustcloud-documentation](https://github.com/dgiese/dustcloud-documentation)
 
-The 
+
+You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/devices/xiaomi.vacuum/UPDATE-howto.md).
 
 # Talks
 
