@@ -3,7 +3,8 @@ It is possible to create new language files which can be integrated into the roo
 
 It will read the content auf audio_xx.csv (whereby xx is a country language code like de_de or en_US) and use one of the supported engines to generate mp3 files for inclusion in the firmware. The language codes are the [ISO-639-1](https://en.wikipedia.org/wiki/ISO_639-1) format, so that the engine can use a voice with suitable pronounciation.
 
-You'll notice that each engine has its problems with mixed langauges (e.g. german with english words in it). A little testing is necessary to find a suitable pronounciation.
+You'll notice that each engine has its problems with mixed langauges (e.g. german with english words in it). A little testing is necessary to find a suitable pronunciation.
+
 
 # Requirements
 1. python3
