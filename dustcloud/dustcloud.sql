@@ -27,12 +27,12 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `cmdqueue` (
-  `cmdid` int(11) NOT NULL,
-  `did` int(11) NOT NULL,
-  `method` varchar(100) NOT NULL,
-  `params` varchar(512) NOT NULL,
-  `expire` datetime NOT NULL,
-  `processed` datetime NOT NULL,
+  `cmdid` int(11) NOT NULL DEFAULT '0',
+  `did` int(11) NOT NULL DEFAULT '0',
+  `method` varchar(100) NOT NULL DEFAULT '',
+  `params` varchar(512) NOT NULL DEFAULT '',
+  `expire` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `processed` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `confirmed` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
