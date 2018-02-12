@@ -18,7 +18,7 @@ The Recon presentation can be found [here](https://github.com/dgiese/dustcloud/r
 
 # Recommended ressources / links
 
-Flole App: alternative way to control the vacuum robot, instead of Xiaomi's Mi Home App. Is able to control and root your vacuum cleaner.
+Flole App: alternative way to control the vacuum robot, instead of Xiaomi's Mi Home App. Is able to control and root your vacuum cleaner. Enables the use of various speech packages.
 https://xiaomi.flole.de/
 
 Roboter-Forum.com: German speaking forum with a lot of information about all sorts of robots. Contains special subforums for Xiaomi rooting. Primary ressource for beginners.
