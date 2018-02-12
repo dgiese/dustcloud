@@ -27,12 +27,12 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `cmdqueue` (
-  `cmdid` int(11) NOT NULL,
-  `did` int(11) NOT NULL,
-  `method` varchar(100) NOT NULL,
-  `params` varchar(512) NOT NULL,
-  `expire` datetime NOT NULL,
-  `processed` datetime NOT NULL,
+  `cmdid` int(11) NOT NULL DEFAULT '0',
+  `did` int(11) NOT NULL DEFAULT '0',
+  `method` varchar(100) NOT NULL DEFAULT '',
+  `params` varchar(512) NOT NULL DEFAULT '',
+  `expire` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `processed` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `confirmed` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -50,19 +50,19 @@ CREATE TABLE `devices` (
   `enckey` varchar(16) DEFAULT NULL,
   `vinda` varchar(16) DEFAULT NULL,
   `token` varchar(32) DEFAULT NULL,
-  `fw` varchar(50) DEFAULT NULL,
-  `model` varchar(50) DEFAULT NULL,
-  `serialnumber` varchar(20) NOT NULL,
-  `ssid` varchar(50) DEFAULT NULL,
-  `netinfo` varchar(100) NOT NULL,
-  `last_contact` timestamp NULL DEFAULT NULL,
-  `last_contact_from` varchar(50) NOT NULL,
-  `last_contact_via` varchar(20) NOT NULL,
-  `PurchaseDate` varchar(20) NOT NULL,
-  `ProductionDate` varchar(20) NOT NULL,
-  `Date_vinda` varchar(20) NOT NULL,
-  `recovery_fw_ver` varchar(75) NOT NULL,
-  `MCU` varchar(50) NOT NULL,
+  `fw` varchar(50) DEFAULT NULL DEFAULT '',
+  `model` varchar(50) DEFAULT NULL DEFAULT '',
+  `serialnumber` varchar(20) NOT NULL DEFAULT '',
+  `ssid` varchar(50) DEFAULT NULL DEFAULT '',
+  `netinfo` varchar(100) NOT NULL DEFAULT '',
+  `last_contact` timestamp NULL DEFAULT NULL DEFAULT 0,
+  `last_contact_from` varchar(50) NOT NULL DEFAULT '',
+  `last_contact_via` varchar(20) NOT NULL DEFAULT '',
+  `PurchaseDate` varchar(20) NOT NULL DEFAULT '',
+  `ProductionDate` varchar(20) NOT NULL DEFAULT '',
+  `Date_vinda` varchar(20) NOT NULL DEFAULT '',
+  `recovery_fw_ver` varchar(75) NOT NULL DEFAULT '',
+  `MCU` varchar(50) NOT NULL DEFAULT '',
   `forward_to_cloud` int(1) NOT NULL DEFAULT '0',
   `full_cloud_forward` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
