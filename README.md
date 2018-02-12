@@ -9,12 +9,12 @@ You can find a step-by-step guide how to wirelessly root your vacuum robot [here
 
 Recording of our talk at 34C3 (2017): https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking
 
-You can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/34c3-presentation/presentations/34c3-2017/34c3_Staubi-current_split_animation.pdf).
+You can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/presentations/34c3-2017/34c3_Staubi-current_split_animation.pdf).
 
 
 We had a talk at Recon BRX 2018, the recording should be published in the next few months: (https://recon.cx/2018/brussels/)
 
-The Recon presentation can be found [here](https://github.com/dgiese/dustcloud/raw/master/34c3-presentation/presentations/Recon-BRX2018/recon_brx_2018-final-split.pdf)
+The Recon presentation can be found [here](https://github.com/dgiese/dustcloud/raw/master/presentations/Recon-BRX2018/recon_brx_2018-final-split.pdf)
 
 # Recommended ressources / links
 
