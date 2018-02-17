@@ -568,9 +568,18 @@ class UDPSimpleServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
 if __name__ == "__main__":
     tcpserver = TCPSimpleServer(("0.0.0.0", 80), SingleTCPHandler)
     udpserver = UDPSimpleServer(("0.0.0.0", 8054), MyUDPHandler)  ## disable UDP interface
-    # terminate with Ctrl-C
-    try:
-        tcpserver.serve_forever()
-        udpserver.serve_forever()
-    except KeyboardInterrupt:
-        sys.exit(0)
+
+    tcpserver_thread = threading.Thread(target=tcpserver.serve_forever)
+    tcpserver_thread.start()
+    udpserver_thread = threading.Thread(target=udpserver.serve_forever)
+    udpserver_thread.start()
+
+    input("Press any key to exit.")
+
+    tcpserver.shutdown()
+    udpserver.shutdown()
+
+    tcpserver_thread.join()
+    udpserver_thread.join()
+
+    sys.exit(0)
