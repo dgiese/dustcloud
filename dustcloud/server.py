@@ -39,7 +39,6 @@ class CloudClient():
         self.cursor = self.db.cursor()
 
     def __del__(self):
-        print("Class destroyed")
         self.db.close()
 
     def do_log(self, did, data, direction):
@@ -371,16 +370,17 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         # self.request is the client connection
-        print(" --------------- Thread-id: %s" % threading.get_ident())
+        thread_id = threading.get_ident()
+        print(" --------------- Thread-id: %s" % thread_id)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if self.cloudstate != "online":
             self.cloudstate = "offline"
         self.Cloudi = CloudClient()
         while True:
-            if (self.request.fileno() < 0):
+            if self.request.fileno() < 0:
                 break
             if self.cloudstate == "online":
-                if (self.sock.fileno() < 0):
+                if self.sock.fileno() < 0:
                     print("Cloud connection disconnected")
                     self.sock.close()
                     self.cloudstate = "offline"
@@ -424,6 +424,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         print("Close Request")
         self.sock.close()
         self.request.close()
+        print(" --------------- Thread-id: %s closed" % thread_id)
 
     def on_read_cloud(self):
         data = self.sock.recv(32)  # wait to get the first 32 bytes (header+md5)
@@ -461,7 +462,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 print("magic ok")
                 packetlenght = int.from_bytes(data[2:4], byteorder='big');  # get packet lenght from header
                 # print("packetlength %s, got already %s " % (packetlenght,len(data)))
-                if len(data) != packetlenght:  # packet longer than 32 byte
+                while len(data) != packetlenght:  # packet longer than 32 byte
                     data += self.request.recv((packetlenght - 32))  # get the rest of the packet
                 # print("packetlength %s, got now %s " % (packetlenght,len(data)))
                 # print("= RAW: %s" % binascii.hexlify(data))
@@ -470,6 +471,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     self.request.close()
                     return
             else:
+                data += self.request.recv(64*1024)  # get the rest of the packet
                 print("Unknown message: {}".format(data))
                 # self.httpmode=1
                 # print("Magic bytes were missing, echo http redirection")
