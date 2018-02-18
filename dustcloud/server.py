@@ -15,14 +15,11 @@
 
 # TODO: change myCloudserverIP to your CloudserverIP (the IP where this script is running)
 
-import socketserver, subprocess, sys, socket
+import socketserver
+import sys
+import socket
 import threading
-from pprint import pprint
-import random
-import json
 import binascii
-import hashlib
-import json
 import datetime
 import struct
 import time
@@ -32,7 +29,10 @@ import ast
 from miio.protocol import Message
 
 
-class CloudClient():
+class CloudClient:
+    """
+    Provides connection to dustcloud database and message parsing
+    """
 
     def __init__(self):
         self.db = pymysql.connect("localhost", "dustcloud", "", "dustcloud")
@@ -96,7 +96,7 @@ class CloudClient():
             self.db.rollback()
 
     def get_commands(self, ddid):
-        sql = "SELECT cmdid, method, params FROM cmdqueue WHERE did = '%d' AND expire > now() AND processed < DATE_ADD(NOW(), INTERVAL -1 SECOND) AND confirmed = '0'" % (ddid)
+        sql = "SELECT cmdid, method, params FROM cmdqueue WHERE did = '%d' AND expire > now() AND processed < DATE_ADD(NOW(), INTERVAL -1 SECOND) AND confirmed = '0'" % ddid
         if self.cursor.execute(sql) > 0:
             # Fetch all the rows in a list of lists.
             results = self.cursor.fetchall()
@@ -121,7 +121,13 @@ class CloudClient():
             return {"id": -1}
 
     def process_data(self, mysocket, data):
-        myCloudserverIP = "10.0.0.1"
+        """
+        Parse message in data
+        :param mysocket: connection handler instance
+        :param data: message as bytes
+        :return: 1 on failure, 0 on success
+        """
+        my_cloudserver_i_p = "10.0.0.1"
         clienthello = bytes.fromhex("21310020ffffffffffffffff0000000000000000000000000000000000000000")
         timestamp = binascii.hexlify(struct.pack('>I', round(time.time()))).decode("utf-8")
         serverhello = bytes.fromhex("21310020ffffffffffffffff" + timestamp + "00000000000000000000000000000000")
@@ -143,9 +149,7 @@ class CloudClient():
                 did = int.from_bytes(data[8:12], byteorder='big')
                 fail = 0
                 try:
-                    if self.cursor.execute(
-                            "SELECT did,name,enckey,forward_to_cloud,full_cloud_forward FROM devices WHERE did = %s",
-                            (did)) == 1:
+                    if self.cursor.execute("SELECT did,name,enckey,forward_to_cloud,full_cloud_forward FROM devices WHERE did = %s", did) == 1:
                         # Fetch all the rows in a list of lists.
                         results = self.cursor.fetchall()
                         for row in results:
@@ -158,11 +162,9 @@ class CloudClient():
                             print("ddid = %s, dname = %s, denckey = %s, full_cloud_forward = %d, forward_to_cloud = %d"
                                   % (ddid, dname, denckey, forward_to_cloud, full_cloud_forward))
                     else:
-                        fail = 1
                         print("Error: unable to fetch data for did %s. Device unknown?" % did)
                         return 1
-                except Exception as e:
-                    fail = 1
+                except Exception:
                     print("Error: unable to fetch data for did %s" % did)
                     raise
                 if fail == 0:
@@ -205,11 +207,11 @@ class CloudClient():
                             self.do_log(did, m.data.value, "client >> dustcloud")
                             cmd = {
                                 "id": packetid,
-                                "result": {"otc_list": [{"ip": myCloudserverIP, "port": 80}],
-                                           "otc_test": {"list": [{"ip": myCloudserverIP, "port": 8053}],
+                                "result": {"otc_list": [{"ip": my_cloudserver_i_p, "port": 80}],
+                                           "otc_test": {"list": [{"ip": my_cloudserver_i_p, "port": 8053}],
                                                         "interval": 1800, "firsttest": 769}}
                             }
-                            if ((mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1)):
+                            if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
                                 self.do_log(did, m.data.value, "dustcloud >> cloud (blck_resp)")
                                 mysocket.blocked_from_cloud_list.append(packetid)  # block real otc_info response from cloud
                                 mysocket.send_data_to_cloud(data)
@@ -219,11 +221,11 @@ class CloudClient():
                                 "id": packetid,
                                 "result": "ok"
                             }
-                            if ((mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1)):
+                            if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
                                 self.do_log(did, m.data.value, "dustcloud >> cloud (status)")
                                 mysocket.send_data_to_cloud(data)
                                 return 0
-                        elif (method == "NONE" and (device_result != "NONE" or device_error != "NONE")):
+                        elif method == "NONE" and (device_result != "NONE" or device_error != "NONE"):
                             self.do_log(did, m.data.value, "client >> dustcloud")
                             if device_error == "NONE":
                                 self.confirm_commands(did, packetid, 1)
@@ -233,13 +235,12 @@ class CloudClient():
                                 "id": packetid,
                                 "result": "ok"
                             }
-                            if ((mysocket.full_cloud_forward == 1) and (packetid not in mysocket.blocked_from_client_list)):
+                            if (mysocket.full_cloud_forward == 1) and (packetid not in mysocket.blocked_from_client_list):
                                 self.do_log(did, m.data.value, "dustcloud >> cloud (result)")
                                 mysocket.send_data_to_cloud(data)
-                            if (packetid in mysocket.blocked_from_client_list):
+                            if packetid in mysocket.blocked_from_client_list:
                                 mysocket.blocked_from_client_list.remove(packetid)
-
-                        elif (method == "_sync.batch_gen_room_up_url"):
+                        elif method == "_sync.batch_gen_room_up_url":
                             self.do_log(did, m.data.value, "client >> dustcloud")
                             # cmd = {
                             # "id": packetid,
@@ -248,12 +249,11 @@ class CloudClient():
                             # "https://xxx/index.php?id=3",
                             # "https://xxx/index.php?id=4"]
                             # }
-                            if ((mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1)):
+                            if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
                                 self.do_log(did, m.data.value, "dustcloud >> cloud")
                                 # mysocket.blocked_from_cloud_list.append(packetid) # block real response from cloud
                                 mysocket.send_data_to_cloud(data)
                             return 0
-
                         else:
                             print("%s : unknown method" % dname)
                             self.do_log(did, m.data.value, "client >> dustcloud")
@@ -261,6 +261,8 @@ class CloudClient():
                                 "id": packetid,
                                 "result": "ok"
                             }
+
+                        # send response to client
                         self.do_log(did, cmd, "client << dustcloud")
                         send_ts = m.header.value["ts"] + datetime.timedelta(seconds=1)
                         header = {'length': 0, 'unknown': 0x00000000,
@@ -277,7 +279,7 @@ class CloudClient():
                         mysocket.sendmydata(c)
                     else:
                         print("%s : Ping-Pong" % dname)
-                        if ((mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1)):
+                        if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
                             # self.do_log(did,"PING (len=32)","dustcloud >> cloud (ping)")
                             mysocket.send_data_to_cloud(data)
                         else:
@@ -311,11 +313,11 @@ class CloudClient():
                        and method not in mysocket.blocked_methods_from_cloud_list \
                        and packetid not in mysocket.blocked_from_cloud_list:
                         mysocket.sendmydata(data)  # forward data to client
-                    if (packetid in mysocket.blocked_from_client_list):
+                    if packetid in mysocket.blocked_from_client_list:
                         mysocket.blocked_from_cloud_list.remove(packetid)
                 else:
                     print("Cloud->%s : Ping-Pong" % mysocket.dname)
-                    if ((mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1)):
+                    if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
                         # self.do_log(did,"PING-PONG (len=32)","dustcloud << cloud (ping)")
                         mysocket.sendmydata(data)  # forward data to client
         else:
@@ -334,8 +336,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
     lastmessageid = 0
     connmode = "tcp"
     cloudstate = ""
-    # socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('ot.io.mi.com', 80)
+    cloud_server_address = ('ot.io.mi.com', 80)
     blocked_from_client_list = []
     blocked_from_cloud_list = []
     blocked_methods_from_cloud_list = ['miIO.ota', 'miIO.config_router', 'enable_log_upload']
@@ -346,8 +347,8 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
 
     def connect_to_cloud(self):
-        print('!!!!!! connecting to {} port {}'.format(*self.server_address))
-        self.sock.connect(self.server_address)
+        print('!!!!!! connecting to {} port {}'.format(*self.cloud_server_address))
+        self.sock.connect(self.cloud_server_address)
         self.send_data_to_cloud(self.clienthello)
         serverresp = self.sock.recv(1024)
         print("###### received from Cloud (len: %d) :%s " % (len(serverresp), binascii.hexlify(serverresp)))
@@ -364,7 +365,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
 
     def sendmydata(self, data):
         self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), "client << dustcloud")
-        if (self.request.fileno() < 0):
+        if self.request.fileno() < 0:
             return
         self.request.send(data)
 
@@ -437,7 +438,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
                 print("magic ok")
-                packetlenght = int.from_bytes(data[2:4], byteorder='big');  # get packet lenght from header
+                packetlenght = int.from_bytes(data[2:4], byteorder='big')  # get packet lenght from header
                 # print("packetlength %s, got already %s " % (packetlenght,len(data)))
                 if len(data) != packetlenght:  # packet longer than 32 byte
                     data += self.sock.recv((packetlenght - 32))  # get the rest of the packet
@@ -445,9 +446,9 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     # print("= RAW: %s" % binascii.hexlify(data))
                     self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), "dustcloud << cloud")
                 process_result = self.Cloudi.process_cloud_data(self, data)
-                #if process_result == 1:
-                    #self.request.close()
-                    #return
+                if process_result == 1:
+                    self.request.close()
+                    return
 
     def on_read(self):
         data = self.request.recv(32)  # wait to get the first 32 bytes (header+md5)
@@ -460,7 +461,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
                 print("magic ok")
-                packetlenght = int.from_bytes(data[2:4], byteorder='big');  # get packet lenght from header
+                packetlenght = int.from_bytes(data[2:4], byteorder='big')  # get packet lenght from header
                 # print("packetlength %s, got already %s " % (packetlenght,len(data)))
                 while len(data) != packetlenght:  # packet longer than 32 byte
                     data += self.request.recv((packetlenght - 32))  # get the rest of the packet
@@ -473,42 +474,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
             else:
                 data += self.request.recv(64*1024)  # get the rest of the packet
                 print("Unknown message: {}".format(data))
-                # self.httpmode=1
-                # print("Magic bytes were missing, echo http redirection")
-                # self.http(data)
-                # http = "HTTP/1.1 302 Found\n"
-                # http = http + "Location: https://xxx/\n"
-                # http = http + "Content-Length: 212\n"
-                # http = http + "Content-Type: text/html; charset=iso-8859-1\n"
-                # http = http + "\n"
-                # http = http + "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n"
-                # http = http + "<html><head>\n"
-                # http = http + "<title>302 Found</title>\n"
-                # http = http + "</head><body>\n"
-                # http = http + "<h1>Found</h1>\n"
-                # http = http + "<p>The document has moved <a href=\"https://xxx/\">here</a>.</p>\n"
-                # http = http + "</body></html>"
-                # self.request.send(http.encode('utf-8'))
-                # self.request.close()
                 return
-
-    def http(self, firstdata):
-        server_address = ('localhost', 5080)
-        self.sock.connect(server_address)
-        while True:
-            if (self.request.fileno() < 0):
-                break
-            r, w, x = select.select([self.request, self.sock], [], [])
-            for s in r:
-                data = s.recv(4096)
-                if len(data) == 0:
-                    self.request.close()
-                    break
-                if s == self.request:
-                    self.sock.sendall(firstdata + data)
-                    firstdata = ""
-                if s == self.sock:
-                    self.request.send(data)
 
 
 class MyUDPHandler(socketserver.BaseRequestHandler):
@@ -542,7 +508,10 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
                 print("magic ok")
-                process_data(socket, data)
+                # TODO: process data
+                # process_data(socket, data)
+            else:
+                print("Unknown message: {}".format(data))
 
 
 class TCPSimpleServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -551,8 +520,8 @@ class TCPSimpleServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     # much faster rebinding
     allow_reuse_address = True
 
-    def __init__(self, server_address, RequestHandlerClass):
-        socketserver.TCPServer.__init__(self, server_address, RequestHandlerClass)
+    def __init__(self, server_address, request_handler_class):
+        socketserver.TCPServer.__init__(self, server_address, request_handler_class)
 
 
 class UDPSimpleServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
@@ -561,20 +530,20 @@ class UDPSimpleServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     # much faster rebinding
     allow_reuse_address = True
 
-    def __init__(self, server_address, RequestHandlerClass):
-        socketserver.UDPServer.__init__(self, server_address, RequestHandlerClass)
+    def __init__(self, server_address, request_handler_class):
+        socketserver.UDPServer.__init__(self, server_address, request_handler_class)
 
 
 if __name__ == "__main__":
     tcpserver = TCPSimpleServer(("0.0.0.0", 80), SingleTCPHandler)
-    udpserver = UDPSimpleServer(("0.0.0.0", 8054), MyUDPHandler)  ## disable UDP interface
+    udpserver = UDPSimpleServer(("0.0.0.0", 8054), MyUDPHandler)  # disable UDP interface
 
     tcpserver_thread = threading.Thread(target=tcpserver.serve_forever)
     tcpserver_thread.start()
     udpserver_thread = threading.Thread(target=udpserver.serve_forever)
     udpserver_thread.start()
 
-    input("Press any key to exit.")
+    input("Press any key to exit.\n")
 
     tcpserver.shutdown()
     udpserver.shutdown()
