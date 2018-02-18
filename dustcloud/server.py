@@ -132,7 +132,6 @@ class CloudClient:
         timestamp = binascii.hexlify(struct.pack('>I', round(time.time()))).decode("utf-8")
         serverhello = bytes.fromhex("21310020ffffffffffffffff" + timestamp + "00000000000000000000000000000000")
         if len(data) == int.from_bytes(data[2:4], byteorder='big'):  # Check correct lenght of packet again
-            print(" ---------Process Thread-id: %s" % threading.get_ident())
             self.do_log_raw(threading.get_ident(), binascii.hexlify(data), "client >> dustcloud")
             if data == clienthello:
                 print("{} thats a client hello")
@@ -283,7 +282,7 @@ class CloudClient:
                             # self.do_log(did,"PING (len=32)","dustcloud >> cloud (ping)")
                             mysocket.send_data_to_cloud(data)
                         else:
-                            print("< RAW: %s" % binascii.hexlify(data))
+                            # print("< RAW: %s" % binascii.hexlify(data))
                             mysocket.sendmydata(data)  # Ping-Pong
         else:
             print("Wrong packet size %s %s " % (len(data), int.from_bytes(data[2:4], byteorder='big')))
@@ -428,6 +427,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         print(" --------------- Thread-id: %s closed" % thread_id)
 
     def on_read_cloud(self):
+        print(" ---------Process cloud message -- Thread-id: %s" % threading.get_ident())
         data = self.sock.recv(32)  # wait to get the first 32 bytes (header+md5)
         print("{} via tcp wrote:".format(self.client_address[0]))
         # print("C> RAW: %s" % binascii.hexlify(data))
@@ -451,6 +451,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     return
 
     def on_read(self):
+        print(" ---------Process client message -- Thread-id: %s" % threading.get_ident())
         data = self.request.recv(32)  # wait to get the first 32 bytes (header+md5)
         print("{} via tcp wrote:".format(self.client_address[0]))
         # print("> RAW: %s" % binascii.hexlify(data))
@@ -494,24 +495,50 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
     lastmessageid = 0
     connmode = "udp"
 
+    blocked_from_client_list = []
+    blocked_from_cloud_list = []
+    blocked_methods_from_cloud_list = ['miIO.ota', 'miIO.config_router', 'enable_log_upload']
+    status_methods = ['event.status', 'props', 'event.keepalive', 'event.remove', 'event.motion', 'event.heartbeat',
+                      'event.click', '_sync.upLocalSceneRuningLog', '_async.store', '_otc.log', 'event.dry',
+                      'event.no_motion', 'event.comfortable']
+
+    def send_data_to_cloud(self, data):
+        # TODO
+        return
+
     def sendmydata(self, data):
-        self.request.sendto(data, self.client_address)
+        self.socket.sendto(data, self.client_address)
 
     def handle(self):
+        # UDP is not connection oriented so the UDPServer will likely create instances
+        # of this request handler randomly. This handle method will be called for every
+        # received message.
+
         data = self.request[0].strip()
-        socket = self.request[1]
+        self.socket = self.request[1]
+
+        # This creates the CloudClient only if it's not already there, reusing the
+        # existing CloudClient if self already set it up.
+        try:
+            self.Cloudi
+        except AttributeError:
+            self.Cloudi = CloudClient()
+
+        thread_id = threading.get_ident()
+        print(" --------------- Thread-id: {} ({})".format(thread_id, self))
         print("{} via udp wrote:".format(self.client_address[0]))
         # print("> RAW: %s" % binascii.hexlify(data))
         if len(data) < 32:
-            print("len < 32")
+            print("len < 32, discarding message")
             return
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
                 print("magic ok")
-                # TODO: process data
-                # process_data(socket, data)
+                self.Cloudi.process_data(self, data)
             else:
                 print("Unknown message: {}".format(data))
+
+        print(" --------------- Thread-id: %s closed" % thread_id)
 
 
 class TCPSimpleServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -536,7 +563,7 @@ class UDPSimpleServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
 
 if __name__ == "__main__":
     tcpserver = TCPSimpleServer(("0.0.0.0", 80), SingleTCPHandler)
-    udpserver = UDPSimpleServer(("0.0.0.0", 8054), MyUDPHandler)  # disable UDP interface
+    udpserver = UDPSimpleServer(("0.0.0.0", 8053), MyUDPHandler)
 
     tcpserver_thread = threading.Thread(target=tcpserver.serve_forever)
     tcpserver_thread.start()
