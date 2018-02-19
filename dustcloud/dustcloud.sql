@@ -108,7 +108,7 @@ CREATE TABLE `statuslog` (
   `id` int(11) NOT NULL,
   `did` int(11) NOT NULL DEFAULT '0',
   `data` text,
-  `direction` varchar(20) DEFAULT NULL,
+  `direction` varchar(30) DEFAULT NULL,
   `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
