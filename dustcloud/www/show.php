@@ -119,7 +119,7 @@ full_cloud_forward: <input type="submit" name="full_cloud_forward" value="1"><in
 </form>
 <?php
 echo "<hr>";
-$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'from_client' ORDER by timestamp DESC");
+$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
 $res->data_seek(0);
 $row = $res->fetch_assoc();
 		foreach ($row as $key => $value)

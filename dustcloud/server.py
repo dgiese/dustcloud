@@ -432,7 +432,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     print("%s : Value: %s" % (self.dname, msg))
                     # print("< RAW: %s" % binascii.hexlify(c))
                     self.sendmydata(c)
-        print("Close Request")
+        print("Close Connection")
         self.cloud_sock.close()
         self.request.close()
         print(" --------------- Thread-id: %s closed" % thread_id)
