@@ -23,10 +23,12 @@ Do not flash Gen2 firmware to Gen1, and vice versa!
 1. Connect to open WiFi of the robot(rockrobo-XXXX)
 	* Do not connect to any other network (e.g. LAN)
 1. > mirobo discover --handshake true
+	* You'll retrieve the token (copy hash represented by placholder #Token for further use):
+	* INFO:miio.device:  IP 192.168.8.x (ID: $) - token: b'#Token'
 1. > mirobo --ip=192.168.8.1 --token=#Token_from_above# status
 	-> should return status
 1. > mirobo --ip=192.168.8.1 --token=#Token_from_above# raw_command miIO.ota '{"mode":"normal", "install":"1", "app_url":"http://#ipaddress-of-your-computer#/v11_#version#.pkg", "file_md5":"#md5#","proc":"dnld install"}'
-	* replace ipaddress, version and md5 with your data
+	* replace ipaddress, version and md5 with your data ( md5 = copied md5 sum of  section "preparation" step 3)
 	* Check status with command from 4)
 	* Wait 10 minutes (you should see an access on your http server)
 1. In case you get a warning about battery needs to be at least 20% charged: connect the robot with your charging station and charge it while updating. This warning can appear even if your robot is charged more then 20%.
