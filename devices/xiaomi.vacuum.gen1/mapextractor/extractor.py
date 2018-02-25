@@ -20,7 +20,7 @@ def read_short(data):
 def charger(data):
     pos_x = read_int(data)
     pos_y = read_int(data)
-    # TODO
+    return (pos_x, pos_y)
 
 
 def grayscale_color(pixel):
@@ -86,13 +86,38 @@ def export_image_colored(data, image_len, timestamp, map_index, output_folder):
             file.write(bytes(pixels[h * rgb_width: h * rgb_width + rgb_width]))
 
 
-def path(data, path_len):
+def path(data, path_len, charger_pos, timestamp, map_index, output_folder):
     set_point_length = read_int(data)
     set_point_size = read_int(data)
     set_angle = read_int(data)
-    image_width = read_int(data)
-    data = data.read(path_len)
-    # TODO
+    image_width = (read_short(data), read_short(data))
+    
+    # extracting path
+    path = [(read_short(data), read_short(data)) for _ in range(set_point_length)]
+
+    # rescaling coordinates
+    path = [((p[0]) // 50, (p[1]) // 50) for p in path]
+    charger_pos = ((charger_pos[0]) // 50, (charger_pos[1]) // 50)
+
+    # Creating image
+    width, height = image_width[0] // 25, image_width[1] // 25
+
+    file_name = make_file_name(output_folder, timestamp, map_index) + '_path.pgm'
+    
+    pixels = [0] * width * height
+
+    for x, y in path:
+        pixels[y * width + x] = 155
+
+    for off_x in range(-2, 2):
+        for off_y in range(-2, 2):
+            idx = (charger_pos[1] + off_y) * width + charger_pos[0] + off_x
+            pixels[idx] = 255
+
+    with open(file_name, 'wb') as file:
+        file.write(('P5\n%d %d\n255\n' % (width, height)).encode())
+        for h in range(height)[::-1]:
+            file.write(bytes(pixels[h * width: h * width + width]))
 
 
 def parse(timestamp, bytes, do_coloring, output_folder):
@@ -112,14 +137,14 @@ def parse(timestamp, bytes, do_coloring, output_folder):
         block_size = read_int(data)
 
         if block_type == 1:
-            charger(data)
+            charger_pos = charger(data)
         elif block_type == 2:
             if do_coloring:
                 export_image_colored(data, block_size, timestamp, map_index, output_folder)
             else:
                 export_image_grayscale(data, block_size, timestamp, map_index, output_folder)
         elif block_type == 3:
-            path(data, block_size)
+            path(data, block_size, charger_pos, timestamp, map_index, output_folder)
         else:
             break
 
