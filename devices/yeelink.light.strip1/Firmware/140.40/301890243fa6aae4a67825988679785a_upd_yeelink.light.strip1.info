@@ -1,0 +1,23 @@
+318788 bytes
+Magic: MRVL
+Builddate: 2017-10-16 04:49:17
+Sections: 3
+Startaddress: 0x1f0032e1
++ Section 1
+  Magic: 02000000
+  Offset: 0xc8
+  Size of Section: 12824 (0x3218)
+  Memaddr: 0x100000
+  Checksum?: 04763875
++ Section 2
+  Magic: 02000000
+  Offset: 0x32e0
+  Size of Section: 300304 (0x49510)
+  Memaddr: 0x1f0032e0
+  Checksum?: 517de672
++ Section 3
+  Magic: 02000000
+  Offset: 0x4c7f0
+  Size of Section: 5460 (0x1554)
+  Memaddr: 0x20000040
+  Checksum?: f45a7d37

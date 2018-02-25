@@ -152,6 +152,7 @@ VACUUM:
 <input type="submit" name="cmd" value="get_dnd_timer">
 <input type="submit" name="cmd" value="get_custom_mode">
 <br>
+</form>
 <form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did; ?>" method="post">
 Method: <input type="input" name="cmd" value="get_status">
 Params: <input type="input" name="params" size="100" value="">

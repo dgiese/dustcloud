@@ -1,0 +1,7 @@
+miio_client
+
+CMakeFiles/
+CMakeLists.txt.user
+CMakeCache.txt
+Makefile
+cmake_install.cmake

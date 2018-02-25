@@ -1,48 +1,61 @@
-Welcome to our repository for hacking and rooting of the Xiaomi Vacuum Robot. We provide you methods how to root your device without opening it or breaking the warranty seal.
+Welcome to our repository for hacking and rooting of the Xiaomi Smart Home Devices. We provide you methods how to root your device without opening it or breaking the warranty seal (on your own risk).
 
-You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/UPDATE-howto.md).
+We moved the documentation of the devices (photos, datasheets, uart logs, etc) to a new repo [dustcloud-documentation](https://github.com/dgiese/dustcloud-documentation)
 
-Our presentation was designed for 35 minutes (+10 min FAQ) , however our available time was cut to 20 minutes(+10 min FAQ). Therefore we had to reduce the content in our presentation.
-You can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/34c3-presentation/34c3_Staubi-current_split_animation.pdf).
-More technical information you find [here (techinfo.pdf)](https://github.com/dgiese/dustcloud/raw/master/xiaomi.vacuum.gen1/techinfo.pdf). The cloud protocol is described [here (cloudprotocol.pdf)](https://github.com/dgiese/dustcloud/raw/master/cloudprotocol.pdf)
 
-Recording of our talk at 34C3: https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking
+You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/devices/xiaomi.vacuum/UPDATE-howto.md).
+
+# Talks
+
+Recording of our talk at 34C3 (2017): https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking
+
+You can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/presentations/34c3-2017/34c3_Staubi-current_split_animation.pdf).
+
+
+We had a talk at Recon BRX 2018, the recording should be published in the next few months: (https://recon.cx/2018/brussels/)
+
+The Recon presentation can be found [here](https://github.com/dgiese/dustcloud/raw/master/presentations/Recon-BRX2018/recon_brx_2018-final-split.pdf)
+
+# Recommended ressources / links
+
+Flole App: alternative way to control the vacuum robot, instead of Xiaomi's Mi Home App. Is able to control and root your vacuum cleaner. Enables the use of various speech packages.
+https://xiaomi.flole.de/
+
+Roboter-Forum.com: German speaking forum with a lot of information about all sorts of robots. Contains special subforums for Xiaomi rooting. Primary ressource for beginners.
+[http://www.roboter-forum.com/](http://www.roboter-forum.com/showthread.php?25097-Root-Zugriff-auf-Xiaomi-Mi-Vacuum-Robot)
 
 ## FAQ
 ### Can you hack all Xiaomi vacuum cleaners connected to the internet?
-No, you can root only your own device, devices which are in your own wifi or where you have physical access to.
-### Do you consider the Xiaomi cloud as insecure?
-Actually we think that Xiaomi did a good job in designing their cloud protocol (at least from a security perspective).
-### Is it required to open the robot / break the warranty seals to root it?
-No, you can push the firmwareupdate to the robot without opening it. See the Update howto.
+No, you can root only your own device, devices which are in your own wifi or where you have physical access to (at least for now).
 ### Do Xiaomi know the exact position of the vacuum (e.g. address)?
-The vacuum transfers its connected SSID, the gateway's MAC address and the RSS value every 30 minutes to the cloud. Theoretically you can pinpoint a address very precisely with that information, e.g. by using Google's geolocation API.
-### Does the root also work for Gen2?
-There might be a way to root also Gen2. However as I (Dennis) do not have access to a Gen2 vacuum, i cannot give you more information on that. As soon as i will get my own Gen2 vacuum, i will update the information.
-### Why there is still no custom patched firmware available (with SSH)?
-While you can build your own firmware with SSH, we are not sure if we want to provide a pre-rooted version with some default SSH keys. As we know you (and us) some people might not change the keys afterwards. So instead of giving just you access to the vacuum, other people would have also access to your vacuum. We would like to make the world safer and not more vulnerable. Therefore we are thinking of some solution for that.
+Yes. The devices transfer its connected SSID, the gateway's MAC address and the RSS value every 30 minutes to the cloud. Theoretically you can pinpoint a address very precisely with that information, e.g. by using Google's geolocation API.
+In addition to that your smartphone transfers its exact position while pairing/provisioning the device with the cloud. The cloud stores that position with the devices dataset.
 ### Is Dustcloud breaking the HTTPS connection / any SSL connection?
-No, dustcloud requires the symmetric key (extracted from /mnt/default/device.conf) to decrypt the AES connection to the cloud. The same key is used to encrypt the forwarded messages to the cloud.
-Note: I personally think that Xiaomis approach of device's unique AES key solves a lot of cloud problems: authentication, integrity (over hmac) and confidentiality.
-### Can i use the vacuum without connecting to any Wifi?
-Sure, however set a password to protect the Wifi AP of your vacuum robot. Edit the file /opt/rockrobo/wlan/wifi_start.sh and change this CMD="create_ap -c $channel -n wlan0 -g 192.168.8.1 $ssid_ap --daemon" to CMD="create_ap -c $channel -n wlan0 -g 192.168.8.1 $ssid_ap YourWPApassword --daemon". Then your unprovisioned vacuum has a protected Wifi and you are still able to connect (if you do not lose the password).
-### Is there a risk that Xiaomi do a force update and disable the root?
-Technically there is, but i do not believe so. In any case you can disable updates (yours and Xiaomi's) by renaming the ccrypt command. See [disable-UPDATES.md](https://github.com/dgiese/dustcloud/blob/master/disable-UPDATES.md) for additional information. 
-### Will you publish rooting methods for other devices (like other vacuums, smarthome-devices, etc)?
+No, dustcloud requires the symmetric key (e.g. extracted from /mnt/default/device.conf) to decrypt the AES connection to the cloud. The same key is used to encrypt the forwarded messages to the cloud.
+Note: I personally think that Xiaomis approach of device's unique AES key solves a lot of cloud problems: authentication, integrity and confidentiality.
+### Will you publish rooting methods for other devices?
 There are plans for that. But keep in mind that the devices were financed from my private budget, therefore the focus will be on devices that i will use myself after the hacking. Do not expect a smart fridge (i have a stupid one already) or a smart car (too expensive). However if you have broken devices (like a used Air purifier or something) or spare devices you want to get rid of, you can contact me. I might be interested in some PCBs ;)
+### Is there a communication way for the community to exchange ideas?
+Yes, there is a telegram channel. https://t.me/joinchat/Fl7MmxBwXWC7ETNZAXQLSQ
+
+Please inform yourself in the forums and with the howtos before you post in this channel. Otherwise your message is very likely to be ignored.
 
 # Contact
 * Dennis Giese <dgi[at]posteo.de>
 * Daniel Wegemer <daniel[at]wegemer.com>
+
+# Press information
+
+Iot will very likely become a very important topic in the future. 
+If you like to know more about IoT security, you can visit us at Northeastern University in Boston, US (Dennis) or at the TU Darmstadt, DE. Please contact us.
 
 # Acknowledgements:
 ### Prof. Matthias Hollick at Secure Mobile Networking Lab (SEEMOO)
 <a href="https://www.seemoo.tu-darmstadt.de">![SEEMOO logo](https://github.com/dgiese/dustcloud/raw/master/gfx/seemoo.png)</a>
 ### Prof. Guevara Noubir (CCIS, Northeastern University)
 <a href="http://www.ccs.neu.edu/home/noubir/Home.html">![CCIS logo](https://github.com/dgiese/dustcloud/raw/master/gfx/CCISLogo_S_gR.png)</a>
-
 # Media coverage:
-* https://www.kaspersky.co.uk/blog/xiaomi-mi-robot-hacked/12567/
+* https://www.kaspersky.com/blog/xiaomi-mi-robot-hacked/12567/
 * https://www.golem.de/news/xiaomi-mit-einem-stueck-alufolie-autonome-staubsauger-rooten-1712-131883.html
 * http://www.zeit.de/digital/datenschutz/2017-12/34c3-hack-staubsauger-iot
 * https://hackaday.com/2017/12/27/34c3-the-first-day-is-a-doozy/
