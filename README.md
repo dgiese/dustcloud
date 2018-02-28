@@ -24,8 +24,8 @@ https://xiaomi.flole.de/
 Roboter-Forum.com: German speaking forum with a lot of information about all sorts of robots. Contains special subforums for Xiaomi rooting. Primary ressource for beginners.
 [http://www.roboter-forum.com/](http://www.roboter-forum.com/showthread.php?25097-Root-Zugriff-auf-Xiaomi-Mi-Vacuum-Robot)
 
-Python-miio: Python library & console tool for controlling Xiaomi smart appliances 
-[https://github.com/rytilahti/python-miio]
+Python-miio: Python library & console tool for controlling Xiaomi smart appliances. 
+https://github.com/rytilahti/python-miio
 
 ## FAQ
 ### Can you hack all Xiaomi vacuum cleaners or other devices connected to the internet?
@@ -46,7 +46,9 @@ No, dustcloud requires the symmetric key (e.g. extracted from /mnt/default/devic
 Note: I personally think that Xiaomis approach of device's unique AES key solves a lot of cloud problems: authentication, integrity and confidentiality.
 ### Will you publish rooting methods for other devices?
 For current rooted device take a look at the [device list](https://github.com/dgiese/dustcloud/blob/master/devices.md).
+
 It is also a good idea to subscribe to the [dustcloud-documentation repo](https://github.com/dgiese/dustcloud-documentation)
+
 There are plans for other devices too. But keep in mind that the devices were financed from my private budget, therefore the focus will be on devices that i will use myself after the hacking. Do not expect a smart fridge (i have a stupid one already) or a smart car (too expensive). However if you have broken devices (like a used Air purifier or something) or spare devices you want to get rid of, you can contact me. I might be interested in some PCBs ;)
 ### Is there a communication way for the community to exchange ideas?
 Yes, there is a telegram channel. https://t.me/joinchat/Fl7MmxBwXWC7ETNZAXQLSQ
