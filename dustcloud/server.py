@@ -323,19 +323,22 @@ class CloudClient:
                 print("Localtime %s " % datetime.datetime.utcnow())
 
                 if m.data["length"] > 0:
-                    method = m.data.value.get("method", "NONE")
-                    device_result = m.data.value.get("result", "NONE")
-                    device_error = m.data.value.get("error", "NONE")
-                    packetid = m.data.value.get("id", 0)
-                    print("Cloud->%s : messageID: %s Method: %s " % (mysocket.dname, packetid, method))
-                    print("Cloud->%s : Value: %s" % (mysocket.dname, m.data.value))
-                    self.do_log(did, m.data.value, "dustcloud << cloud")
-                    if mysocket.full_cloud_forward == 1 \
-                       and method not in blocked_methods_from_cloud_list \
-                       and packetid not in mysocket.blocked_from_cloud_list:
-                        mysocket.sendmydata(data)  # forward data to client
-                    if packetid in mysocket.blocked_from_client_list:
-                        mysocket.blocked_from_cloud_list.remove(packetid)
+                    if m.data.value:
+                        method = m.data.value.get("method", "NONE")
+                        device_result = m.data.value.get("result", "NONE")
+                        device_error = m.data.value.get("error", "NONE")
+                        packetid = m.data.value.get("id", 0)
+                        print("cloud->%s : messageID: %s Method: %s " % (mysocket.dname, packetid, method))
+                        print("cloud->%s : Value: %s" % (mysocket.dname, m.data.value))
+                        self.do_log(did, m.data.value, "dustcloud << cloud")
+                        if mysocket.full_cloud_forward == 1 \
+                           and method not in blocked_methods_from_cloud_list \
+                           and packetid not in mysocket.blocked_from_cloud_list:
+                            mysocket.sendmydata(data)  # forward data to client
+                        if packetid in mysocket.blocked_from_client_list:
+                            mysocket.blocked_from_cloud_list.remove(packetid)
+                    else:
+                        print("cloud->%s : Couldn't parse message!" % mysocket.dname)
                 else:
                     print("Cloud->%s : Ping-Pong" % mysocket.dname)
                     if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
@@ -412,6 +415,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 # print(self.commandcounter)
                 # if queue_return["id"] >= self.commandcounter:
                 if queue_return["id"] >= 0:
+                    print("---------Send message to client {}".format(self.dname))
                     self.commandcounter = queue_return["id"]
                     self.Cloudi.mark_command_as_processed(self.ddid, queue_return["id"])
                     cmd = queue_return
