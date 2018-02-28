@@ -50,6 +50,20 @@ class ServerMode(enum.Enum):
         return self.value
 
 
+class MessageDirection(enum.Enum):
+    ToClient = 'client << dustcloud'
+    ToCloud = 'dustcloud >> cloud'
+    FromClient = 'client >> dustcloud'
+    FromCloud = 'dustcloud << cloud'
+
+    def __str__(self):
+        return self.value
+
+    # define add operator to add detail to the direction
+    def __add__(self, detail):
+        return str(self) + " " + detail
+
+
 class CloudClient:
     """
     Provides connection to dustcloud database and message parsing.
@@ -66,8 +80,7 @@ class CloudClient:
     def do_log(self, did, data, direction):
         data = "%s" % data
         try:
-            self.cursor.execute("Insert into statuslog(did, data, direction) VALUES(%s, %s, %s)",
-                                (did, data, direction))
+            self.cursor.execute("Insert into statuslog(did, data, direction) VALUES(%s, %s, %s)", (did, data, str(direction)))
             self.db.commit()
         except Exception as e:
             # Rollback in case there is any error
@@ -78,7 +91,7 @@ class CloudClient:
     def do_log_raw(self, did, data, direction):
         data = "%s" % data
         try:
-            self.cursor.execute("Insert into raw(did, raw, direction) VALUES(%s, %s, %s)", (did, data, direction))
+            self.cursor.execute("Insert into raw(did, raw, direction) VALUES(%s, %s, %s)", (did, data, str(direction)))
             self.db.commit()
         except Exception as e:
             # Rollback in case there is any error
@@ -154,7 +167,7 @@ class CloudClient:
         timestamp = binascii.hexlify(struct.pack('>I', round(time.time()))).decode("utf-8")
         serverhello = bytes.fromhex("21310020ffffffffffffffff" + timestamp + "00000000000000000000000000000000")
         if len(data) == int.from_bytes(data[2:4], byteorder='big'):  # Check correct lenght of packet again
-            self.do_log_raw(threading.get_ident(), binascii.hexlify(data), "client >> dustcloud")
+            self.do_log_raw(threading.get_ident(), binascii.hexlify(data), MessageDirection.FromClient)
             if data == clienthello:
                 print("{} thats a client hello")
                 # print("< RAW: %s" % binascii.hexlify(serverhello))
@@ -225,7 +238,7 @@ class CloudClient:
                                 print("!!! (eee) SQL rollback : %s" % str(e))
                                 self.db.rollback()
 
-                            self.do_log(did, m.data.value, "client >> dustcloud")
+                            self.do_log(did, m.data.value, MessageDirection.FromClient)
                             cmd = {
                                 "id": packetid,
                                 "result": {"otc_list": [{"ip": my_cloudserver_i_p, "port": 80}],
@@ -233,21 +246,21 @@ class CloudClient:
                                                         "interval": 1800, "firsttest": 769}}
                             }
                             if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                                self.do_log(did, m.data.value, "dustcloud >> cloud (blck_resp)")
+                                self.do_log(did, m.data.value, MessageDirection.ToCloud + "(blck_resp)")
                                 mysocket.blocked_from_cloud_list.append(packetid)  # block real otc_info response from cloud
                                 mysocket.send_data_to_cloud(data)
                         elif method in status_methods:
-                            self.do_log(did, m.data.value, "client >> dustcloud")
+                            self.do_log(did, m.data.value, MessageDirection.FromClient)
                             cmd = {
                                 "id": packetid,
                                 "result": "ok"
                             }
                             if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                                self.do_log(did, m.data.value, "dustcloud >> cloud (status)")
+                                self.do_log(did, m.data.value, MessageDirection.ToCloud + "(status)")
                                 mysocket.send_data_to_cloud(data)
                                 return 0
                         elif method == "NONE" and (device_result != "NONE" or device_error != "NONE"):
-                            self.do_log(did, m.data.value, "client >> dustcloud")
+                            self.do_log(did, m.data.value, MessageDirection.FromClient)
                             if device_error == "NONE":
                                 self.confirm_commands(did, packetid, 1)
                             else:
@@ -257,12 +270,12 @@ class CloudClient:
                                 "result": "ok"
                             }
                             if (mysocket.full_cloud_forward == 1) and (packetid not in mysocket.blocked_from_client_list):
-                                self.do_log(did, m.data.value, "dustcloud >> cloud (result)")
+                                self.do_log(did, m.data.value, MessageDirection.ToCloud + "(result)")
                                 mysocket.send_data_to_cloud(data)
                             if packetid in mysocket.blocked_from_client_list:
                                 mysocket.blocked_from_client_list.remove(packetid)
                         elif method == "_sync.batch_gen_room_up_url":
-                            self.do_log(did, m.data.value, "client >> dustcloud")
+                            self.do_log(did, m.data.value, MessageDirection.FromClient)
                             # cmd = {
                             # "id": packetid,
                             # "result": ["https://xxx/index.php?id=1",
@@ -271,20 +284,20 @@ class CloudClient:
                             # "https://xxx/index.php?id=4"]
                             # }
                             if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                                self.do_log(did, m.data.value, "dustcloud >> cloud")
+                                self.do_log(did, m.data.value, MessageDirection.ToCloud)
                                 # mysocket.blocked_from_cloud_list.append(packetid) # block real response from cloud
                                 mysocket.send_data_to_cloud(data)
                             return 0
                         else:
                             print("%s : unknown method" % dname)
-                            self.do_log(did, m.data.value, "client >> dustcloud")
+                            self.do_log(did, m.data.value, MessageDirection.FromClient)
                             cmd = {
                                 "id": packetid,
                                 "result": "ok"
                             }
 
                         # send response to client
-                        self.do_log(did, cmd, "client << dustcloud")
+                        self.do_log(did, cmd, MessageDirection.ToClient)
                         send_ts = m.header.value["ts"] + datetime.timedelta(seconds=1)
                         header = {'length': 0, 'unknown': 0x00000000,
                                   'device_id': m.header.value["device_id"],
@@ -301,7 +314,7 @@ class CloudClient:
                     else:
                         print("%s : Ping-Pong" % dname)
                         if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                            # self.do_log(did,"PING (len=32)","dustcloud >> cloud (ping)")
+                            # self.do_log(did,"PING (len=32)", MessageDirection.ToCloud + "(ping)")
                             mysocket.send_data_to_cloud(data)
                         else:
                             # print("< RAW: %s" % binascii.hexlify(data))
@@ -315,7 +328,7 @@ class CloudClient:
         if len(data) == int.from_bytes(data[2:4], byteorder='big'):  # Check correct lenght of packet again
             print(threading.get_ident())
             did = int.from_bytes(data[8:12], byteorder='big')
-            self.do_log_raw(did, binascii.hexlify(data), "dustcloud << cloud")
+            self.do_log_raw(did, binascii.hexlify(data), MessageDirection.FromCloud)
 
             if did == mysocket.ddid:
                 m = Message.parse(data, **mysocket.ctx)
@@ -330,7 +343,7 @@ class CloudClient:
                         packetid = m.data.value.get("id", 0)
                         print("cloud->%s : messageID: %s Method: %s " % (mysocket.dname, packetid, method))
                         print("cloud->%s : Value: %s" % (mysocket.dname, m.data.value))
-                        self.do_log(did, m.data.value, "dustcloud << cloud")
+                        self.do_log(did, m.data.value, MessageDirection.FromCloud)
                         if mysocket.full_cloud_forward == 1 \
                            and method not in blocked_methods_from_cloud_list \
                            and packetid not in mysocket.blocked_from_cloud_list:
@@ -342,7 +355,7 @@ class CloudClient:
                 else:
                     print("Cloud->%s : Ping-Pong" % mysocket.dname)
                     if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                        # self.do_log(did,"PING-PONG (len=32)","dustcloud << cloud (ping)")
+                        # self.do_log(did,"PING-PONG (len=32)", MessageDirection.FromCloud + "(ping)")
                         mysocket.sendmydata(data)  # forward data to client
         else:
             print("Wrong packet size %s %s " % (len(data), int.from_bytes(data[2:4], byteorder='big')))
@@ -367,19 +380,19 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         self.send_data_to_cloud(self.clienthello)
         serverresp = self.cloud_sock.recv(1024)
         print("###### received from Cloud (len: %d) :%s " % (len(serverresp), binascii.hexlify(serverresp)))
-        self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(serverresp), "dustcloud << cloud")
+        self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(serverresp), MessageDirection.FromCloud)
 
     def send_data_to_cloud(self, data):
         if self.cloudstate == "offline":
             self.cloudstate = "online"
             self.connect_to_cloud()
-        self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), "dustcloud >> cloud")
+        self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), MessageDirection.ToCloud)
         # print("C< RAW: %s" % binascii.hexlify(data))
         self.cloud_sock.sendall(data)
         return
 
     def sendmydata(self, data):
-        self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), "client << dustcloud")
+        self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), MessageDirection.ToClient)
         if self.request.fileno() < 0:
             return
         self.request.send(data)
@@ -428,7 +441,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     msg = {'data': {'value': cmd},
                            'header': {'value': header},
                            'checksum': 0}
-                    self.Cloudi.do_log(self.ddid, cmd, "client << dustcloud (cmd)")
+                    self.Cloudi.do_log(self.ddid, cmd, MessageDirection.ToClient + "(cmd)")
                     print("Sendtime %s " % send_ts)
                     print("Localtime %s " % datetime.datetime.utcnow())
                     c = Message.build(msg, **self.ctx)
@@ -459,7 +472,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     data += self.cloud_sock.recv((packetlenght - 32))  # get the rest of the packet
                     # print("packetlength %s, got now %s " % (packetlenght,len(data)))
                     # print("= RAW: %s" % binascii.hexlify(data))
-                    self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), "dustcloud << cloud")
+                    self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), MessageDirection.FromCloud)
                 process_result = self.Cloudi.process_cloud_data(self, data)
                 if process_result == 1:
                     self.request.close()
