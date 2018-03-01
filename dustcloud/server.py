@@ -84,7 +84,6 @@ class CloudClient:
             self.db.commit()
         except Exception as e:
             # Rollback in case there is any error
-            print(self.cursor._last_executed)
             print("!!! (eee) SQL rollback : %s" % str(e))
             self.db.rollback()
 
@@ -152,7 +151,6 @@ class CloudClient:
                     "from": '4'
                 }
         else:
-            # print(" !! no commands")
             return {"id": -1}
 
     def process_data(self, mysocket, data):
@@ -181,11 +179,14 @@ class CloudClient:
                 mysocket.sendmydata(serverhello)
             else:
                 did = int.from_bytes(data[8:12], byteorder='big')
-                fail = 0
                 try:
                     if self.cursor.execute("SELECT did,name,enckey,forward_to_cloud,full_cloud_forward FROM devices WHERE did = %s", did) == 1:
                         # Fetch all the rows in a list of lists.
                         results = self.cursor.fetchall()
+                        if not results:
+                            print("Error: unable to fetch data for did %s. Device unknown?" % did)
+                            return 1
+
                         for row in results:
                             ddid = row[0]
                             dname = row[1]
@@ -201,124 +202,127 @@ class CloudClient:
                 except Exception:
                     print("Error: unable to fetch data for did %s" % did)
                     raise
-                if fail == 0:
-                    enckey = denckey
-                    enckey = enckey + (16 - len(enckey)) * "\x00"  # extend key if its shorter than 16 bytes
-                    ctx = {'token': enckey.encode()}
-                    m = Message.parse(data, **ctx)
-                    if mysocket.ddid != ddid:
-                        print("(!!!) Warning, did missmatch: %d != %d" % (mysocket.ddid, ddid))
-                    mysocket.ddid = ddid
-                    mysocket.ctx = ctx
-                    mysocket.dname = dname
-                    mysocket.device_id = m.header.value["device_id"]
-                    mysocket.forward_to_cloud = forward_to_cloud
-                    mysocket.full_cloud_forward = full_cloud_forward
-                    self.set_last_contact(ddid, mysocket.client_address[0], mysocket.connmode)
-                    print("Headertime %s " % m.header.value["ts"])
-                    print("Localtime %s " % datetime.datetime.utcnow())
 
-                    if m.data["length"] > 0:
-                        method = m.data.value.get("method", "NONE")
-                        device_result = m.data.value.get("result", "NONE")
-                        device_error = m.data.value.get("error", "NONE")
-                        packetid = m.data.value.get("id", 0)
-                        print("%s : messageID: %s Method: %s " % (dname, packetid, method))
-                        print("%s : Value: %s" % (dname, m.data.value))
-                        if method == "_otc.info":
-                            params = m.data.value["params"]
-                            try:
-                                self.cursor.execute(
-                                    "UPDATE devices SET token = %s, fw = %s, mac = %s, ssid = %s, model = %s, netinfo = %s WHERE did = %s",
-                                    (params["token"], params["fw_ver"], params["mac"], params["ap"]["ssid"],
-                                     params["model"], params["netif"]["localIp"], did))
-                                self.db.commit()
-                            except Exception as e:
-                                # Rollback in case there is any error
-                                print("!!! (eee) SQL rollback : %s" % str(e))
-                                self.db.rollback()
+                enckey = denckey
+                enckey = enckey + (16 - len(enckey)) * "\x00"  # extend key if its shorter than 16 bytes
+                ctx = {'token': enckey.encode()}
 
-                            self.do_log(did, m.data.value, MessageDirection.FromClient)
-                            cmd = {
-                                "id": packetid,
-                                "result": {"otc_list": [{"ip": my_cloudserver_i_p, "port": 80}],
-                                           "otc_test": {"list": [{"ip": my_cloudserver_i_p, "port": 8053}],
-                                                        "interval": 1800, "firsttest": 769}}
-                            }
-                            if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                                self.do_log(did, m.data.value, MessageDirection.ToCloud + "(blck_resp)")
-                                mysocket.blocked_from_cloud_list.append(packetid)  # block real otc_info response from cloud
-                                mysocket.send_data_to_cloud(data)
-                        elif method in status_methods:
-                            self.do_log(did, m.data.value, MessageDirection.FromClient)
-                            cmd = {
-                                "id": packetid,
-                                "result": "ok"
-                            }
-                            if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                                self.do_log(did, m.data.value, MessageDirection.ToCloud + "(status)")
-                                mysocket.send_data_to_cloud(data)
-                                return 0
-                        elif method == "NONE" and (device_result != "NONE" or device_error != "NONE"):
-                            self.do_log(did, m.data.value, MessageDirection.FromClient)
-                            if device_error == "NONE":
-                                self.confirm_commands(did, packetid, 1)
-                            else:
-                                self.confirm_commands(did, packetid, -1)
-                            cmd = {
-                                "id": packetid,
-                                "result": "ok"
-                            }
-                            if (mysocket.full_cloud_forward == 1) and (packetid not in mysocket.blocked_from_client_list):
-                                self.do_log(did, m.data.value, MessageDirection.ToCloud + "(result)")
-                                mysocket.send_data_to_cloud(data)
-                            if packetid in mysocket.blocked_from_client_list:
-                                mysocket.blocked_from_client_list.remove(packetid)
-                        elif method == "_sync.batch_gen_room_up_url":
-                            self.do_log(did, m.data.value, MessageDirection.FromClient)
-                            # cmd = {
-                            # "id": packetid,
-                            # "result": ["https://xxx/index.php?id=1",
-                            # "https://xxx/index.php?id=2",
-                            # "https://xxx/index.php?id=3",
-                            # "https://xxx/index.php?id=4"]
-                            # }
-                            if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                                self.do_log(did, m.data.value, MessageDirection.ToCloud)
-                                # mysocket.blocked_from_cloud_list.append(packetid) # block real response from cloud
-                                mysocket.send_data_to_cloud(data)
-                            return 0
-                        else:
-                            print("%s : unknown method" % dname)
-                            self.do_log(did, m.data.value, MessageDirection.FromClient)
-                            cmd = {
-                                "id": packetid,
-                                "result": "ok"
-                            }
+                m = Message.parse(data, **ctx)
+                # a ddid of 0 is ok for the first time
+                if mysocket.ddid != 0 and mysocket.ddid != ddid:
+                    print("(!!!) Warning, did missmatch: %d != %d" % (mysocket.ddid, ddid))
 
-                        # send response to client
-                        self.do_log(did, cmd, MessageDirection.ToClient)
-                        send_ts = m.header.value["ts"] + datetime.timedelta(seconds=1)
-                        header = {'length': 0, 'unknown': 0x00000000,
-                                  'device_id': m.header.value["device_id"],
-                                  'ts': send_ts}
+                mysocket.ddid = ddid
+                mysocket.ctx = ctx
+                mysocket.dname = dname
+                mysocket.device_id = m.header.value["device_id"]
+                mysocket.forward_to_cloud = forward_to_cloud
+                mysocket.full_cloud_forward = full_cloud_forward
+                self.set_last_contact(ddid, mysocket.client_address[0], mysocket.connmode)
+                print("Headertime %s " % m.header.value["ts"])
+                print("Localtime %s " % datetime.datetime.utcnow())
 
-                        msg = {'data': {'value': cmd},
-                               'header': {'value': header},
-                               'checksum': 0}
-                        c = Message.build(msg, **ctx)
-                        print("%s : prepare response" % dname)
-                        print("%s : Value: %s" % (dname, cmd))
-                        # print("< RAW: %s" % binascii.hexlify(c))
-                        mysocket.sendmydata(c)
-                    else:
-                        print("%s : Ping-Pong" % dname)
+                if m.data["length"] > 0:
+                    method = m.data.value.get("method", "NONE")
+                    device_result = m.data.value.get("result", "NONE")
+                    device_error = m.data.value.get("error", "NONE")
+                    packetid = m.data.value.get("id", 0)
+                    print("%s : messageID: %s Method: %s " % (dname, packetid, method))
+                    print("%s : Value: %s" % (dname, m.data.value))
+                    if method == "_otc.info":
+                        params = m.data.value["params"]
+                        try:
+                            self.cursor.execute(
+                                "UPDATE devices SET token = %s, fw = %s, mac = %s, ssid = %s, model = %s, netinfo = %s WHERE did = %s",
+                                (params["token"], params["fw_ver"], params["mac"], params["ap"]["ssid"],
+                                 params["model"], params["netif"]["localIp"], did))
+                            self.db.commit()
+                        except Exception as e:
+                            # Rollback in case there is any error
+                            print("!!! (eee) SQL rollback : %s" % str(e))
+                            self.db.rollback()
+
+                        self.do_log(did, m.data.value, MessageDirection.FromClient)
+                        cmd = {
+                            "id": packetid,
+                            "result": {"otc_list": [{"ip": my_cloudserver_i_p, "port": 80}],
+                                       "otc_test": {"list": [{"ip": my_cloudserver_i_p, "port": 8053}],
+                                                    "interval": 1800, "firsttest": 769}}
+                        }
                         if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
-                            # self.do_log(did,"PING (len=32)", MessageDirection.ToCloud + "(ping)")
+                            self.do_log(did, m.data.value, MessageDirection.ToCloud + "(blck_resp)")
+                            mysocket.blocked_from_cloud_list.append(packetid)  # block real otc_info response from cloud
                             mysocket.send_data_to_cloud(data)
+                    elif method in status_methods:
+                        self.do_log(did, m.data.value, MessageDirection.FromClient)
+                        cmd = {
+                            "id": packetid,
+                            "result": "ok"
+                        }
+                        if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
+                            self.do_log(did, m.data.value, MessageDirection.ToCloud + "(status)")
+                            mysocket.send_data_to_cloud(data)
+                            return 0
+                    elif method == "NONE" and (device_result != "NONE" or device_error != "NONE"):
+                        self.do_log(did, m.data.value, MessageDirection.FromClient)
+                        if device_error == "NONE":
+                            self.confirm_commands(did, packetid, 1)
                         else:
-                            # print("< RAW: %s" % binascii.hexlify(data))
-                            mysocket.sendmydata(data)  # Ping-Pong
+                            self.confirm_commands(did, packetid, -1)
+                        cmd = {
+                            "id": packetid,
+                            "result": "ok"
+                        }
+                        if (mysocket.full_cloud_forward == 1) and (packetid not in mysocket.blocked_from_client_list):
+                            self.do_log(did, m.data.value, MessageDirection.ToCloud + "(result)")
+                            mysocket.send_data_to_cloud(data)
+                        if packetid in mysocket.blocked_from_client_list:
+                            mysocket.blocked_from_client_list.remove(packetid)
+                    elif method == "_sync.batch_gen_room_up_url":
+                        self.do_log(did, m.data.value, MessageDirection.FromClient)
+                        # cmd = {
+                        # "id": packetid,
+                        # "result": ["https://xxx/index.php?id=1",
+                        # "https://xxx/index.php?id=2",
+                        # "https://xxx/index.php?id=3",
+                        # "https://xxx/index.php?id=4"]
+                        # }
+                        if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
+                            self.do_log(did, m.data.value, MessageDirection.ToCloud)
+                            # mysocket.blocked_from_cloud_list.append(packetid) # block real response from cloud
+                            mysocket.send_data_to_cloud(data)
+                        return 0
+                    else:
+                        print("%s : unknown method" % dname)
+                        self.do_log(did, m.data.value, MessageDirection.FromClient)
+                        cmd = {
+                            "id": packetid,
+                            "result": "ok"
+                        }
+
+                    # send response to client
+                    self.do_log(did, cmd, MessageDirection.ToClient)
+                    send_ts = m.header.value["ts"] + datetime.timedelta(seconds=1)
+                    header = {'length': 0, 'unknown': 0x00000000,
+                              'device_id': m.header.value["device_id"],
+                              'ts': send_ts}
+
+                    msg = {'data': {'value': cmd},
+                           'header': {'value': header},
+                           'checksum': 0}
+                    c = Message.build(msg, **ctx)
+                    print("%s : prepare response" % dname)
+                    print("%s : Value: %s" % (dname, cmd))
+                    # print("< RAW: %s" % binascii.hexlify(c))
+                    mysocket.sendmydata(c)
+                else:
+                    print("%s : Ping-Pong" % dname)
+                    if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
+                        # self.do_log(did,"PING (len=32)", MessageDirection.ToCloud + "(ping)")
+                        mysocket.send_data_to_cloud(data)
+                    else:
+                        # print("< RAW: %s" % binascii.hexlify(data))
+                        mysocket.sendmydata(data)  # Ping-Pong
         else:
             print("Wrong packet size %s %s " % (len(data), int.from_bytes(data[2:4], byteorder='big')))
             return 1
@@ -326,7 +330,6 @@ class CloudClient:
 
     def process_cloud_data(self, mysocket, data):
         if len(data) == int.from_bytes(data[2:4], byteorder='big'):  # Check correct lenght of packet again
-            print(threading.get_ident())
             did = int.from_bytes(data[8:12], byteorder='big')
             self.do_log_raw(did, binascii.hexlify(data), MessageDirection.FromCloud)
 
@@ -341,8 +344,8 @@ class CloudClient:
                         device_result = m.data.value.get("result", "NONE")
                         device_error = m.data.value.get("error", "NONE")
                         packetid = m.data.value.get("id", 0)
-                        print("cloud->%s : messageID: %s Method: %s " % (mysocket.dname, packetid, method))
-                        print("cloud->%s : Value: %s" % (mysocket.dname, m.data.value))
+                        print("%s<-cloud : messageID: %s Method: %s " % (mysocket.dname, packetid, method))
+                        print("%s<-cloud : Value: %s" % (mysocket.dname, m.data.value))
                         self.do_log(did, m.data.value, MessageDirection.FromCloud)
                         if mysocket.full_cloud_forward == 1 \
                            and method not in blocked_methods_from_cloud_list \
@@ -351,9 +354,9 @@ class CloudClient:
                         if packetid in mysocket.blocked_from_client_list:
                             mysocket.blocked_from_cloud_list.remove(packetid)
                     else:
-                        print("cloud->%s : Couldn't parse message!" % mysocket.dname)
+                        print("%s<-cloud : Couldn't parse message!" % mysocket.dname)
                 else:
-                    print("Cloud->%s : Ping-Pong" % mysocket.dname)
+                    print("%s<-cloud : Ping-Pong" % mysocket.dname)
                     if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
                         # self.do_log(did,"PING-PONG (len=32)", MessageDirection.FromCloud + "(ping)")
                         mysocket.sendmydata(data)  # forward data to client
@@ -375,11 +378,11 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
     blocked_from_cloud_list = []
 
     def connect_to_cloud(self):
-        print('!!!!!! connecting to {} port {}'.format(*cloud_server_address))
+        print('!!!!!! connecting to cloud {} on port {}'.format(*cloud_server_address))
         self.cloud_sock.connect(cloud_server_address)
         self.send_data_to_cloud(self.clienthello)
         serverresp = self.cloud_sock.recv(1024)
-        print("###### received from Cloud (len: %d) :%s " % (len(serverresp), binascii.hexlify(serverresp)))
+        print("###### received from Cloud (len: %d) : %s" % (len(serverresp), binascii.hexlify(serverresp)))
         self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(serverresp), MessageDirection.FromCloud)
 
     def send_data_to_cloud(self, data):
@@ -407,6 +410,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
             # self.request is the client connection
             if self.request.fileno() < 0:
                 break
+
             if self.cloudstate == "online":
                 if self.cloud_sock.fileno() < 0:
                     print("Cloud connection disconnected")
@@ -416,17 +420,16 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 r, w, x = select.select([self.request, self.cloud_sock], [], [], 1)
             else:
                 r, w, x = select.select([self.request], [], [], 1)
+
             for s in r:
                 if s == self.request:
                     self.on_read()
                 if s == self.cloud_sock:
                     self.on_read_cloud()
+
+            # if there is a device connection, check if the user wants to send commands
             if self.ddid != 0:
                 queue_return = self.Cloudi.get_commands(self.ddid)
-                # print("Queue:")
-                # print(queue_return["id"])
-                # print(self.commandcounter)
-                # if queue_return["id"] >= self.commandcounter:
                 if queue_return["id"] >= 0:
                     print("---------Send message to client {}".format(self.dname))
                     self.commandcounter = queue_return["id"]
@@ -445,7 +448,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     print("Sendtime %s " % send_ts)
                     print("Localtime %s " % datetime.datetime.utcnow())
                     c = Message.build(msg, **self.ctx)
-                    print("%s : prepare response (command)" % self.dname)
+                    print("%s : prepare command" % self.dname)
                     print("%s : Value: %s" % (self.dname, msg))
                     # print("< RAW: %s" % binascii.hexlify(c))
                     self.sendmydata(c)
@@ -465,18 +468,13 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
             return
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
-                print("magic ok")
                 packetlenght = int.from_bytes(data[2:4], byteorder='big')  # get packet lenght from header
-                # print("packetlength %s, got already %s " % (packetlenght,len(data)))
-                if len(data) != packetlenght:  # packet longer than 32 byte
+                while len(data) != packetlenght:  # packet longer than 32 byte
                     data += self.cloud_sock.recv((packetlenght - 32))  # get the rest of the packet
-                    # print("packetlength %s, got now %s " % (packetlenght,len(data)))
-                    # print("= RAW: %s" % binascii.hexlify(data))
-                    self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), MessageDirection.FromCloud)
+                # print("= RAW: %s" % binascii.hexlify(data))
                 process_result = self.Cloudi.process_cloud_data(self, data)
                 if process_result == 1:
                     self.request.close()
-                    return
 
     def on_read(self):
         print(" ---------Process client message -- Thread-id: %s" % threading.get_ident())
@@ -488,12 +486,9 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
             self.request.close()
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
-                print("magic ok")
                 packetlenght = int.from_bytes(data[2:4], byteorder='big')  # get packet lenght from header
-                # print("packetlength %s, got already %s " % (packetlenght,len(data)))
                 while len(data) != packetlenght:  # packet longer than 32 byte
                     data += self.request.recv((packetlenght - 32))  # get the rest of the packet
-                # print("packetlength %s, got now %s " % (packetlenght,len(data)))
                 # print("= RAW: %s" % binascii.hexlify(data))
                 process_result = self.Cloudi.process_data(self, data)
                 if process_result == 1:
@@ -586,7 +581,6 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
             return
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
-                print("magic ok")
                 self.Cloudi.process_data(self, data)
             else:
                 print("Unknown message: {}".format(data))
