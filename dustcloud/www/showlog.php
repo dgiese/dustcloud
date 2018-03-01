@@ -71,9 +71,9 @@ function prettyPrint( $json )
 }
 
 $longlog = isset($_GET['longlog']) ? $_GET['longlog'] : '0';
+$url1=$_SERVER['REQUEST_URI'];
 if ($longlog == 0)
 {
-    $url1=$_SERVER['REQUEST_URI'];
     header("Refresh: 30; URL=$url1"); ### Be carefull, may contain some security risk
 }
 

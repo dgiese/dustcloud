@@ -264,20 +264,19 @@ class CloudClient:
                             mysocket.send_data_to_cloud(data)
                             return 0
                     elif method == "NONE" and (device_result != "NONE" or device_error != "NONE"):
+                        # client sent a result for a request
                         self.do_log(did, m.data.value, MessageDirection.FromClient)
                         if device_error == "NONE":
                             self.confirm_commands(did, packetid, 1)
                         else:
                             self.confirm_commands(did, packetid, -1)
-                        cmd = {
-                            "id": packetid,
-                            "result": "ok"
-                        }
+
                         if (mysocket.full_cloud_forward == 1) and (packetid not in mysocket.blocked_from_client_list):
                             self.do_log(did, m.data.value, MessageDirection.ToCloud + "(result)")
                             mysocket.send_data_to_cloud(data)
                         if packetid in mysocket.blocked_from_client_list:
                             mysocket.blocked_from_client_list.remove(packetid)
+                        return 0
                     elif method == "_sync.batch_gen_room_up_url":
                         self.do_log(did, m.data.value, MessageDirection.FromClient)
                         # cmd = {
