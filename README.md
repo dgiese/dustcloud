@@ -2,15 +2,13 @@ Welcome to our repository for hacking and rooting of the Xiaomi Smart Home Devic
 
 We moved the documentation of the devices (photos, datasheets, uart logs, etc) to a new repo [dustcloud-documentation](https://github.com/dgiese/dustcloud-documentation)
 
-
-You can find a step-by-step guide how to wirelessly root your vacuum robot [here](https://github.com/dgiese/dustcloud/blob/master/devices/xiaomi.vacuum/UPDATE-howto.md).
+Please take a look at the Dustcloud Wiki: (https://github.com/dgiese/dustcloud/wiki)
 
 # Talks
 
 Recording of our talk at 34C3 (2017): https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking
 
 You can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/presentations/34c3-2017/34c3_Staubi-current_split_animation.pdf).
-
 
 We had a talk at Recon BRX 2018, the recording should be published in the next few months: (https://recon.cx/2018/brussels/)
 
@@ -27,31 +25,9 @@ Roboter-Forum.com: German speaking forum with a lot of information about all sor
 Python-miio: Python library & console tool for controlling Xiaomi smart appliances. 
 https://github.com/rytilahti/python-miio
 
-## FAQ
-### Can you hack all Xiaomi vacuum cleaners or other devices connected to the internet?
-No, you can root only your own device, devices which are in your own wifi or where you have physical access to (at least for now).
-### Do Xiaomi know the exact position of the vacuum or my smart device(e.g. address)?
-Yes. The devices transfer its connected SSID, the gateway's MAC address and the RSS value every 30 minutes to the cloud. Theoretically you can pinpoint a address very precisely with that information, e.g. by using Google's geolocation API.
-In addition to that your smartphone transfers its exact position while pairing/provisioning the device with the cloud. The cloud stores that position with the devices dataset.
-### Is Dustcloud meant to be a full replacement of the cloud?
-No, while it can replace technically the cloud, it is not meant to be a full featured control software for your device. With Dustcloud we give developers of open source smart home software (like FHEM, home assistant, etc) the tools to understand how the devices work, so they can develop the proper plugins/interfaces.
-We do not have ressources to support many devices functionally. Reverse Engineering is already hard and time consuming enought ;)
-### Is it safe to download customized firmware images elsewhere?
-We do not recommend to download and install unknown firmware images, even if it appears to be convenient. Keep in mind that your device is very powerful and has potential access to private data. Our recommended way is to create your firmware yourself. There you have control what changes are made and can make sure that no unwanted "features" are hidden in the image.
-For all images known to us we provide the MD5 checksum of the encrypted and unencrypted image in the "firmwareversions.xlsx" file.
 
-We may provide a list of MD5 checksums of all files inside the image, so you can check a particular image for integrity and for changes made. 
-### Is Dustcloud breaking the HTTPS connection / any SSL connection?
-No, dustcloud requires the symmetric key (e.g. extracted from /mnt/default/device.conf) to decrypt the AES connection to the cloud. The same key is used to encrypt the forwarded messages to the cloud.
-Note: I personally think that Xiaomis approach of device's unique AES key solves a lot of cloud problems: authentication, integrity and confidentiality.
-### Will you publish rooting methods for other devices?
-For current rooted device take a look at the [device list](https://github.com/dgiese/dustcloud/blob/master/devices.md).
-
-It is also a good idea to subscribe to the [dustcloud-documentation repo](https://github.com/dgiese/dustcloud-documentation)
-
-There are plans for other devices too. But keep in mind that the devices were financed from my private budget, therefore the focus will be on devices that i will use myself after the hacking. Do not expect a smart fridge (i have a stupid one already) or a smart car (too expensive). However if you have broken devices (like a used Air purifier or something) or spare devices you want to get rid of, you can contact me. I might be interested in some PCBs ;)
-### Is there a communication way for the community to exchange ideas?
-Yes, there is a telegram channel. https://t.me/joinchat/Fl7MmxBwXWC7ETNZAXQLSQ
+# Communication for the community
+Yes, there is a telegram channel. https://t.me/joinchat/Fl7Mm0iEV7Pgf9ngDyly-g
 
 If you do not want to use telegram, you can use the following channel: https://matrix.to/#/#dustcloud:matrix.org
 
