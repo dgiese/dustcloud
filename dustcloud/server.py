@@ -366,6 +366,37 @@ class CloudClient:
         return 0
 
 
+def send_pending_commands(connection):
+    if not connection.ddid:
+        # if there is no device id it doesn't make sense to send any commands
+        return
+
+    queue_return = connection.Cloudi.get_commands(connection.ddid)
+    if queue_return["id"] >= 0:
+        print("---------Send message to client {}".format(connection.dname))
+        connection.commandcounter = queue_return["id"]
+        connection.Cloudi.mark_command_as_processed(connection.ddid, queue_return["id"])
+        cmd = queue_return
+        cmd["id"] = connection.commandcounter
+        connection.blocked_from_client_list.append(
+            cmd["id"])  # add to blocklist to not forward results from my cmds to the cloud
+        send_ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=1)
+        header = {'length': 0, 'unknown': 0x00000000,
+                  'device_id': connection.device_id,
+                  'ts': send_ts}
+        msg = {'data': {'value': cmd},
+               'header': {'value': header},
+               'checksum': 0}
+        connection.Cloudi.do_log(connection.ddid, cmd, MessageDirection.ToClient + "(cmd)")
+        print("Sendtime %s " % send_ts)
+        print("Localtime %s " % datetime.datetime.utcnow())
+        c = Message.build(msg, **connection.ctx)
+        print("%s : prepare command" % connection.dname)
+        print("%s : Value: %s" % (connection.dname, msg))
+        # print("< RAW: %s" % binascii.hexlify(c))
+        connection.sendmydata(c)
+
+
 class SingleTCPHandler(socketserver.BaseRequestHandler):
     """One instance per connection. Override handle(self) to customize action."""
     ddid = 0
@@ -427,31 +458,8 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 if s == self.cloud_sock:
                     self.on_read_cloud()
 
-            # if there is a device connection, check if the user wants to send commands
-            if self.ddid != 0:
-                queue_return = self.Cloudi.get_commands(self.ddid)
-                if queue_return["id"] >= 0:
-                    print("---------Send message to client {}".format(self.dname))
-                    self.commandcounter = queue_return["id"]
-                    self.Cloudi.mark_command_as_processed(self.ddid, queue_return["id"])
-                    cmd = queue_return
-                    cmd["id"] = self.commandcounter
-                    self.blocked_from_client_list.append(cmd["id"])  # add to blocklist to not forward results from my cmds to the cloud
-                    send_ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=1)
-                    header = {'length': 0, 'unknown': 0x00000000,
-                              'device_id': self.device_id,
-                              'ts': send_ts}
-                    msg = {'data': {'value': cmd},
-                           'header': {'value': header},
-                           'checksum': 0}
-                    self.Cloudi.do_log(self.ddid, cmd, MessageDirection.ToClient + "(cmd)")
-                    print("Sendtime %s " % send_ts)
-                    print("Localtime %s " % datetime.datetime.utcnow())
-                    c = Message.build(msg, **self.ctx)
-                    print("%s : prepare command" % self.dname)
-                    print("%s : Value: %s" % (self.dname, msg))
-                    # print("< RAW: %s" % binascii.hexlify(c))
-                    self.sendmydata(c)
+            send_pending_commands(self)
+
         print("Close Connection")
         self.cloud_sock.close()
         self.request.close()
@@ -574,7 +582,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 
         thread_id = threading.get_ident()
         print(" --------------- Thread-id: {} ({})".format(thread_id, self))
-        print("{} via udp wrote:".format(self.client_address[0]))
+        print("{}:{} via udp wrote:".format(*self.client_address))
         # print("> RAW: %s" % binascii.hexlify(data))
         if len(data) < 32:
             print("len < 32, discarding message")
@@ -584,6 +592,8 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
                 self.Cloudi.process_data(self, data)
             else:
                 print("Unknown message: {}".format(data))
+
+        send_pending_commands(self)
 
         print(" --------------- Thread-id: %s closed" % thread_id)
 
