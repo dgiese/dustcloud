@@ -58,8 +58,8 @@ if ($did != "")
 {
 	if ($cmd != "")
 	{
-		# add new cmd to cmdquere with 15 seconds expiration
-		$sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($cmd)."','".$mysqli->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 15 SECOND))";
+		# add new cmd to cmdquere with 30 seconds expiration
+		$sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($cmd)."','".$mysqli->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 30 SECOND))";
 		$res = $mysqli->query($sql);
 		if (!$res) {
 			echo "<p>There was an error in query: $sql</p>";
@@ -119,7 +119,7 @@ full_cloud_forward: <input type="submit" name="full_cloud_forward" value="1"><in
 </form>
 <?php
 echo "<hr>";
-$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'from_client' ORDER by timestamp DESC");
+$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
 $res->data_seek(0);
 $row = $res->fetch_assoc();
 		foreach ($row as $key => $value)
