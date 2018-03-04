@@ -12,170 +12,172 @@
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 
-
-function hex2str($hex) {
-    $str = '';
-    for($i=0;$i<strlen($hex);$i+=2) $str .= chr(hexdec(substr($hex,$i,2)));
-    return $str;
-}
-
-    $url1=$_SERVER['REQUEST_URI'];
-	$r = isset($_POST['r']) ? $_POST['r'] : '10';
-	if ($r == 3 )
-	{
-		$refresh = 3;
-	}elseif ($r == 120 )
-	{
-		$refresh = 120;
-	}
-	else
-	{
-		$refresh = 10;
-	}
-    header("Refresh: $refresh; URL=$url1");
-
-if (!isset($_GET['did']))
+// Header configuration
+$url1 = $_SERVER['REQUEST_URI'];
+$refresh_seconds = isset($_GET['refresh']) ? $_GET['refresh'] : 10;
+if (3 == $refresh_seconds)
 {
-	die("no did set");
-}else{
-	if (filter_var($_GET['did'], FILTER_VALIDATE_INT) === false) {
-		die('You must enter a valid integer for did!');
-	}
-	$did = $_GET['did'];
+    $refresh = 3;
 }
-
-require_once 'config.php';
-$mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-if ($mysqli->connect_errno) {
-    echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-}
-
-$cmd= isset($_POST['cmd']) ? $_POST['cmd'] : '';
-$params = isset($_POST['params']) ? $_POST['params'] : '';
-$forward_to_cloud=isset($_POST['forward_to_cloud']) ? $_POST['forward_to_cloud'] : '';
-$full_cloud_forward=isset($_POST['full_cloud_forward']) ? $_POST['full_cloud_forward'] : '';
-if ($did != "")
+else
 {
-	if ($cmd != "")
-	{
-		# add new cmd to cmdquere with 30 seconds expiration
-		$sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($cmd)."','".$mysqli->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 30 SECOND))";
-		$res = $mysqli->query($sql);
-		if (!$res) {
-			echo "<p>There was an error in query: $sql</p>";
-			echo $mysqli->error;
-		}
-	}
-	if ($forward_to_cloud == "1" || $forward_to_cloud == "0")
-	{
-		$sql = "UPDATE devices set forward_to_cloud = '".$mysqli->real_escape_string($forward_to_cloud)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
-		$res = $mysqli->query($sql);
-		if (!$res) {
-		echo "<p>There was an error in query: $sql</p>";
-		echo $mysqli->error;
-		}
-	}
-	if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
-	{
-		$sql = "UPDATE devices set full_cloud_forward = '".$mysqli->real_escape_string($full_cloud_forward)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
-		$res = $mysqli->query($sql);
-		if (!$res) {
-			echo "<p>There was an error in query: $sql</p>";
-			echo $mysqli->error;
-		}
-	}	
+    $refresh = 10;
 }
-
-
-echo "<a href=\"index.php\">Index</a><br>";
-$res = $mysqli->query("SELECT * FROM devices WHERE did = '".$mysqli->real_escape_string($did)."'");
-
-$res->data_seek(0);
-while ($row = $res->fetch_assoc()) {
-	$model= $row['model'];
-    echo "<b>" . $row['name'] . "(did:" . $row['did'] . ")</b>"
-		."<a href=\"./showlog.php?did=" . $row['did'] . "\">(recv msg log)</a>"
-		."<a href=\"./showcmdlog.php?did=" . $row['did'] . "\"> (sent cmd log)</a>"
-		."<br>Last contact: " . $row['last_contact'];
-	$date1 = new DateTime("now");
-	$date2 = new DateTime($row['last_contact']);
-	$interval = $date1->diff($date2);
-	echo " (".$interval->format('%a days %H:%I:%S ago').")";
-	
-	echo "<br>\n";
-	foreach ($row as $key => $value)
-	{
-		if ($value != "")
-		{
-			echo "$key : $value ";	
-			echo "<br>";
-		}
-	}
-}
+header("Refresh: $refresh; URL=$url1");
 ?>
-<form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did; ?>" method="post">
-forward_to_cloud: <input type="submit" name="forward_to_cloud" value="1"><input type="submit" name="forward_to_cloud" value="0"><br>
-full_cloud_forward: <input type="submit" name="full_cloud_forward" value="1"><input type="submit" name="full_cloud_forward" value="0">
-</form>
+
 <?php
-echo "<hr>";
-$res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
-$res->data_seek(0);
-$row = $res->fetch_assoc();
-		foreach ($row as $key => $value)
-	{
-		echo "$key : $value ";	
-		echo "<br>";
-	}
+    // Style sheets
+    require_once 'fns.php';
+    includeStyleSheet();
 
+    // Device ID
+    if (!isset($_GET['did']))
+    {
+        die('no did set');
+    }
+    else
+    {
+        if (false === filter_var($_GET['did'], FILTER_VALIDATE_INT))
+        {
+            die('You must enter a valid integer for did!');
+        }
+        $did = $_GET['did'];
+    }
 
-echo "<hr>";
+    // DB connection
+    require_once 'config.php';
+    $mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    if ($mysqli->connect_errno)
+    {
+        die('Failed to connect to MySQL: ('.$mysqli->connect_errno.') '.$mysqli->connect_error);
+    }
+
+    // Commands and settings
+    $cmd = isset($_POST['cmd']) ? $_POST['cmd'] : '';
+    $params = isset($_POST['params']) ? $_POST['params'] : '';
+    $forward_to_cloud = isset($_POST['forward_to_cloud']) ? $_POST['forward_to_cloud'] : '';
+    $full_cloud_forward = isset($_POST['full_cloud_forward']) ? $_POST['full_cloud_forward'] : '';
+    if ($cmd != "")
+    {
+        # add new cmd to cmdquere with 30 seconds expiration
+        $sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($cmd)."','".$mysqli->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 30 SECOND))";
+        doQueryAndReportFailure($mysqli, $sql);
+    }
+    if ($forward_to_cloud == "1" || $forward_to_cloud == "0")
+    {
+        $sql = "UPDATE devices set forward_to_cloud = '".$mysqli->real_escape_string($forward_to_cloud)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
+        doQueryAndReportFailure($mysqli, $sql);
+    }
+    if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
+    {
+        $sql = "UPDATE devices set full_cloud_forward = '".$mysqli->real_escape_string($full_cloud_forward)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
+        doQueryAndReportFailure($mysqli, $sql);
+    }
 ?>
-<form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did."&r=3"; ?>" method="post">
-<input type="submit" name="cmd" value="miIO.info"><br>
-VACUUM:
-<input type="submit" name="cmd" value="get_status">
-<input type="submit" name="cmd" value="app_start">
-<input type="submit" name="cmd" value="app_stop">
-<input type="submit" name="cmd" value="app_pause">
-<input type="submit" name="cmd" value="app_spot">
-<input type="submit" name="cmd" value="app_charge">
-<input type="submit" name="cmd" value="app_rc_start">
-<input type="submit" name="cmd" value="app_rc_end">
-<input type="submit" name="cmd" value="find_me"><br>
-VACUUM:
-<input type="submit" name="cmd" value="get_log_upload_status">
-<input type="submit" name="cmd" value="get_consumable">
-<input type="submit" name="cmd" value="get_map_v1">
-<input type="submit" name="cmd" value="get_clean_summary">
-<input type="submit" name="cmd" value="get_timer">
-<input type="submit" name="cmd" value="get_dnd_timer">
-<input type="submit" name="cmd" value="get_custom_mode">
-<br>
-</form>
-<form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did; ?>" method="post">
-Method: <input type="input" name="cmd" value="get_status">
-Params: <input type="input" name="params" size="100" value="">
-<input type="submit" name="submit" value="send command">
-</form>
+
+<!-- Actual page content -->
+<a href="index.php">Index</a><br>
 <?php
-$options = "";
-$res = $mysqli->query("SELECT * FROM ota WHERE model = '".$mysqli->real_escape_string($model)."'");
+    // Device settings
+    $res = $mysqli->query("SELECT * FROM devices WHERE did = '".$mysqli->real_escape_string($did)."'");
 
+    $res->data_seek(0);
+    while ($row = $res->fetch_assoc())
+    {
+        $model= $row['model'];
 
+        $name = $row['name'];
+        $did = $row['did'];
+        $last_contact = $row['last_contact']; ?>
 
-$res->data_seek(0);
-while ($row = $res->fetch_assoc()) {
-	$select_param= htmlentities("{'proc': 'dnld install', 'app_url': '".$row['url']."', 'file_md5': '".$row['md5']."', 'install': '1', 'mode': 'normal'}");
-	$options .= "<option value=\"".$select_param."\">".$row['version']." ".$row['model']." ".$row['filename']."</option>";
-}
+        <b><?php echo $name ?> (did: <?php echo $did ?>)</b>
+        <a href="showlog.php?did=<?php echo $did ?>">(recv msg log)</a>
+        <a href="showcmdlog.php?did=<?php echo $did ?>">(sent cmd log)</a>
+        <br />
+        <?php printLastContact($last_contact) ?>
+        <div class="device_info">
+<?php
+        foreach ($row as $key => $value)
+        {
+            if ($value != "")
+            {
+                echo "$key : $value<br>";
+            }
+        } ?>
+        </div>
+<?php
+    }
 ?>
+
 <form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did; ?>" method="post">
-Method: miIO.ota <input type="hidden" name="cmd" value="miIO.ota">
-Params: 
-<select name="params">
-	  <option value="">Select...</option>
-	  <?php echo $options;?>
-	</select>
-<input type="submit" name="submit" value="send command">
+    forward_to_cloud: <input type="submit" name="forward_to_cloud" value="1"><input type="submit" name="forward_to_cloud" value="0"><br>
+    full_cloud_forward: <input type="submit" name="full_cloud_forward" value="1"><input type="submit" name="full_cloud_forward" value="0">
+</form>
+
+<hr />
+<?php
+    // Last client message
+    $res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
+    $res->data_seek(0);
+    $row = $res->fetch_assoc();
+    foreach ($row as $key => $value)
+    {
+        echo "$key : $value ";
+        echo "<br>";
+    }
+    ?>
+<hr />
+
+<!-- Predefined commands -->
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did."&refresh=3"; ?>" method="post">
+    <input type="submit" name="cmd" value="miIO.info"><br>
+    VACUUM:
+    <input type="submit" name="cmd" value="get_status">
+    <input type="submit" name="cmd" value="app_start">
+    <input type="submit" name="cmd" value="app_stop">
+    <input type="submit" name="cmd" value="app_pause">
+    <input type="submit" name="cmd" value="app_spot">
+    <input type="submit" name="cmd" value="app_charge">
+    <input type="submit" name="cmd" value="app_rc_start">
+    <input type="submit" name="cmd" value="app_rc_end">
+    <input type="submit" name="cmd" value="find_me"><br>
+    VACUUM:
+    <input type="submit" name="cmd" value="get_log_upload_status">
+    <input type="submit" name="cmd" value="get_consumable">
+    <input type="submit" name="cmd" value="get_map_v1">
+    <input type="submit" name="cmd" value="get_clean_summary">
+    <input type="submit" name="cmd" value="get_timer">
+    <input type="submit" name="cmd" value="get_dnd_timer">
+    <input type="submit" name="cmd" value="get_custom_mode">
+    <br>
+</form>
+<!-- Custom commands -->
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did; ?>" method="post">
+    Method: <input type="input" name="cmd" value="get_status">
+    Params: <input type="input" name="params" size="100" value="">
+    <input type="submit" name="submit" value="send command">
+</form>
+
+<?php
+    // OTA command
+    $options = "";
+    $res = $mysqli->query("SELECT * FROM ota WHERE model = '".$mysqli->real_escape_string($model)."'");
+
+    $res->data_seek(0);
+    while ($row = $res->fetch_assoc())
+    {
+        $select_param= htmlentities("{'proc': 'dnld install', 'app_url': '".$row['url']."', 'file_md5': '".$row['md5']."', 'install': '1', 'mode': 'normal'}");
+        $options .= "<option value=\"".$select_param."\">".$row['version']." ".$row['model']." ".$row['filename']."</option>";
+    }
+?>
+
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF'])."?did=".$did; ?>" method="post">
+    Method: miIO.ota <input type="hidden" name="cmd" value="miIO.ota">
+    Params: 
+    <select name="params">
+        <option value="">Select...</option>
+        <?php echo $options;?>
+    </select>
+    <input type="submit" name="submit" value="send command">
 </form>

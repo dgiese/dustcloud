@@ -15,47 +15,50 @@
 $url1=$_SERVER['REQUEST_URI'];
 header("Refresh: 30; URL=$url1"); ### Be carefull, may contain some security risk
 
+// Style sheets
+require_once 'fns.php';
+includeStyleSheet();
+
 if (!isset($_GET['did']))
 {
-	die("no did set");
-}else{
-	if (filter_var($_GET['did'], FILTER_VALIDATE_INT) === false) {
-		die('You must enter a valid integer for did!');
-	}
-	$did = $_GET['did'];
+    die("no did set");
+}
+else
+{
+    if (filter_var($_GET['did'], FILTER_VALIDATE_INT) === false)
+    {
+        die('You must enter a valid integer for did!');
+    }
+    $did = $_GET['did'];
 }
 
 require_once 'config.php';
 $mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-if ($mysqli->connect_errno) {
+if ($mysqli->connect_errno)
+{
     echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
 }
 echo "<a href=\"index.php\">Index</a><br>";
 $res = $mysqli->query("SELECT * FROM devices WHERE did = '".$did."'");
 
 $res->data_seek(0);
-while ($row = $res->fetch_assoc()) {
-    echo "<a href=\"./show.php?did=" . $row['did'] . "\">" . $row['name'] . "(did:" . $row['did'] . ")</a><br>Last contact: " . $row['last_contact'];
-	$date1 = new DateTime("now");
-	$date2 = new DateTime($row['last_contact']);
-	$interval = $date1->diff($date2);
-	echo " (".$interval->format('%a days %H:%I:%S ago').")";
-	echo "<br>\n";
+while ($row = $res->fetch_assoc())
+{
+    echo "<a href=\"./show.php?did=" . $row['did'] . "\">" . $row['name'] . "(did:" . $row['did'] . ")</a><br>";
+    
+    printLastContact($row['last_contact']);
 }
 echo "<hr>";
 $res = $mysqli->query("SELECT * FROM cmdqueue WHERE did = '".$did."' ORDER BY CMDID DESC LIMIT 100");
 $res->data_seek(0);
 while ($row = $res->fetch_assoc())
 {
-		foreach ($row as $key => $value)
-	{
-		echo "$key : $value ";
-		echo "<br>";
-	}
-	echo "<hr>";
+    foreach ($row as $key => $value)
+    {
+        echo "$key : $value ";
+        echo "<br>";
+    }
+    echo "<hr>";
 }
 
-
 echo "<hr>";
-
-?>
