@@ -32,7 +32,7 @@ function printLastContact($last_contact_str)
     $now = new DateTime("now");
     $interval_seconds = $now->getTimestamp() - $last_contact_date->getTimestamp();
     $interval = $now->diff($last_contact_date);
-    if ($interval_seconds <= 60 && $last_contact_date > 0)
+    if ($interval_seconds <= 60)
     {
         $interval_class = "green";
     }

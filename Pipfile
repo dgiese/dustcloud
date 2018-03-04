@@ -11,6 +11,7 @@ requests = "*"
 prompt-toolkit = "*"
 python-miio = ">=0.3.6"
 gtts = "*"
+bottle = "*"
 
 
 [dev-packages]
