@@ -122,49 +122,6 @@ class CloudClient:
             print("!!! (eee) SQL rollback : %s" % str(e))
             self.db.rollback()
 
-    def confirm_commands(self, ddid, packetid, code):
-        try:
-            self.cursor.execute("UPDATE cmdqueue SET confirmed = %s WHERE did = %s AND cmdid = %s",
-                                (code, ddid, packetid))
-            self.db.commit()
-        except Exception as e:
-            # Rollback in case there is any error
-            print("!!! (eee) SQL rollback : %s" % str(e))
-            self.db.rollback()
-
-    def mark_command_as_processed(self, ddid, packetid):
-        try:
-            self.cursor.execute("UPDATE cmdqueue SET processed = now() WHERE did = %s AND cmdid = %s", (ddid, packetid))
-            self.db.commit()
-        except Exception as e:
-            # Rollback in case there is any error
-            print("!!! (eee) SQL rollback : %s" % str(e))
-            self.db.rollback()
-
-    def get_commands(self, ddid):
-        sql = "SELECT cmdid, method, params FROM cmdqueue WHERE did = '%d' AND expire > now() AND processed < DATE_ADD(NOW(), INTERVAL -1 SECOND) AND confirmed = '0'" % ddid
-        if self.cursor.execute(sql) > 0:
-            # Fetch all the rows in a list of lists.
-            results = self.cursor.fetchall()
-            for row in results:
-                id = row[0]
-                method = row[1]
-                params = row[2]
-                if params == "":
-                    params = []
-                else:
-                    params = ast.literal_eval(params)
-                # Now print fetched result
-                print(" ### Command for did = %s, method = %s, params = %s" % (ddid, method, params))
-                return {
-                    "id": id,
-                    "method": '%s' % method,
-                    "params": params,
-                    "from": '4'
-                }
-        else:
-            return {"id": -1}
-
     def process_data(self, mysocket, data):
         """
         Parse message in data
@@ -285,11 +242,6 @@ class CloudClient:
                     elif method == "NONE" and (device_result != "NONE" or device_error != "NONE"):
                         # client sent a result for a request
                         self.do_log(did, m.data.value, MessageDirection.FromClient)
-                        if device_error == "NONE":
-                            self.confirm_commands(did, packetid, 1)
-                        else:
-                            self.confirm_commands(did, packetid, -1)
-
                         if packetid in self.expected_messages:
                             self.expected_messages.pop(packetid).set()
 
@@ -401,35 +353,6 @@ class CloudClient:
 
     def expect_message(self, msgid, ev):
         self.expected_messages[msgid] = ev
-
-
-def send_pending_commands(connection):
-    if not connection.ddid:
-        # if there is no device id it doesn't make sense to send any commands
-        return
-
-    queue_return = connection.Cloudi.get_commands(connection.ddid)
-    if queue_return["id"] >= 0:
-        print("---------Send message to client {}".format(connection.dname))
-        connection.Cloudi.mark_command_as_processed(connection.ddid, queue_return["id"])
-        cmd = queue_return
-        # add to blocklist to not forward results from my cmds to the cloud
-        connection.blocked_from_client_list.append(cmd["id"])
-        send_ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=1)
-        header = {'length': 0, 'unknown': 0x00000000,
-                  'device_id': connection.device_id,
-                  'ts': send_ts}
-        msg = {'data': {'value': cmd},
-               'header': {'value': header},
-               'checksum': 0}
-        connection.Cloudi.do_log(connection.ddid, cmd, MessageDirection.ToClient + "(cmd)")
-        print("Sendtime %s " % send_ts)
-        print("Localtime %s " % datetime.datetime.utcnow())
-        c = Message.build(msg, **connection.ctx)
-        print("%s : prepare command" % connection.dname)
-        print("%s : Value: %s" % (connection.dname, msg))
-        # print("< RAW: %s" % binascii.hexlify(c))
-        connection.send_data_to_client(c)
 
 
 # function static variable decorator,
@@ -548,8 +471,6 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 if s == self.cloud_sock:
                     self.on_read_cloud()
 
-            send_pending_commands(self)
-
         print("Close Connection")
         self.cloud_sock.close()
         self.request.close()
@@ -561,7 +482,10 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         print("{} via tcp wrote:".format(self.client_address[0]))
         # print("C> RAW: %s" % binascii.hexlify(data))
         if len(data) < 32:  # should never receive anything smaller than 32 byte
-            print("len < 32")
+            if len(data) == 0:
+                print("Cloud closed conenction")
+            else:
+                print("len < 32")
             self.cloud_sock.close()
             return
         else:
@@ -580,7 +504,10 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         print("{} via tcp wrote:".format(self.client_address[0]))
         # print("> RAW: %s" % binascii.hexlify(data))
         if len(data) < 32:  # should never receive anything smaller than 32 byte
-            print("len < 32")
+            if len(data) == 0:
+                print("Client closed connection")
+            else:
+                print("len < 32")
             self.request.close()
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
@@ -689,7 +616,6 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
             else:
                 print("Unknown message: {}".format(data))
 
-        send_pending_commands(self)
         self.Cloudi_lock.release()
         print(" --------------- Thread-id: %s closed" % thread_id)
 
