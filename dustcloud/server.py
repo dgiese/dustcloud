@@ -28,6 +28,7 @@ import select
 import ast
 import argparse
 import enum
+import bottle
 from miio.protocol import Message
 
 blocked_methods_from_cloud_list = [
@@ -40,6 +41,16 @@ status_methods = ['event.status', 'props', 'event.keepalive', 'event.remove', 'e
                   'event.no_motion', 'event.comfortable']
 cloud_server_address = ('ot.io.mi.com', 80)
 http_redirect_address = None
+
+# dict of devices did -> [name, request_handler]
+devices = {}
+
+
+def get_device(did):
+    try:
+        return devices[did]
+    except KeyError:
+        return None
 
 
 class ServerMode(enum.Enum):
@@ -73,6 +84,7 @@ class CloudClient:
     def __init__(self):
         self.db = pymysql.connect("localhost", "dustcloud", "", "dustcloud")
         self.cursor = self.db.cursor()
+        self.expected_messages = {}
 
     def __del__(self):
         self.db.close()
@@ -110,49 +122,6 @@ class CloudClient:
             print("!!! (eee) SQL rollback : %s" % str(e))
             self.db.rollback()
 
-    def confirm_commands(self, ddid, packetid, code):
-        try:
-            self.cursor.execute("UPDATE cmdqueue SET confirmed = %s WHERE did = %s AND cmdid = %s",
-                                (code, ddid, packetid))
-            self.db.commit()
-        except Exception as e:
-            # Rollback in case there is any error
-            print("!!! (eee) SQL rollback : %s" % str(e))
-            self.db.rollback()
-
-    def mark_command_as_processed(self, ddid, packetid):
-        try:
-            self.cursor.execute("UPDATE cmdqueue SET processed = now() WHERE did = %s AND cmdid = %s", (ddid, packetid))
-            self.db.commit()
-        except Exception as e:
-            # Rollback in case there is any error
-            print("!!! (eee) SQL rollback : %s" % str(e))
-            self.db.rollback()
-
-    def get_commands(self, ddid):
-        sql = "SELECT cmdid, method, params FROM cmdqueue WHERE did = '%d' AND expire > now() AND processed < DATE_ADD(NOW(), INTERVAL -1 SECOND) AND confirmed = '0'" % ddid
-        if self.cursor.execute(sql) > 0:
-            # Fetch all the rows in a list of lists.
-            results = self.cursor.fetchall()
-            for row in results:
-                id = row[0]
-                method = row[1]
-                params = row[2]
-                if params == "":
-                    params = []
-                else:
-                    params = ast.literal_eval(params)
-                # Now print fetched result
-                print(" ### Command for did = %s, method = %s, params = %s" % (ddid, method, params))
-                return {
-                    "id": id,
-                    "method": '%s' % method,
-                    "params": params,
-                    "from": '4'
-                }
-        else:
-            return {"id": -1}
-
     def process_data(self, mysocket, data):
         """
         Parse message in data
@@ -170,15 +139,22 @@ class CloudClient:
                 print("{} thats a client hello")
                 # print("< RAW: %s" % binascii.hexlify(serverhello))
                 mysocket.clienthello = data
-                mysocket.sendmydata(serverhello)
+                mysocket.send_data_to_client(serverhello)
             elif data[0:12] == clienthello[0:12]:
                 print("{} thats a long client hello")
                 serverhello = bytes.fromhex("21310020ffffffffffffffff" + timestamp) + data[16:32]
                 # print("< RAW: %s" % binascii.hexlify(serverhello))
                 mysocket.clienthello = data
-                mysocket.sendmydata(serverhello)
+                mysocket.send_data_to_client(serverhello)
             else:
                 did = int.from_bytes(data[8:12], byteorder='big')
+
+                # register socket connection for device to allow sending custom commands outside
+                # the request handler
+                device = get_device(did)
+                if device:
+                    device[1] = mysocket
+
                 try:
                     if self.cursor.execute("SELECT did,name,enckey,forward_to_cloud,full_cloud_forward FROM devices WHERE did = %s", did) == 1:
                         # Fetch all the rows in a list of lists.
@@ -266,10 +242,8 @@ class CloudClient:
                     elif method == "NONE" and (device_result != "NONE" or device_error != "NONE"):
                         # client sent a result for a request
                         self.do_log(did, m.data.value, MessageDirection.FromClient)
-                        if device_error == "NONE":
-                            self.confirm_commands(did, packetid, 1)
-                        else:
-                            self.confirm_commands(did, packetid, -1)
+                        if packetid in self.expected_messages:
+                            self.expected_messages.pop(packetid).set()
 
                         if (mysocket.full_cloud_forward == 1) and (packetid not in mysocket.blocked_from_client_list):
                             self.do_log(did, m.data.value, MessageDirection.ToCloud + "(result)")
@@ -313,7 +287,7 @@ class CloudClient:
                     print("%s : prepare response" % dname)
                     print("%s : Value: %s" % (dname, cmd))
                     # print("< RAW: %s" % binascii.hexlify(c))
-                    mysocket.sendmydata(c)
+                    mysocket.send_data_to_client(c)
                 else:
                     print("%s : Ping-Pong" % dname)
                     if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
@@ -321,7 +295,7 @@ class CloudClient:
                         mysocket.send_data_to_cloud(data)
                     else:
                         # print("< RAW: %s" % binascii.hexlify(data))
-                        mysocket.sendmydata(data)  # Ping-Pong
+                        mysocket.send_data_to_client(data)  # Ping-Pong
         else:
             print("Wrong packet size %s %s " % (len(data), int.from_bytes(data[2:4], byteorder='big')))
             return 1
@@ -349,7 +323,7 @@ class CloudClient:
                         if mysocket.full_cloud_forward == 1 \
                            and method not in blocked_methods_from_cloud_list \
                            and packetid not in mysocket.blocked_from_cloud_list:
-                            mysocket.sendmydata(data)  # forward data to client
+                            mysocket.send_data_to_client(data)  # forward data to client
                         if packetid in mysocket.blocked_from_client_list:
                             mysocket.blocked_from_cloud_list.remove(packetid)
                     else:
@@ -358,42 +332,76 @@ class CloudClient:
                     print("%s<-cloud : Ping-Pong" % mysocket.dname)
                     if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
                         # self.do_log(did,"PING-PONG (len=32)", MessageDirection.FromCloud + "(ping)")
-                        mysocket.sendmydata(data)  # forward data to client
+                        mysocket.send_data_to_client(data)  # forward data to client
         else:
             print("Wrong packet size %s %s " % (len(data), int.from_bytes(data[2:4], byteorder='big')))
             return 1
         return 0
 
+    def get_devices(self):
+        try:
+            if self.cursor.execute("SELECT did,name FROM devices"):
+                # Fetch all the rows in a list of lists.
+                results = self.cursor.fetchall()
+                return [[row[0], row[1]] for row in results]
+            else:
+                print("Error: device query error")
+        except Exception:
+            print("Error: unable to fetch devices")
 
-def send_pending_commands(connection):
-    if not connection.ddid:
-        # if there is no device id it doesn't make sense to send any commands
-        return
+        return []
 
-    queue_return = connection.Cloudi.get_commands(connection.ddid)
-    if queue_return["id"] >= 0:
-        print("---------Send message to client {}".format(connection.dname))
-        connection.commandcounter = queue_return["id"]
-        connection.Cloudi.mark_command_as_processed(connection.ddid, queue_return["id"])
-        cmd = queue_return
-        cmd["id"] = connection.commandcounter
-        connection.blocked_from_client_list.append(
-            cmd["id"])  # add to blocklist to not forward results from my cmds to the cloud
-        send_ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=1)
-        header = {'length': 0, 'unknown': 0x00000000,
-                  'device_id': connection.device_id,
-                  'ts': send_ts}
-        msg = {'data': {'value': cmd},
-               'header': {'value': header},
-               'checksum': 0}
-        connection.Cloudi.do_log(connection.ddid, cmd, MessageDirection.ToClient + "(cmd)")
-        print("Sendtime %s " % send_ts)
-        print("Localtime %s " % datetime.datetime.utcnow())
-        c = Message.build(msg, **connection.ctx)
-        print("%s : prepare command" % connection.dname)
-        print("%s : Value: %s" % (connection.dname, msg))
-        # print("< RAW: %s" % binascii.hexlify(c))
-        connection.sendmydata(c)
+    def expect_message(self, msgid, ev):
+        self.expected_messages[msgid] = ev
+
+
+# function static variable decorator,
+# thanks to https://stackoverflow.com/a/279586
+def static_vars(**kwargs):
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
+    return decorate
+
+
+@static_vars(commandcounter=0)
+def send_manual_command(method, params, connection):
+    cmdid = send_manual_command.commandcounter
+    send_manual_command.commandcounter += 1
+
+    print("---------Send message to client {} {}".format(connection.dname, connection.client_address))
+    cmd = {
+        "id": cmdid,
+        "method": '%s' % method,
+        "params": params,
+        "from": '4'
+    }
+
+    # add to blocklist to not forward results from my cmds to the cloud
+    connection.blocked_from_client_list.append(cmdid)
+
+    # build message
+    send_ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=1)
+    header = {'length': 0, 'unknown': 0x00000000,
+              'device_id': connection.device_id,
+              'ts': send_ts}
+    msg = {'data': {'value': cmd},
+           'header': {'value': header},
+           'checksum': 0}
+    connection.Cloudi.do_log(connection.ddid, cmd, MessageDirection.ToClient + "(cmd)")
+    print("Sendtime %s " % send_ts)
+    print("Localtime %s " % datetime.datetime.utcnow())
+    c = Message.build(msg, **connection.ctx)
+    print("%s : prepare command" % connection.dname)
+    print("%s : Value: %s" % (connection.dname, msg))
+
+    # print("< RAW: %s" % binascii.hexlify(c))
+
+    if connection.send_data_to_client_and_wait_for_result(c, cmdid):
+        return cmdid
+    else:
+        return None
 
 
 class SingleTCPHandler(socketserver.BaseRequestHandler):
@@ -424,11 +432,17 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         self.cloud_sock.sendall(data)
         return
 
-    def sendmydata(self, data):
+    def send_data_to_client(self, data):
         self.Cloudi.do_log_raw(self.ddid, binascii.hexlify(data), MessageDirection.ToClient)
         if self.request.fileno() < 0:
             return
         self.request.send(data)
+
+    def send_data_to_client_and_wait_for_result(self, data, msgid, timeout=5.0):
+        ev = threading.Event()
+        self.Cloudi.expect_message(msgid, ev)
+        self.send_data_to_client(data)
+        return ev.wait(timeout)
 
     def handle(self):
         thread_id = threading.get_ident()
@@ -457,8 +471,6 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 if s == self.cloud_sock:
                     self.on_read_cloud()
 
-            send_pending_commands(self)
-
         print("Close Connection")
         self.cloud_sock.close()
         self.request.close()
@@ -470,7 +482,10 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         print("{} via tcp wrote:".format(self.client_address[0]))
         # print("C> RAW: %s" % binascii.hexlify(data))
         if len(data) < 32:  # should never receive anything smaller than 32 byte
-            print("len < 32")
+            if len(data) == 0:
+                print("Cloud closed conenction")
+            else:
+                print("len < 32")
             self.cloud_sock.close()
             return
         else:
@@ -489,7 +504,10 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
         print("{} via tcp wrote:".format(self.client_address[0]))
         # print("> RAW: %s" % binascii.hexlify(data))
         if len(data) < 32:  # should never receive anything smaller than 32 byte
-            print("len < 32")
+            if len(data) == 0:
+                print("Client closed connection")
+            else:
+                print("len < 32")
             self.request.close()
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
@@ -551,18 +569,25 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
     ctx = ""
     device_id = ""
     dname = ""
-    commandcounter = 0
     connmode = "udp"
 
     blocked_from_client_list = []
     blocked_from_cloud_list = []
+    Cloudi = CloudClient()
+    Cloudi_lock = threading.Lock()
 
     def send_data_to_cloud(self, data):
         # TODO
         return
 
-    def sendmydata(self, data):
+    def send_data_to_client(self, data):
         self.socket.sendto(data, self.client_address)
+
+    def send_data_to_client_and_wait_for_result(self, data, msgid, timeout=5.0):
+        ev = threading.Event()
+        self.Cloudi.expect_message(msgid, ev)
+        self.send_data_to_client(data)
+        return ev.wait(timeout)
 
     def handle(self):
         # UDP is not connection oriented so the UDPServer will likely create instances
@@ -572,28 +597,26 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
         data = self.request[0].strip()
         self.socket = self.request[1]
 
-        # This creates the CloudClient only if it's not already there, reusing the
-        # existing CloudClient if self already set it up.
-        try:
-            self.Cloudi
-        except AttributeError:
-            self.Cloudi = CloudClient()
+        # keep one single instance of CloudClient for UDP connection
+        # and protect it from multi-threaded access
+        self.Cloudi_lock.acquire()
+        self.Cloudi = MyUDPHandler.Cloudi
 
         thread_id = threading.get_ident()
         print(" --------------- Thread-id: {} ({})".format(thread_id, self))
         print("{}:{} via udp wrote:".format(*self.client_address))
         # print("> RAW: %s" % binascii.hexlify(data))
-        if len(data) < 32:
+        if len(data) == 0:
+            print("Connection closed")
+        elif len(data) < 32:
             print("len < 32, discarding message")
-            return
         else:
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
                 self.Cloudi.process_data(self, data)
             else:
                 print("Unknown message: {}".format(data))
 
-        send_pending_commands(self)
-
+        self.Cloudi_lock.release()
         print(" --------------- Thread-id: %s closed" % thread_id)
 
 
@@ -615,6 +638,50 @@ class UDPSimpleServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
 
     def __init__(self, server_address, request_handler_class):
         socketserver.UDPServer.__init__(self, server_address, request_handler_class)
+
+
+http_app = bottle.Bottle()
+
+
+def enable_cors(fn):
+    def _enable_cors(*args, **kwargs):
+        # set CORS headers
+        bottle.response.headers['Access-Control-Allow-Origin'] = '*'
+        bottle.response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
+        bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
+        if bottle.request.method != 'OPTIONS':
+            # actual request; reply with the actual response
+            return fn(*args, **kwargs)
+
+    return _enable_cors
+
+
+@http_app.get('/devices')
+@enable_cors
+def get_devices():
+    return {"success": True, "devices": {did: [val[0], val[1] is not None] for did, val in devices.items()}}
+
+
+@http_app.post('/run_command')
+@enable_cors
+def run_command():
+    did = bottle.request.query.did
+    device = get_device(int(did))
+    if device:
+        device_connection = device[1]
+        if device_connection:
+            cmd = bottle.request.forms.get('cmd')
+            params = bottle.request.forms.get('params')
+            msg_id = send_manual_command(cmd, params, device_connection)
+            if msg_id is not None:
+                return {"success": True, "did": did, "cmd": cmd, "params": params, "id": msg_id}
+            else:
+                return {"success": False, "reason": "Failed sending command"}
+        else:
+            return {"success": False, "reason": "Device is not connected"}
+    else:
+        return {"success": False, "reason": "Unknown device"}
 
 
 def get_server_port(args):
@@ -643,7 +710,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "-sport", "--server-port",
         type=int, required=False,
-        help="Listen port for the server. Defaults to 80 for -mode TCP and 8053 for -mode UDP")
+        help="Listen port for the server. Defaults to 80 for -mode TCP and 8053 for -mode UDP.")
+    parser.add_argument(
+        "-cmdport", "--command-server-port",
+        type=int, required=False,
+        default=1121,
+        help="Listen port for the command server. Defaults to 1121.")
     args = parser.parse_args()
 
     http_redirect_address = args.http_redirect
@@ -653,6 +725,7 @@ if __name__ == "__main__":
         print("Enabled HTTP redirect to {}:{}".format(*http_redirect_address))
 
     server_port = get_server_port(args)
+    cmd_server_port = args.command_server_port
 
     if args.server_mode == ServerMode.TCP:
         server = TCPSimpleServer(("0.0.0.0", server_port), SingleTCPHandler)
@@ -660,13 +733,20 @@ if __name__ == "__main__":
         server = UDPSimpleServer(("0.0.0.0", server_port), MyUDPHandler)
 
     print("Launching {} server on port {}.".format(args.server_mode, server_port))
+    print("Launching command server on port {}.".format(cmd_server_port))
+
+    devices = {x[0]: [x[1], None] for x in CloudClient().get_devices()}
+
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.start()
 
     try:
-        print("Press CTRL-C to exit.\n")
-        server.serve_forever()
+        http_app.run(host="localhost", port=cmd_server_port);
     except KeyboardInterrupt:
         pass
 
+    http_app.close()
     server.shutdown()
+    server_thread.join()
 
     sys.exit(0)
