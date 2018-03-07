@@ -201,7 +201,11 @@ echo "$TIMEZONE" > ./etc/timezone
 cp ../sounds/*.wav ./opt/rockrobo/resources/sounds/prc/
 
 cd ..
-umount image
+while [ `umount image; echo $?` -ne 0 ]; do
+    echo "waiting for unmount..."
+    sleep 2
+done
+
 rm -rf image
 rm -rf sounds
 rm -f ssh_host_*
