@@ -39,7 +39,7 @@ blocked_methods_from_cloud_list = [
 status_methods = ['event.status', 'props', 'event.keepalive', 'event.remove', 'event.motion', 'event.heartbeat',
                   'event.click', '_sync.upLocalSceneRuningLog', '_async.store', '_otc.log', 'event.dry',
                   'event.no_motion', 'event.comfortable']
-cloud_server_address = ('ot.io.mi.com', 80)
+cloud_server_address = ('ott.io.mi.com', 80)
 http_redirect_address = None
 
 # dict of devices did -> [name, request_handler]
