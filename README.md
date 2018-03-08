@@ -2,7 +2,7 @@ Welcome to our repository for hacking and rooting of the Xiaomi Smart Home Devic
 
 We moved the documentation of the devices (photos, datasheets, uart logs, etc) to a new repo [dustcloud-documentation](https://github.com/dgiese/dustcloud-documentation)
 
-Please take a look at the Dustcloud Wiki: (https://github.com/dgiese/dustcloud/wiki)
+Please take a look at the Dustcloud Wiki, which also contains instructions on how to root and flash your device: (https://github.com/dgiese/dustcloud/wiki)
 
 # Talks
 
