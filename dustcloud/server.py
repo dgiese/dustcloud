@@ -29,7 +29,10 @@ import ast
 import argparse
 import enum
 import bottle
+import re
+import base64
 from miio.protocol import Message
+from build_map import build_map
 
 blocked_methods_from_cloud_list = [
     'miIO.ota',
@@ -44,6 +47,7 @@ http_redirect_address = None
 
 # dict of devices did -> [name, request_handler]
 devices = {}
+device_maps = {}
 
 
 def get_device(did):
@@ -51,6 +55,48 @@ def get_device(did):
         return devices[did]
     except KeyError:
         return None
+
+
+def process_runtime_map(data):
+    next = 32
+    did = re.search(b'did=(.+?)\\n', data[next:next+32])
+    if did:
+        next = next + did.span(1)[1] + 1
+        did = did.group(1).decode()
+    else:
+        print("Missing did in ROCKROBO_MAP__ message")
+        return
+
+    print("Got ROCKROBO_MAP__ message for did {}".format(did))
+
+    slam_size = re.search(b'SLAM=(.+?)\\n', data[next:next+32])
+    if slam_size:
+        next = next + slam_size.span(1)[1] + 1
+        slam_size = int(slam_size.group(1).decode())
+    else:
+        print("Missing slam_size in ROCKROBO_MAP__ message")
+        return
+
+    slam_content = data[next:next+slam_size].decode()
+    next = next+slam_size
+
+    map_size = re.search(b'MAP=(.+?)\\n', data[next:next + 32])
+    if map_size:
+        next = next + map_size.span(1)[1] + 1
+        map_size = int(map_size.group(1).decode())
+    else:
+        print("Missing map_size in ROCKROBO_MAP__ message")
+        return
+
+    map_content = data[next:next + map_size]
+
+    next = next + map_size
+    if next != len(data):
+        print("Parse error, discarding ROCKROBO_MAP__ message")
+        return
+
+    navmap = build_map(slam_content, map_content)
+    device_maps[int(did)] = navmap.getvalue()
 
 
 class ServerMode(enum.Enum):
@@ -87,7 +133,10 @@ class CloudClient:
         self.expected_messages = {}
 
     def __del__(self):
-        self.db.close()
+        try:
+            self.db.close()
+        except AttributeError:
+            pass
 
     def do_log(self, did, data, direction):
         data = "%s" % data
@@ -492,7 +541,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
                 packetlenght = int.from_bytes(data[2:4], byteorder='big')  # get packet lenght from header
                 while len(data) != packetlenght:  # packet longer than 32 byte
-                    data += self.cloud_sock.recv((packetlenght - 32))  # get the rest of the packet
+                    data += self.cloud_sock.recv((packetlenght - len(data)))  # get the rest of the packet
                 # print("= RAW: %s" % binascii.hexlify(data))
                 process_result = self.Cloudi.process_cloud_data(self, data)
                 if process_result == 1:
@@ -513,11 +562,23 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
             if data[0:2] == bytes.fromhex("2131"):  # Check for magic bytes
                 packetlenght = int.from_bytes(data[2:4], byteorder='big')  # get packet lenght from header
                 while len(data) != packetlenght:  # packet longer than 32 byte
-                    data += self.request.recv((packetlenght - 32))  # get the rest of the packet
+                    data += self.request.recv((packetlenght - len(data)))  # get the rest of the packet
                 # print("= RAW: %s" % binascii.hexlify(data))
                 process_result = self.Cloudi.process_data(self, data)
                 if process_result == 1:
                     self.request.close()
+            elif data[0:14] == b"ROCKROBO_MAP__":
+                packetlenght = int(data[15:31]) + 32
+                print("ROCKROBO_MAP__ message of size %d" % packetlenght)
+                while len(data) != packetlenght:
+                    read_data = self.request.recv(packetlenght - len(data))
+                    data += read_data
+                    if not read_data:
+                        break
+                if len(data) < packetlenght:
+                    print("ROCKROBO_MAP__ message not complete, discarding... (%d bytes missing)" % (packetlenght - len(data)))
+                else:
+                    process_runtime_map(data)
             else:
                 data += self.request.recv(64*1024)  # get the rest of the packet
                 print("Unknown message: {}".format(data))
@@ -680,6 +741,21 @@ def run_command():
                 return {"success": False, "reason": "Failed sending command"}
         else:
             return {"success": False, "reason": "Device is not connected"}
+    else:
+        return {"success": False, "reason": "Unknown device"}
+
+
+@http_app.post('/get_map')
+@enable_cors
+def run_command():
+    did = int(bottle.request.query.did)
+    device = get_device(did)
+    if device:
+        if did in device_maps:
+            navmap = device_maps[did]
+            return {"success": True, "imagedata": base64.b64encode(navmap).decode()}
+        else:
+            return {"success": False, "reason": "No map available"}
     else:
         return {"success": False, "reason": "Unknown device"}
 
