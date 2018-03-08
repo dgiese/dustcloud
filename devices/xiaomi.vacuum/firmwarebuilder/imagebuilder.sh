@@ -14,8 +14,6 @@
 
 #You should have received a copy of the GNU General Public License
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
-# Preparation:
-# place english.pkg and v11_<fw_version>.pkg (e.g. v11_003077.pkg) in this folder
 #
 
 if [[ $EUID -ne 0 ]]; then
@@ -40,9 +38,18 @@ if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
 	exit 1
 fi
 
+# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+readlink -f imagebuilder.sh 2> /dev/null
+if [[ $? -eq 0 ]]; then
+    echo "compatible readlink found!"
+else
+    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
+    exit 1
+fi
+
 if [[ $# -eq 0 ]]; then
 	cat << EOF
-usage: sudo ./firmwarebuilder -f v11_003094.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
+usage: sudo ./imagebuilder.sh -f v11_003094.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
 
 Options:
   -f, --firmware            path to firmware file
