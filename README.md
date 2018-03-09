@@ -30,7 +30,7 @@ https://github.com/rytilahti/python-miio
 Yes, there is a telegram channel. https://t.me/joinchat/Fl7Mm0iEV7Pgf9ngDyly-g
 
 If you do not want to use telegram, you can use the following channel: https://matrix.to/#/#dustcloud:matrix.org
-or our IRC-Channel `#dustcloudproject` on [Freenode](https://freenode.net/), which is bridged to tthe matrix channel. 
+or our IRC-Channel `#dustcloudproject` on [Freenode](https://freenode.net/), which is bridged to the matrix channel. 
 
 We are communicating announcements over all channels. 
 
