@@ -48,7 +48,7 @@ where xx.yy is the IP of your local instance (can technically run on a raspberry
 
 ## Install commands for Raspberry Pi
 
-1. See https://github.com/dgiese/dustcloud/blob/master/dustcloud/raspberrypi_installcommands.txt)
+1. See https://github.com/dgiese/dustcloud/wiki/Dustcloud-Raspberry-Pi-Installation)
 > Change IP 123.123.123.123 to your server IP
 2. Open http://#yourserveripaddress#:81/dustcloud/index.php
 3. Add DID and Enckey (from device.conf on vacuum)
