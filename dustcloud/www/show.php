@@ -209,6 +209,24 @@ function send_form(form_element) {
     var formData = new FormData(form_element);
     send_request(formData);
 }
+
+function get_map()
+{
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            map_result = JSON.parse(this.responseText);
+            if (map_result.success) {
+                map_data = map_result.imagedata
+                document.getElementById('map').src = "data:image/png;base64,"+map_data
+            }
+            setTimeout(get_map, 4000);
+        }
+    };
+    xmlhttp.open("POST", "<?php echo htmlentities(CMD_SERVER)."get_map?did=".$did; ?>", true);
+    xmlhttp.send();
+}
+get_map();
 </script>
 <form>
     <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="miIO.info"><br>
@@ -302,3 +320,4 @@ if (isset($_GET['cmd_res']))
 <?php
 }
 ?>
+<img id="map"></img>

@@ -3,11 +3,11 @@
 }
 
 .green {
-    background-color: lightgreen
+    background-color: lightgreen;
 }
 
 .red {
-    background-color: lightcoral
+    background-color: lightcoral;
 }
 
 .loader {
@@ -22,4 +22,10 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+#map {
+    background-color: blue;
+    max-width: 1024px;
+    max-height: 1024px
 }
