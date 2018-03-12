@@ -13,8 +13,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# TODO: change myCloudserverIP to your CloudserverIP (the IP where this script is running)
-
 import socketserver
 import sys
 import socket
@@ -33,6 +31,9 @@ import re
 import base64
 from miio.protocol import Message
 from build_map import build_map
+
+# TODO: change my_cloudserver_ip to your CloudserverIP (the IP where this script is running)
+my_cloudserver_ip = "10.0.0.1"
 
 blocked_methods_from_cloud_list = [
     'miIO.ota',
@@ -178,7 +179,6 @@ class CloudClient:
         :param data: message as bytes
         :return: 1 on failure, 0 on success
         """
-        my_cloudserver_i_p = "10.0.0.1"
         clienthello = bytes.fromhex("21310020ffffffffffffffff0000000000000000000000000000000000000000")
         timestamp = binascii.hexlify(struct.pack('>I', round(time.time()))).decode("utf-8")
         serverhello = bytes.fromhex("21310020ffffffffffffffff" + timestamp + "00000000000000000000000000000000")
@@ -270,8 +270,8 @@ class CloudClient:
                         self.do_log(did, m.data.value, MessageDirection.FromClient)
                         cmd = {
                             "id": packetid,
-                            "result": {"otc_list": [{"ip": my_cloudserver_i_p, "port": 80}],
-                                       "otc_test": {"list": [{"ip": my_cloudserver_i_p, "port": 8053}],
+                            "result": {"otc_list": [{"ip": my_cloudserver_ip, "port": 80}],
+                                       "otc_test": {"list": [{"ip": my_cloudserver_ip, "port": 8053}],
                                                     "interval": 1800, "firsttest": 769}}
                         }
                         if (mysocket.forward_to_cloud == 1) or (mysocket.full_cloud_forward == 1):
