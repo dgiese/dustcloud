@@ -26,11 +26,22 @@ import select
 import ast
 import argparse
 import enum
-import bottle
 import re
 import base64
 from miio.protocol import Message
-from build_map import build_map
+
+try:
+    import bottle
+    have_bottle = True
+except ImportError:
+    have_bottle = False
+
+try:
+    from build_map import build_map
+    have_build_map = True
+except ImportError as e:
+    have_build_map = False
+    print("WARNING: Failed to import build_map.py: {}".format(e))
 
 # TODO: change my_cloudserver_ip to your CloudserverIP (the IP where this script is running)
 my_cloudserver_ip = "10.0.0.1"
@@ -701,63 +712,63 @@ class UDPSimpleServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
         socketserver.UDPServer.__init__(self, server_address, request_handler_class)
 
 
-http_app = bottle.Bottle()
+def setup_command_server(enable_live_map):
+    http_app = bottle.Bottle()
 
+    def enable_cors(fn):
+        def _enable_cors(*args, **kwargs):
+            # set CORS headers
+            bottle.response.headers['Access-Control-Allow-Origin'] = '*'
+            bottle.response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
+            bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
-def enable_cors(fn):
-    def _enable_cors(*args, **kwargs):
-        # set CORS headers
-        bottle.response.headers['Access-Control-Allow-Origin'] = '*'
-        bottle.response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
-        bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+            if bottle.request.method != 'OPTIONS':
+                # actual request; reply with the actual response
+                return fn(*args, **kwargs)
 
-        if bottle.request.method != 'OPTIONS':
-            # actual request; reply with the actual response
-            return fn(*args, **kwargs)
+        return _enable_cors
 
-    return _enable_cors
+    @http_app.get('/devices')
+    @enable_cors
+    def get_devices():
+        return {"success": True, "devices": {did: [val[0], val[1] is not None] for did, val in devices.items()}}
 
-
-@http_app.get('/devices')
-@enable_cors
-def get_devices():
-    return {"success": True, "devices": {did: [val[0], val[1] is not None] for did, val in devices.items()}}
-
-
-@http_app.post('/run_command')
-@enable_cors
-def run_command():
-    did = bottle.request.query.did
-    device = get_device(int(did))
-    if device:
-        device_connection = device[1]
-        if device_connection:
-            cmd = bottle.request.forms.get('cmd')
-            params = bottle.request.forms.get('params')
-            msg_id = send_manual_command(cmd, params, device_connection)
-            if msg_id is not None:
-                return {"success": True, "did": did, "cmd": cmd, "params": params, "id": msg_id}
+    @http_app.post('/run_command')
+    @enable_cors
+    def run_command():
+        did = bottle.request.query.did
+        device = get_device(int(did))
+        if device:
+            device_connection = device[1]
+            if device_connection:
+                cmd = bottle.request.forms.get('cmd')
+                params = bottle.request.forms.get('params')
+                msg_id = send_manual_command(cmd, params, device_connection)
+                if msg_id is not None:
+                    return {"success": True, "did": did, "cmd": cmd, "params": params, "id": msg_id}
+                else:
+                    return {"success": False, "reason": "Failed sending command"}
             else:
-                return {"success": False, "reason": "Failed sending command"}
+                return {"success": False, "reason": "Device is not connected"}
         else:
-            return {"success": False, "reason": "Device is not connected"}
-    else:
-        return {"success": False, "reason": "Unknown device"}
+            return {"success": False, "reason": "Unknown device"}
 
+    if enable_live_map:
+        @http_app.post('/get_map')
+        @enable_cors
+        def run_command():
+            did = int(bottle.request.query.did)
+            device = get_device(did)
+            if device:
+                if did in device_maps:
+                    navmap = device_maps[did]
+                    return {"success": True, "imagedata": base64.b64encode(navmap).decode()}
+                else:
+                    return {"success": False, "reason": "No map available"}
+            else:
+                return {"success": False, "reason": "Unknown device"}
 
-@http_app.post('/get_map')
-@enable_cors
-def run_command():
-    did = int(bottle.request.query.did)
-    device = get_device(did)
-    if device:
-        if did in device_maps:
-            navmap = device_maps[did]
-            return {"success": True, "imagedata": base64.b64encode(navmap).decode()}
-        else:
-            return {"success": False, "reason": "No map available"}
-    else:
-        return {"success": False, "reason": "Unknown device"}
+    return http_app
 
 
 def get_server_port(args):
@@ -771,7 +782,10 @@ def get_server_port(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="""
+Proxy server for Xiaomi devices that sits between the device and the Xiaomi cloud.
+Acts like the cloud to let the device think it is connected properly.
+""")
     parser.add_argument(
         "-mode", "--server-mode",
         type=ServerMode, choices=list(ServerMode),
@@ -792,7 +806,22 @@ if __name__ == "__main__":
         type=int, required=False,
         default=1121,
         help="Listen port for the command server. Defaults to 1121.")
+    parser.add_argument(
+        "--enable-live-map",
+        required=False,
+        action='store_true',
+        help="Enable live cleaning map. Needs bottle and pillow installed: 'pip install bottle pillow'")
     args = parser.parse_args()
+
+    if not have_bottle:
+        print("""
+WARNING: Won't start command server, 'bottle' package is missing! Install with 'pip install bottle'.
+Dustcloud web UI won't be able to send commands.
+""")
+
+    enable_live_map = args.enable_live_map and have_build_map
+    if args.enable_live_map and not have_build_map:
+        print("WARNING: Enabling live map feature failed, build_map.py is missing!")
 
     http_redirect_address = args.http_redirect
     if http_redirect_address:
@@ -809,20 +838,31 @@ if __name__ == "__main__":
         server = UDPSimpleServer(("0.0.0.0", server_port), MyUDPHandler)
 
     print("Launching {} server on port {}.".format(args.server_mode, server_port))
-    print("Launching command server on port {}.".format(cmd_server_port))
 
     devices = {x[0]: [x[1], None] for x in CloudClient().get_devices()}
 
-    server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.start()
+    if have_bottle:
+        # run dustcloud proxy server in extra thread
+        # and the command server for dustcloud web UI on main thread
+        server_thread = threading.Thread(target=server.serve_forever)
+        server_thread.start()
 
-    try:
-        http_app.run(host="localhost", port=cmd_server_port);
-    except KeyboardInterrupt:
-        pass
+        print("Launching command server on port {}.".format(cmd_server_port))
 
-    http_app.close()
-    server.shutdown()
-    server_thread.join()
+        cmd_server = setup_command_server(enable_live_map)
+        try:
+            cmd_server.run(host="localhost", port=cmd_server_port)
+        except KeyboardInterrupt:
+            pass
+
+        cmd_server.close()
+        server.shutdown()
+        server_thread.join()
+    else:
+        # run dustcloud proxy server in main thread
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
 
     sys.exit(0)
