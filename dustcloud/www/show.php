@@ -125,6 +125,9 @@ header("Refresh: $refresh; URL=$refresh_url");
 </form>
 
 <hr />
+<img id="map"></img>
+<hr />
+
 <?php
     // Last client message
     $res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
@@ -320,4 +323,3 @@ if (isset($_GET['cmd_res']))
 <?php
 }
 ?>
-<img id="map"></img>
