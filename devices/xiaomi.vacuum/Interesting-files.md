@@ -21,3 +21,7 @@ current map (open it with irfanview)
 
 ### /mnt/data/rockrobo/rrlog/
 Logfiles, Maps, Cloudlogs
+
+
+### /mnt/data/rockrobo/apptimer.cfg
+Configured Timers (e.g. start cleaning)
