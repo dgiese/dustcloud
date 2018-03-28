@@ -230,7 +230,7 @@ class CloudClient:
                             forward_to_cloud = row[3]
                             full_cloud_forward = row[4]
                             # Now print fetched result
-                            print("ddid = %s, dname = %s, denckey = %s, full_cloud_forward = %d, forward_to_cloud = %d"
+                            print("ddid = %s, dname = %s, denckey = %s, forward_to_cloud = %d, full_cloud_forward = %d"
                                   % (ddid, dname, denckey, forward_to_cloud, full_cloud_forward))
                     else:
                         print("Error: unable to fetch data for did %s. Device unknown?" % did)
