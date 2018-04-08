@@ -16,38 +16,8 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-if [[ $EUID -ne 0 ]]; then
-    echo "You must be a root user" 2>&1
-    exit 1
-fi
-
-IS_MAC=false
-if [[ $OSTYPE == darwin* ]]; then
-    # Mac OSX
-    IS_MAC=true
-    echo "Running on a Mac, adjusting commands accordingly"
-fi
-
-if [ ! -f /usr/bin/ccrypt -a "$IS_MAC" = false ]; then
-    echo "Ccrypt not found! Please install it (e.g. by apt install ccrypt)"
-    exit 1
-fi
-
-if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
-    echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
-    exit 1
-fi
-
-# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
-readlink -f imagebuilder.sh 2> /dev/null
-if [[ $? -eq 0 ]]; then
-    echo "compatible readlink found!"
-else
-    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
-    exit 1
-fi
-
-if [[ $# -eq 0 ]]; then
+print_help()
+{
     cat << EOF
 usage: sudo ./imagebuilder.sh -f v11_003094.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
 
@@ -59,11 +29,16 @@ Options:
                             -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
+  -h, --help                prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
 
 Report bugs to: https://github.com/dgiese/dustcloud/issues
 EOF
+}
+
+if [[ $# -eq 0 ]]; then
+    print_help
     exit 0
 fi
 
@@ -103,11 +78,46 @@ case $key in
     DISABLE_XIAOMI=true
     shift
     ;;
+    -h|--help)
+    print_help
+    exit 0
+    ;;
     *)
     shift
     ;;
 esac
 done
+
+if [[ $EUID -ne 0 ]]; then
+    echo "You must be a root user" 2>&1
+    exit 1
+fi
+
+IS_MAC=false
+if [[ $OSTYPE == darwin* ]]; then
+    # Mac OSX
+    IS_MAC=true
+    echo "Running on a Mac, adjusting commands accordingly"
+fi
+
+if [ ! -f /usr/bin/ccrypt -a "$IS_MAC" = false ]; then
+    echo "Ccrypt not found! Please install it (e.g. by apt install ccrypt)"
+    exit 1
+fi
+
+if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
+    echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
+    exit 1
+fi
+
+# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+readlink -f imagebuilder.sh 2> /dev/null
+if [[ $? -eq 0 ]]; then
+    echo "compatible readlink found!"
+else
+    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
+    exit 1
+fi
 
 if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
     echo "No public keys selected!"
