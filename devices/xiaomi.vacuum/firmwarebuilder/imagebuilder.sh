@@ -16,39 +16,9 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-if [[ $EUID -ne 0 ]]; then
-	echo "You must be a root user" 2>&1
-	exit 1
-fi
-
-IS_MAC=false
-if [[ $OSTYPE == darwin* ]]; then
-	# Mac OSX
-	IS_MAC=true
-	echo "Running on a Mac, adjusting commands accordingly"
-fi
-
-if [ ! -f /usr/bin/ccrypt -a "$IS_MAC" = false ]; then
-    echo "Ccrypt not found! Please install it (e.g. by apt install ccrypt)"
-	exit 1
-fi
-
-if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
-    echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
-	exit 1
-fi
-
-# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
-readlink -f imagebuilder.sh 2> /dev/null
-if [[ $? -eq 0 ]]; then
-    echo "compatible readlink found!"
-else
-    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
-    exit 1
-fi
-
-if [[ $# -eq 0 ]]; then
-	cat << EOF
+print_help()
+{
+    cat << EOF
 usage: sudo ./imagebuilder.sh -f v11_003094.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
 
 Options:
@@ -59,12 +29,17 @@ Options:
                             -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
+  -h, --help                prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
 
 Report bugs to: https://github.com/dgiese/dustcloud/issues
 EOF
-	exit 0
+}
+
+if [[ $# -eq 0 ]]; then
+    print_help
+    exit 0
 fi
 
 PUBLIC_KEYS=()
@@ -103,11 +78,46 @@ case $key in
     DISABLE_XIAOMI=true
     shift
     ;;
+    -h|--help)
+    print_help
+    exit 0
+    ;;
     *)
     shift
     ;;
 esac
 done
+
+if [[ $EUID -ne 0 ]]; then
+    echo "You must be a root user" 2>&1
+    exit 1
+fi
+
+IS_MAC=false
+if [[ $OSTYPE == darwin* ]]; then
+    # Mac OSX
+    IS_MAC=true
+    echo "Running on a Mac, adjusting commands accordingly"
+fi
+
+if [ ! -f /usr/bin/ccrypt -a "$IS_MAC" = false ]; then
+    echo "Ccrypt not found! Please install it (e.g. by apt install ccrypt)"
+    exit 1
+fi
+
+if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
+    echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
+    exit 1
+fi
+
+# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+readlink -f imagebuilder.sh 2> /dev/null
+if [[ $? -eq 0 ]]; then
+    echo "compatible readlink found!"
+else
+    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
+    exit 1
+fi
 
 if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
     echo "No public keys selected!"
@@ -120,8 +130,8 @@ PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
 
 if [[ ! -f "$FIRMWARE" ]]; then
-	echo "You need to specify an existing firmware file, e.g. v11_003094.pkg"
-	exit 1
+    echo "You need to specify an existing firmware file, e.g. v11_003094.pkg"
+    exit 1
 fi
 FIRMWARE=$(readlink -f "$FIRMWARE")
 BASENAME=$(basename $FIRMWARE)
@@ -129,7 +139,7 @@ FILENAME="${BASENAME%.*}"
 
 if [ ! -f "$SOUNDFILE" ]; then
     echo "File $SOUNDFILE not found!"
-	exit 1
+    exit 1
 fi
 SOUNDFILE=$(readlink -f "$SOUNDFILE")
 
@@ -152,17 +162,17 @@ ccrypt -d -K "$PASSWORD_FW" "$FIRMWARE"
 echo "unpack firmware"
 tar -xzf "$FIRMWARE"
 if [ ! -f disk.img ]; then
-	echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
-	exit 1
+    echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
+    exit 1
 fi
 mkdir image
 
 if [ "$IS_MAC" = true ]; then
-	#ext4fuse doesn't support write properly
-	#ext4fuse disk.img image -o force
-	fuse-ext2 disk.img image -o rw+
+    #ext4fuse doesn't support write properly
+    #ext4fuse disk.img image -o force
+    fuse-ext2 disk.img image -o rw+
 else
-	mount -o loop disk.img image
+    mount -o loop disk.img image
 fi
 cd image
 echo "patch ssh host keys"
@@ -181,8 +191,8 @@ mkdir ./root/.ssh
 chmod 700 ./root/.ssh
 
 if [ -f ./root/.ssh/authorized_keys ]; then
-	echo "removing obsolete authorized_keys from Xiaomi image"
-	rm ./root/.ssh/authorized_keys
+    echo "removing obsolete authorized_keys from Xiaomi image"
+    rm ./root/.ssh/authorized_keys
 fi
 
 for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
@@ -191,13 +201,13 @@ done
 chmod 600 ./root/.ssh/authorized_keys
 
 if [ "$DISABLE_XIAOMI" = true ]; then
-	echo "reconfiguring network traffic to xiaomi"
-	# comment out this section if you do not want do disable the xiaomi cloud
-	# or redirect it
-	echo "0.0.0.0       awsbj0-files.fds.api.xiaomi.com" >> ./etc/hosts
-	echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
-	#echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
-	#echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
+    echo "reconfiguring network traffic to xiaomi"
+    # comment out this section if you do not want do disable the xiaomi cloud
+    # or redirect it
+    echo "0.0.0.0       awsbj0-files.fds.api.xiaomi.com" >> ./etc/hosts
+    echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
+    #echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
+    #echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
 fi
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
@@ -220,8 +230,8 @@ echo "pack new firmware"
 PATCHED="${FILENAME}_patched.pkg"
 tar -czf "$PATCHED" disk.img
 if [ ! -f "$PATCHED" ]; then
-	echo "File $PATCHED not found! Packing the firmware was unsuccessful."
-	exit 1
+    echo "File $PATCHED not found! Packing the firmware was unsuccessful."
+    exit 1
 fi
 rm -f disk.img
 echo "encrypt firmware"
@@ -230,9 +240,9 @@ mkdir -p output
 mv "${PATCHED}.cpt" "output/${BASENAME}"
 
 if [ "$IS_MAC" = true ]; then
-	md5 "output/${BASENAME}" > "output/${FILENAME}.md5"
+    md5 "output/${BASENAME}" > "output/${FILENAME}.md5"
 else
-	md5sum "output/${BASENAME}" > "output/${FILENAME}.md5"
+    md5sum "output/${BASENAME}" > "output/${FILENAME}.md5"
 fi
 
 cat "output/${FILENAME}.md5"
