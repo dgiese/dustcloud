@@ -12,6 +12,8 @@ return [
         'username' => 'user123',
         'password' => '',
     ],
-    'cmd.server' => 'http://localhost:1121/'
+    'cmd.server' => 'http://localhost:1121/',
+    "twig.cache" => "cache",
+    "twig.templates" => "templates",
     'debug' => true,
 ];

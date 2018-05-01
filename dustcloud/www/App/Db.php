@@ -6,7 +6,7 @@ namespace App;
     /**
      * @var \MySQLi
      */
-    private $connection = null;
+    private static $connection = null;
 
     public function __construct ($host, $user, $password, $dbname) {
         self::$connection = new \MySQLi($host, $user, $password, $dbname);

@@ -34,8 +34,22 @@ class App {
 
     public static function db () {
         if (self::getInstance()->db === null) {
-            self::getInstance()->db = new DB(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+            $conf = App::config("mysql");
+            self::getInstance()->db = new Db($conf["host"], $conf["username"], $conf["password"], $conf["database"]);
         }
         return self::getInstance()->db->getInstance();
+    }
+    
+    public static function renderTemplate ($file, $data = [], $stopExecution = true) {
+        $loader = new Twig_Loader_Filesystem(APP_ROOT . DIRECTORY_SEPARATOR . App::config("twig.templates"));
+        $twig = new Twig_Environment($loader, array(
+            'cache' => APP_ROOT . DIRECTORY_SEPARATOR . App::config("twig.cache"),
+        ));
+
+        echo $twig->render($file, $data);
+        
+        if ($stopExecution) {
+            exit;
+        }
     }
 }
