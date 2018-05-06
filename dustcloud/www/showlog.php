@@ -49,7 +49,7 @@ while ($row = $res->fetch_assoc())
 {
     echo "<a href=\"./show.php?did=" . $row['did'] . "\">" . $row['name'] . "(did:" . $row['did'] . ")</a><br>";
 
-    printLastContact($row['last_contact']);
+    Utils::printLastContact($row['last_contact']);
 }
 echo "<a href=\"".$url1."&longlog=1\">2000 messages without refresh</a><br>";
 echo "<hr>";
@@ -68,7 +68,7 @@ while ($row = $res->fetch_assoc())
     {
         if ($key == "data")
         {
-            $value = prettyPrint($value);
+            $value = Utils::prettyPrint($value);
             echo "$key : <pre>$value</pre>";
         }
         else

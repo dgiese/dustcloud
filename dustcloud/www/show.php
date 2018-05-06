@@ -99,7 +99,7 @@ if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
         <a href="showlog.php?did=<?php echo $did ?>">(recv msg log)</a>
         <a href="showcmdlog.php?did=<?php echo $did ?>">(sent cmd log)</a>
         <br />
-        <?php printLastContact($last_contact) ?>
+        <?php Utils::printLastContact($last_contact) ?>
         <div class="device_info">
 <?php
         foreach ($row as $key => $value)

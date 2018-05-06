@@ -19,6 +19,7 @@ header("Refresh: 30; URL=$url1"); ### Be carefull, may contain some security ris
 require __DIR__ . '/bootstrap.php';
 
 use App\App;
+use App\Utils;
 
 if (!isset($_GET['did']))
 {
@@ -43,7 +44,7 @@ while ($row = $res->fetch_assoc())
 {
     echo "<a href=\"./show.php?did=" . $row['did'] . "\">" . $row['name'] . "(did:" . $row['did'] . ")</a><br>";
 
-    printLastContact($row['last_contact']);
+    Utils::printLastContact($row['last_contact']);
 }
 echo "<hr>";
 $res = $mysqli->query("SELECT * FROM cmdqueue WHERE did = '".$did."' ORDER BY CMDID DESC LIMIT 100");
