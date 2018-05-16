@@ -6,9 +6,7 @@ sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' /opt/rockrobo/rrlog/rrlogmt.conf
 
 #UPLOAD_METHOD=0
 sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' /opt/rockrobo/rrlog/rrlog.conf
-
-#UPLOAD_METHOD=0
-sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' /opt/rockrobo/rrlog/rrlog.conf
+sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' /opt/rockrobo/rrlog/rrlogmt.conf
 
 # Add exit 0
 sed -i '/^\#!\/bin\/bash$/a exit 0' /opt/rockrobo/rrlog/misc.sh
