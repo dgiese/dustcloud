@@ -13,11 +13,11 @@
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 
-require_once 'config.php';
-$mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-if ($mysqli->connect_errno) {
-    echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-}
+require __DIR__ . '/bootstrap.php';
+
+use App\App;
+
+$mysqli = App::db();
 
 $did= isset($_POST['did']) ? $_POST['did'] : '';
 $enckey= isset($_POST['enckey']) ? $_POST['enckey'] : '';
