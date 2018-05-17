@@ -1,22 +1,17 @@
 <?php
 # Author: Dennis Giese [dustcloud@1338-1.org]
 # Copyright 2017 by Dennis Giese
-
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
-
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
-
 require __DIR__ . '/bootstrap.php';
-
 use App\App;
 use App\Utils;
-
 // Header configuration
 $refresh_seconds = isset($_GET['refresh']) ? $_GET['refresh'] : 10;
 if (3 == $refresh_seconds)
@@ -27,18 +22,12 @@ else
 {
     $refresh = 10;
 }
-
 // Build the refresh query url (removing any temporary params like cmd_res)
 $query = $_GET;
 unset($query['cmd_res']);
 unset($query['cmd_res_detail']);
 $new_query = http_build_query($query);
 $refresh_url = $_SERVER['PHP_SELF']."?".$new_query;
-
-header("Refresh: $refresh; URL=$refresh_url");
-
-// Style sheets
-Utils::includeStyleSheet();
 
 // Device ID
 if (!isset($_GET['did']))
@@ -53,10 +42,8 @@ else
     }
     $did = $_GET['did'];
 }
-
 // DB connection
 $db = App::db();
-
 // Commands and settings
 $cmd = isset($_POST['cmd']) ? $_POST['cmd'] : '';
 $params = isset($_POST['params']) ? $_POST['params'] : '';
@@ -79,18 +66,27 @@ if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
     $db->insert($sql);
 }
 ?>
-
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+    "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Dustcloud</title>
+    <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="scripts.js"></script>
+    <?php Utils::includeStyleSheet(); ?>
+  </head>
+  <body>
+<span id="settings" did="<?php echo $did; ?>"></span>
 <!-- Actual page content -->
 <a href="index.php">Index</a><br>
 <?php
     // Device settings
     $res = $db->query("SELECT * FROM devices WHERE did = '".$db->real_escape_string($did)."'");
-
     $res->data_seek(0);
     while ($row = $res->fetch_assoc())
     {
         $model= $row['model'];
-
         $name = $row['name'];
         $did = $row['did'];
         $last_contact = $row['last_contact']; ?>
@@ -99,7 +95,7 @@ if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
         <a href="showlog.php?did=<?php echo $did ?>">(recv msg log)</a>
         <a href="showcmdlog.php?did=<?php echo $did ?>">(sent cmd log)</a>
         <br />
-        <?php Utils::printLastContact($last_contact) ?>
+        <span id="last_contact"></span>
         <div class="device_info">
 <?php
         foreach ($row as $key => $value)
@@ -154,7 +150,6 @@ function on_request_state_change() {
             // request is starting, show loader
             document.getElementById("loader").style.display = 'block';
         }
-
         if (this.readyState == 4) {
             // request is done, hide loader and process result
             document.getElementById("loader").style.display = 'none';
@@ -189,25 +184,21 @@ function on_request_state_change() {
             window.location.search = searchParams.toString();
         }
 }
-
 function send_request(formData) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = on_request_state_change;
     xmlhttp.open("POST", "<?php echo htmlentities(App::config("cmd.server"))."run_command?did=".$did; ?>", true);
     xmlhttp.send(formData);
 }
-
 function send_command(cmd) {
     var formData = new FormData();
     formData.set("cmd", cmd);
     send_request(formData);
 }
-
 function send_form(form_element) {
     var formData = new FormData(form_element);
     send_request(formData);
 }
-
 function get_map()
 {
     var xmlhttp = new XMLHttpRequest();
@@ -260,7 +251,6 @@ get_map();
     // OTA command
     $options = "";
     $res = $db->query("SELECT * FROM ota WHERE model = '".$db->real_escape_string($model)."'");
-
     $res->data_seek(0);
     while ($row = $res->fetch_assoc())
     {
@@ -288,7 +278,6 @@ if (isset($_GET['cmd_res']))
     $command_result_text = "Unknown result";
     $command_result_text_detail = "";
     $command_result_class = "";
-
     if ($command_result == $cmd_res_request_failure) {
         $command_result_text = "Request to command server failed. Check your configuration!";
         $command_result_class = "red";
@@ -304,7 +293,6 @@ if (isset($_GET['cmd_res']))
     else {
         $command_result_text = $command_result;
     }
-
     if (isset($_GET['cmd_res_detail']))
     {
         $command_result_text_detail = "(".$_GET['cmd_res_detail'].")";
@@ -318,3 +306,5 @@ if (isset($_GET['cmd_res']))
 <?php
 }
 ?>
+  </body>
+</html>
