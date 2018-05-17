@@ -13,6 +13,7 @@
 #GNU General Public License for more details.
 
 require_once 'config.php';
+require_once 'fns.php';
 
 // Header configuration
 $refresh_seconds = isset($_GET['refresh']) ? $_GET['refresh'] : 10;
@@ -32,15 +33,37 @@ unset($query['cmd_res_detail']);
 $new_query = http_build_query($query);
 $refresh_url = $_SERVER['PHP_SELF']."?".$new_query;
 
-header("Refresh: $refresh; URL=$refresh_url");
+#header("Refresh: $refresh; URL=$refresh_url");
+
+// Device ID
+if (!isset($_GET['did']))
+{
+    die('no did set');
+}
+else
+{
+    if (false === filter_var($_GET['did'], FILTER_VALIDATE_INT))
+    {
+        die('You must enter a valid integer for did!');
+    }
+    $did = $_GET['did'];
+}
 ?>
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+    "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Dustcloud</title>
+    <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="scripts.js"></script>
+    <?php includeStyleSheet(); ?>
+  </head>
+  <body>
+   <span id="settings" did="<?php echo $did; ?>"></span>
 
 <?php
-    // Style sheets
-    require_once 'fns.php';
-    includeStyleSheet();
-
     // Device ID
     if (!isset($_GET['did']))
     {
@@ -104,7 +127,7 @@ header("Refresh: $refresh; URL=$refresh_url");
         <a href="showlog.php?did=<?php echo $did ?>">(recv msg log)</a>
         <a href="showcmdlog.php?did=<?php echo $did ?>">(sent cmd log)</a>
         <br />
-        <?php printLastContact($last_contact) ?>
+        <span did="ja im span" id="last_contact"></span>
         <div class="device_info">
 <?php
         foreach ($row as $key => $value)
@@ -323,3 +346,6 @@ if (isset($_GET['cmd_res']))
 <?php
 }
 ?>
+
+  </body>
+</html>
