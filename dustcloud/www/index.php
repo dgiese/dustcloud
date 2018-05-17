@@ -12,16 +12,14 @@
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 
-// Style sheets
-require_once 'fns.php';
-includeStyleSheet();
+require __DIR__ . '/bootstrap.php';
 
-require_once 'config.php';
-$mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-if ($mysqli->connect_errno)
-{
-    die("Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error);
-}
+use App\App;
+use App\Utils;
+
+Utils::includeStyleSheet();
+
+$mysqli = App::db();
 echo "<a href=\"newdevice.php\">Create new device</a><br><br>";
 $res = $mysqli->query("SELECT did,name,model,mac,fw,last_contact FROM devices ORDER BY model, id ASC");
 
