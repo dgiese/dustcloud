@@ -14,12 +14,12 @@ We had a talk at Recon BRX 2018, the recording should be published in the next f
 
 The Recon presentation can be found [here](https://github.com/dgiese/dustcloud/raw/master/presentations/Recon-BRX2018/recon_brx_2018-final-split.pdf)
 
-# Recommended ressources / links
+# Recommended resources / links
 
 Flole App: alternative way to control the vacuum robot, instead of Xiaomi's Mi Home App. Is able to control and root your vacuum cleaner. Enables the use of various speech packages.
 https://xiaomi.flole.de/
 
-Roboter-Forum.com: German speaking forum with a lot of information about all sorts of robots. Contains special subforums for Xiaomi rooting. Primary ressource for beginners.
+Roboter-Forum.com: German speaking forum with a lot of information about all sorts of robots. Contains special subforums for Xiaomi rooting. Primary resource for beginners.
 [http://www.roboter-forum.com/](http://www.roboter-forum.com/showthread.php?25097-Root-Zugriff-auf-Xiaomi-Mi-Vacuum-Robot)
 
 Python-miio: Python library & console tool for controlling Xiaomi smart appliances. 

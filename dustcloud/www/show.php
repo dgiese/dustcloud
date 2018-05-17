@@ -9,9 +9,11 @@
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
+
 require __DIR__ . '/bootstrap.php';
 use App\App;
 use App\Utils;
+
 // Header configuration
 $refresh_seconds = isset($_GET['refresh']) ? $_GET['refresh'] : 10;
 if (3 == $refresh_seconds)
@@ -28,6 +30,7 @@ unset($query['cmd_res']);
 unset($query['cmd_res_detail']);
 $new_query = http_build_query($query);
 $refresh_url = $_SERVER['PHP_SELF']."?".$new_query;
+
 
 // Device ID
 if (!isset($_GET['did']))
@@ -95,7 +98,9 @@ if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
         <a href="showlog.php?did=<?php echo $did ?>">(recv msg log)</a>
         <a href="showcmdlog.php?did=<?php echo $did ?>">(sent cmd log)</a>
         <br />
+
         <span id="last_contact"></span>
+
         <div class="device_info">
 <?php
         foreach ($row as $key => $value)
