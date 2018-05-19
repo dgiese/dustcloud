@@ -29,6 +29,7 @@ import enum
 import re
 import base64
 from miio.protocol import Message
+import json
 
 try:
     import bottle
@@ -742,7 +743,10 @@ def setup_command_server(enable_live_map):
             device_connection = device[1]
             if device_connection:
                 cmd = bottle.request.forms.get('cmd')
-                params = bottle.request.forms.get('params')
+                try:
+                    params = json.loads(bottle.request.forms.get('params'))
+                except TypeError:
+                    return {"success": False, "reason": "Failed to parse parameters"}
                 msg_id = send_manual_command(cmd, params, device_connection)
                 if msg_id is not None:
                     return {"success": True, "did": did, "cmd": cmd, "params": params, "id": msg_id}
