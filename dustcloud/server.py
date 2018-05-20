@@ -743,8 +743,12 @@ def setup_command_server(enable_live_map):
             device_connection = device[1]
             if device_connection:
                 cmd = bottle.request.forms.get('cmd')
+                paramsString = bottle.request.forms.get('params')
                 try:
-                    params = json.loads(bottle.request.forms.get('params'))
+                    if paramsString is None:
+                        params = ""
+                    else:
+                        params = json.loads(paramsString)
                 except TypeError:
                     return {"success": False, "reason": "Failed to parse parameters"}
                 msg_id = send_manual_command(cmd, params, device_connection)
