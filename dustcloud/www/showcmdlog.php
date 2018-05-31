@@ -16,8 +16,10 @@ $url1=$_SERVER['REQUEST_URI'];
 header("Refresh: 30; URL=$url1"); ### Be carefull, may contain some security risk
 
 // Style sheets
-require_once 'fns.php';
-includeStyleSheet();
+require __DIR__ . '/bootstrap.php';
+
+use App\App;
+use App\Utils;
 
 if (!isset($_GET['did']))
 {
@@ -32,12 +34,8 @@ else
     $did = $_GET['did'];
 }
 
-require_once 'config.php';
-$mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-if ($mysqli->connect_errno)
-{
-    echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-}
+$mysqli = App::db();
+
 echo "<a href=\"index.php\">Index</a><br>";
 $res = $mysqli->query("SELECT * FROM devices WHERE did = '".$did."'");
 
@@ -45,8 +43,8 @@ $res->data_seek(0);
 while ($row = $res->fetch_assoc())
 {
     echo "<a href=\"./show.php?did=" . $row['did'] . "\">" . $row['name'] . "(did:" . $row['did'] . ")</a><br>";
-    
-    printLastContact($row['last_contact']);
+
+    Utils::printLastContact($row['last_contact']);
 }
 echo "<hr>";
 $res = $mysqli->query("SELECT * FROM cmdqueue WHERE did = '".$did."' ORDER BY CMDID DESC LIMIT 100");

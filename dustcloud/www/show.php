@@ -1,19 +1,18 @@
 <?php
 # Author: Dennis Giese [dustcloud@1338-1.org]
 # Copyright 2017 by Dennis Giese
-
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
-
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 
-require_once 'config.php';
-require_once 'fns.php';
+require __DIR__ . '/bootstrap.php';
+use App\App;
+use App\Utils;
 
 // Header configuration
 $refresh_seconds = isset($_GET['refresh']) ? $_GET['refresh'] : 10;
@@ -25,7 +24,6 @@ else
 {
     $refresh = 10;
 }
-
 // Build the refresh query url (removing any temporary params like cmd_res)
 $query = $_GET;
 unset($query['cmd_res']);
@@ -33,7 +31,6 @@ unset($query['cmd_res_detail']);
 $new_query = http_build_query($query);
 $refresh_url = $_SERVER['PHP_SELF']."?".$new_query;
 
-#header("Refresh: $refresh; URL=$refresh_url");
 
 // Device ID
 if (!isset($_GET['did']))
@@ -48,8 +45,30 @@ else
     }
     $did = $_GET['did'];
 }
+// DB connection
+$db = App::db();
+// Commands and settings
+$cmd = isset($_POST['cmd']) ? $_POST['cmd'] : '';
+$params = isset($_POST['params']) ? $_POST['params'] : '';
+$forward_to_cloud = isset($_POST['forward_to_cloud']) ? $_POST['forward_to_cloud'] : '';
+$full_cloud_forward = isset($_POST['full_cloud_forward']) ? $_POST['full_cloud_forward'] : '';
+if ($cmd != "")
+{
+    # add new cmd to cmdquere with 30 seconds expiration
+    $sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$db->real_escape_string($did).",'".$db->real_escape_string($cmd)."','".$db->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 30 SECOND))";
+    $db->insert($sql);
+}
+if ($forward_to_cloud == "1" || $forward_to_cloud == "0")
+{
+    $sql = "UPDATE devices set forward_to_cloud = '".$db->real_escape_string($forward_to_cloud)."' WHERE did = '".$db->real_escape_string($did)."'";
+    $db->insert($sql);
+}
+if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
+{
+    $sql = "UPDATE devices set full_cloud_forward = '".$db->real_escape_string($full_cloud_forward)."' WHERE did = '".$db->real_escape_string($did)."'";
+    $db->insert($sql);
+}
 ?>
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
     "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="en">
@@ -58,67 +77,19 @@ else
     <title>Dustcloud</title>
     <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
     <script type="text/javascript" src="scripts.js"></script>
-    <?php includeStyleSheet(); ?>
+    <?php Utils::includeStyleSheet(); ?>
   </head>
   <body>
-   <span id="settings" did="<?php echo $did; ?>"></span>
-
-<?php
-    // Device ID
-    if (!isset($_GET['did']))
-    {
-        die('no did set');
-    }
-    else
-    {
-        if (false === filter_var($_GET['did'], FILTER_VALIDATE_INT))
-        {
-            die('You must enter a valid integer for did!');
-        }
-        $did = $_GET['did'];
-    }
-
-    // DB connection
-    $mysqli = new MySQLi(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($mysqli->connect_errno)
-    {
-        die('Failed to connect to MySQL: ('.$mysqli->connect_errno.') '.$mysqli->connect_error);
-    }
-
-    // Commands and settings
-    $cmd = isset($_POST['cmd']) ? $_POST['cmd'] : '';
-    $params = isset($_POST['params']) ? $_POST['params'] : '';
-    $forward_to_cloud = isset($_POST['forward_to_cloud']) ? $_POST['forward_to_cloud'] : '';
-    $full_cloud_forward = isset($_POST['full_cloud_forward']) ? $_POST['full_cloud_forward'] : '';
-    if ($cmd != "")
-    {
-        # add new cmd to cmdquere with 30 seconds expiration
-        $sql = "INSERT into cmdqueue(did,method,params,expire) VALUES(".$mysqli->real_escape_string($did).",'".$mysqli->real_escape_string($cmd)."','".$mysqli->real_escape_string($params)."',DATE_ADD(NOW(), INTERVAL 30 SECOND))";
-        doQueryAndReportFailure($mysqli, $sql);
-    }
-    if ($forward_to_cloud == "1" || $forward_to_cloud == "0")
-    {
-        $sql = "UPDATE devices set forward_to_cloud = '".$mysqli->real_escape_string($forward_to_cloud)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
-        doQueryAndReportFailure($mysqli, $sql);
-    }
-    if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
-    {
-        $sql = "UPDATE devices set full_cloud_forward = '".$mysqli->real_escape_string($full_cloud_forward)."' WHERE did = '".$mysqli->real_escape_string($did)."'";
-        doQueryAndReportFailure($mysqli, $sql);
-    }
-?>
-
+<span id="settings" did="<?php echo $did; ?>"></span>
 <!-- Actual page content -->
 <a href="index.php">Index</a><br>
 <?php
     // Device settings
-    $res = $mysqli->query("SELECT * FROM devices WHERE did = '".$mysqli->real_escape_string($did)."'");
-
+    $res = $db->query("SELECT * FROM devices WHERE did = '".$db->real_escape_string($did)."'");
     $res->data_seek(0);
     while ($row = $res->fetch_assoc())
     {
         $model= $row['model'];
-
         $name = $row['name'];
         $did = $row['did'];
         $last_contact = $row['last_contact']; ?>
@@ -127,7 +98,9 @@ else
         <a href="showlog.php?did=<?php echo $did ?>">(recv msg log)</a>
         <a href="showcmdlog.php?did=<?php echo $did ?>">(sent cmd log)</a>
         <br />
-        <span did="ja im span" id="last_contact"></span>
+
+        <span id="last_contact"></span>
+
         <div class="device_info">
 <?php
         foreach ($row as $key => $value)
@@ -153,7 +126,7 @@ else
 
 <?php
     // Last client message
-    $res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
+    $res = $db->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
     $res->data_seek(0);
     $row = $res->fetch_assoc();
     if ($row)
@@ -182,7 +155,6 @@ function on_request_state_change() {
             // request is starting, show loader
             document.getElementById("loader").style.display = 'block';
         }
-
         if (this.readyState == 4) {
             // request is done, hide loader and process result
             document.getElementById("loader").style.display = 'none';
@@ -198,7 +170,7 @@ function on_request_state_change() {
                         // command sent to device
                         searchParams.set('cmd_res','<?php echo $cmd_res_request_success; ?>')
                         searchParams.set('cmd_res_detail', cmd_res_detail)
-                    } 
+                    }
                     else {
                         // failed to send command to device
                         searchParams.set('cmd_res','<?php echo $cmd_res_command_failure; ?>')
@@ -217,25 +189,21 @@ function on_request_state_change() {
             window.location.search = searchParams.toString();
         }
 }
-
 function send_request(formData) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = on_request_state_change;
-    xmlhttp.open("POST", "<?php echo htmlentities(CMD_SERVER)."run_command?did=".$did; ?>", true);
+    xmlhttp.open("POST", "<?php echo htmlentities(App::config("cmd.server"))."run_command?did=".$did; ?>", true);
     xmlhttp.send(formData);
 }
-
 function send_command(cmd) {
     var formData = new FormData();
     formData.set("cmd", cmd);
     send_request(formData);
 }
-
 function send_form(form_element) {
     var formData = new FormData(form_element);
     send_request(formData);
 }
-
 function get_map()
 {
     var xmlhttp = new XMLHttpRequest();
@@ -249,46 +217,45 @@ function get_map()
             setTimeout(get_map, 4000);
         }
     };
-    xmlhttp.open("POST", "<?php echo htmlentities(CMD_SERVER)."get_map?did=".$did; ?>", true);
+    xmlhttp.open("POST", "<?php echo htmlentities(App::config("cmd.server"))."get_map?did=".$did; ?>", true);
     xmlhttp.send();
 }
 get_map();
 </script>
 <form>
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="miIO.info"><br>
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="miIO.info"><br>
     VACUUM:
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_status">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="app_start">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="app_stop">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="app_pause">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="app_spot">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="app_charge">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="app_rc_start">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="app_rc_end">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="find_me">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_status">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="app_start">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="app_stop">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="app_pause">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="app_spot">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="app_charge">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="app_rc_start">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="app_rc_end">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="find_me">
     <br>
     VACUUM:
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_log_upload_status">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_consumable">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_map_v1">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_clean_summary">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_timer">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_dnd_timer">
-    <input type="button" onClick="javascript:send_command(this.value);" name="cmd" value="get_custom_mode">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_log_upload_status">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_consumable">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_map_v1">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_clean_summary">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_timer">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_dnd_timer">
+    <input type="button" onClick="send_command(this.value);" name="cmd" value="get_custom_mode">
     <br>
 </form>
 <!-- Custom commands -->
 <form>
     Method: <input type="input" name="cmd" value="get_status">
     Params: <input type="input" name="params" size="100" value="">
-    <input type="button" onClick="javascript:send_form(this.parentNode);" value="send command">
+    <input type="button" onClick="send_form(this.parentNode);" value="send command">
 </form>
 
 <?php
     // OTA command
     $options = "";
-    $res = $mysqli->query("SELECT * FROM ota WHERE model = '".$mysqli->real_escape_string($model)."'");
-
+    $res = $db->query("SELECT * FROM ota WHERE model = '".$db->real_escape_string($model)."'");
     $res->data_seek(0);
     while ($row = $res->fetch_assoc())
     {
@@ -299,24 +266,23 @@ get_map();
 
 <form>
     Method: miIO.ota <input type="hidden" name="cmd" value="miIO.ota">
-    Params: 
+    Params:
     <select name="params">
         <option value="">Select...</option>
         <?php echo $options;?>
     </select>
-    <input type="button" onClick="javascript:send_form(this.parentNode);" value="send command">
+    <input type="button" onClick="send_form(this.parentNode);" value="send command">
 </form>
 
 <hr />
 <div id="loader" class="loader" style="display:none"></div>
-<?php 
+<?php
 if (isset($_GET['cmd_res']))
 {
     $command_result = $_GET['cmd_res'];
     $command_result_text = "Unknown result";
     $command_result_text_detail = "";
     $command_result_class = "";
-
     if ($command_result == $cmd_res_request_failure) {
         $command_result_text = "Request to command server failed. Check your configuration!";
         $command_result_class = "red";
@@ -332,20 +298,18 @@ if (isset($_GET['cmd_res']))
     else {
         $command_result_text = $command_result;
     }
-
     if (isset($_GET['cmd_res_detail']))
     {
         $command_result_text_detail = "(".$_GET['cmd_res_detail'].")";
     }
 ?>
     <div class="command_result ">
-        Result for last command: 
+        Result for last command:
         <span class="result_value <?php echo $command_result_class; ?>"><?php echo $command_result_text; ?></span>
         <span class="result_value_detail"><?php echo $command_result_text_detail; ?></span>
     </div>
 <?php
 }
 ?>
-
   </body>
 </html>
