@@ -1,7 +1,7 @@
 function update_last_contact()
 {
   $.ajax({
-    url: "/api.php",
+    url: "./api.php",
     data: {
       cmd: 'last_contact',
       did: $("#settings").attr('did')
