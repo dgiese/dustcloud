@@ -19,7 +19,7 @@
 print_help()
 {
     cat << EOF
-usage: sudo ./imagebuilder.sh -f v11_003094.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
+usage: sudo ./imagebuilder.sh -f v11_003194.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
 
 Options:
   -f, --firmware            path to firmware file
@@ -29,6 +29,7 @@ Options:
                             -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
+  --adbd                    replace xiaomis custom adbd with generic adbd version
   -h, --help                prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
@@ -43,7 +44,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 PUBLIC_KEYS=()
-
+PATCH_ADBD=false
 DISABLE_XIAOMI=false
 while [[ $# -gt 0 ]]; do
 key="$1"
@@ -76,6 +77,10 @@ case $key in
     ;;
     --disable-xiaomi)
     DISABLE_XIAOMI=true
+    shift
+    ;;
+    --adbd)
+    PATCH_ADBD=true
     shift
     ;;
     -h|--help)
@@ -130,7 +135,7 @@ PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
 
 if [[ ! -f "$FIRMWARE" ]]; then
-    echo "You need to specify an existing firmware file, e.g. v11_003094.pkg"
+    echo "You need to specify an existing firmware file, e.g. v11_003194.pkg"
     exit 1
 fi
 FIRMWARE=$(readlink -f "$FIRMWARE")
@@ -142,6 +147,13 @@ if [ ! -f "$SOUNDFILE" ]; then
     exit 1
 fi
 SOUNDFILE=$(readlink -f "$SOUNDFILE")
+
+if [ "$PATCH_ADBD" = true ]; then
+    if [ ! -f ./adbd ]; then
+        echo "File adbd not found, cannot replace adbd in image!"
+        exit 1
+    fi
+fi
 
 # Generate SSH Host Keys
 echo "Generate SSH Host Keys"
@@ -208,6 +220,12 @@ if [ "$DISABLE_XIAOMI" = true ]; then
     echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
     #echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
     #echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
+fi
+
+if [ "$PATCH_ADBD" = true ]; then
+    echo "replacing adbd"
+    cp ./usr/bin/adbd ./usr/bin/adbd.original
+    cp ./adbd ./usr/bin/adbd
 fi
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
