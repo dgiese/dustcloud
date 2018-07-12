@@ -30,6 +30,7 @@ Options:
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
   --adbd                    replace xiaomis custom adbd with generic adbd version
+  --disable-logs            disables most log files creations and log uploads on the vacuum
   -h, --help                prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
@@ -46,6 +47,7 @@ fi
 PUBLIC_KEYS=()
 PATCH_ADBD=false
 DISABLE_XIAOMI=false
+DISABLE_LOGS=false
 while [[ $# -gt 0 ]]; do
 key="$1"
 
@@ -77,6 +79,10 @@ case $key in
     ;;
     --disable-xiaomi)
     DISABLE_XIAOMI=true
+    shift
+    ;;
+    --disable-logs)
+    DISABLE_LOGS=true
     shift
     ;;
     --adbd)
@@ -226,6 +232,25 @@ if [ "$PATCH_ADBD" = true ]; then
     echo "replacing adbd"
     cp ./usr/bin/adbd ./usr/bin/adbd.original
     cp ./adbd ./usr/bin/adbd
+fi
+
+if [ "$DISABLE_LOGS" = true ]; then
+    # Set LOG_LEVEL=3
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' ./opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' ./opt/rockrobo/rrlog/rrlogmt.conf
+
+    #UPLOAD_METHOD=0
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlogmt.conf
+
+    # Add exit 0
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/misc.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/tar_extra_file.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/toprotation.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/topstop.sh
+
+    # Comment $IncludeConfig
+    sed -Ei 's/^(\$IncludeConfig)/#&/' ./etc/rsyslog.conf
 fi
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
