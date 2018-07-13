@@ -231,7 +231,7 @@ fi
 if [ "$PATCH_ADBD" = true ]; then
     echo "replacing adbd"
     cp ./usr/bin/adbd ./usr/bin/adbd.original
-    cp ./adbd ./usr/bin/adbd
+    cp ../adbd ./usr/bin/adbd
 fi
 
 if [ "$DISABLE_LOGS" = true ]; then
@@ -252,6 +252,12 @@ if [ "$DISABLE_LOGS" = true ]; then
     # Comment $IncludeConfig
     sed -Ei 's/^(\$IncludeConfig)/#&/' ./etc/rsyslog.conf
 fi
+
+
+###
+USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;`
+
+###
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
 echo "0.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
@@ -282,6 +288,7 @@ ccrypt -e -K "$PASSWORD_FW" "$PATCHED"
 mkdir -p output
 mv "${PATCHED}.cpt" "output/${BASENAME}"
 
+echo $USER_PASSWORD > "output/${FILENAME}.password"
 if [ "$IS_MAC" = true ]; then
     md5 "output/${BASENAME}" > "output/${FILENAME}.md5"
 else
