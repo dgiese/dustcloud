@@ -31,6 +31,7 @@ Options:
   --disable-xiaomi          disable xiaomi servers using hosts file
   --adbd                    replace xiaomis custom adbd with generic adbd version
   --disable-logs            disables most log files creations and log uploads on the vacuum
+  --ruby                    restores user ruby (can do sudo) and assigns a random password
   -h, --help                prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
@@ -45,6 +46,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 PUBLIC_KEYS=()
+RESTORE_RUBY=false
 PATCH_ADBD=false
 DISABLE_XIAOMI=false
 DISABLE_LOGS=false
@@ -89,6 +91,10 @@ case $key in
     PATCH_ADBD=true
     shift
     ;;
+    --ruby)
+    RESTORE_RUBY=true
+    shift
+    ;;    
     -h|--help)
     print_help
     exit 0
@@ -254,16 +260,24 @@ if [ "$DISABLE_LOGS" = true ]; then
 fi
 
 
-###
-USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;`
-cp ./etc/passwd- ./etc/passwd
-cp ./etc/group- ./etc/group-
-cp ./etc/shadow- ./etc/shadow
-#cp ./etc/gshadow- ./etc/gshadow
-#cp ./etc/subuid- ./etc/subuid
-#cp ./etc/subgid- ./etc/subgid
-echo "ruby:$USER_PASSWORD" | chpasswd -R .
-###
+if [ "$RESTORE_RUBY" = true ]; then
+    echo "Generate random password for user ruby"
+    USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;`
+    #original password (<=v3254) file has the following credentials:
+    #   root:rockrobo
+    #   ruby:rockrobo
+    echo "Restore old usertable to enable user ruby"
+    cp ./etc/passwd- ./etc/passwd
+    cp ./etc/group- ./etc/group-
+    cp ./etc/shadow- ./etc/shadow
+    #cp ./etc/gshadow- ./etc/gshadow
+    #cp ./etc/subuid- ./etc/subuid
+    #cp ./etc/subgid- ./etc/subgid
+    #if this fails, then the password is rockrobo for user ruby
+    echo "ruby:$USER_PASSWORD" | chpasswd -c SHA512 -R $PWD
+    echo $USER_PASSWORD > "output/${FILENAME}.password"
+    ###
+fi
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
 echo "0.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
@@ -294,7 +308,6 @@ ccrypt -e -K "$PASSWORD_FW" "$PATCHED"
 mkdir -p output
 mv "${PATCHED}.cpt" "output/${BASENAME}"
 
-echo $USER_PASSWORD > "output/${FILENAME}.password"
 if [ "$IS_MAC" = true ]; then
     md5 "output/${BASENAME}" > "output/${FILENAME}.md5"
 else
