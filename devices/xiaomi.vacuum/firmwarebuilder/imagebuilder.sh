@@ -256,7 +256,13 @@ fi
 
 ###
 USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;`
-
+cp ./etc/passwd- ./etc/passwd
+cp ./etc/group- ./etc/group-
+cp ./etc/shadow- ./etc/shadow
+#cp ./etc/gshadow- ./etc/gshadow
+#cp ./etc/subuid- ./etc/subuid
+#cp ./etc/subgid- ./etc/subgid
+echo "ruby:$USER_PASSWORD" | chpasswd -R .
 ###
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
