@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import binascii
 import socket
 import hashlib
 import json
@@ -105,7 +106,10 @@ def main():
     ip_address = args.address
     known_token = args.token
     firmware = args.firmware
-
+    
+    if len(known_token) == 16:
+        known_token = binascii.hexlify(known_token)
+        
     if not args.firmware:
         print('You should specify firmware file name to install')
         exit()
