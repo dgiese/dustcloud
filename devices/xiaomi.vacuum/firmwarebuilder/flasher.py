@@ -108,7 +108,7 @@ def main():
     firmware = args.firmware
     
     if len(known_token) == 16:
-        known_token = binascii.hexlify(bytes(known_token, encoding="utf8"))
+        known_token = str(binascii.hexlify(bytes(known_token, encoding="utf8")))
         
     if not args.firmware:
         print('You should specify firmware file name to install')
