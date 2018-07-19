@@ -19,7 +19,7 @@
 print_help()
 {
     cat << EOF
-usage: sudo ./imagebuilder.sh -f v11_003094.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
+usage: sudo ./imagebuilder.sh -f v11_003194.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
 
 Options:
   -f, --firmware            path to firmware file
@@ -29,6 +29,9 @@ Options:
                             -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
+  --adbd                    replace xiaomis custom adbd with generic adbd version
+  --disable-logs            disables most log files creations and log uploads on the vacuum
+  --ruby                    restores user ruby (can do sudo) and assigns a random password
   -h, --help                prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
@@ -43,8 +46,10 @@ if [[ $# -eq 0 ]]; then
 fi
 
 PUBLIC_KEYS=()
-
+RESTORE_RUBY=false
+PATCH_ADBD=false
 DISABLE_XIAOMI=false
+DISABLE_LOGS=false
 while [[ $# -gt 0 ]]; do
 key="$1"
 
@@ -78,6 +83,18 @@ case $key in
     DISABLE_XIAOMI=true
     shift
     ;;
+    --disable-logs)
+    DISABLE_LOGS=true
+    shift
+    ;;
+    --adbd)
+    PATCH_ADBD=true
+    shift
+    ;;
+    --ruby)
+    RESTORE_RUBY=true
+    shift
+    ;;    
     -h|--help)
     print_help
     exit 0
@@ -130,7 +147,7 @@ PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
 
 if [[ ! -f "$FIRMWARE" ]]; then
-    echo "You need to specify an existing firmware file, e.g. v11_003094.pkg"
+    echo "You need to specify an existing firmware file, e.g. v11_003194.pkg"
     exit 1
 fi
 FIRMWARE=$(readlink -f "$FIRMWARE")
@@ -142,6 +159,13 @@ if [ ! -f "$SOUNDFILE" ]; then
     exit 1
 fi
 SOUNDFILE=$(readlink -f "$SOUNDFILE")
+
+if [ "$PATCH_ADBD" = true ]; then
+    if [ ! -f ./adbd ]; then
+        echo "File adbd not found, cannot replace adbd in image!"
+        exit 1
+    fi
+fi
 
 # Generate SSH Host Keys
 echo "Generate SSH Host Keys"
@@ -208,6 +232,51 @@ if [ "$DISABLE_XIAOMI" = true ]; then
     echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
     #echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
     #echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
+fi
+
+if [ "$PATCH_ADBD" = true ]; then
+    echo "replacing adbd"
+    cp ./usr/bin/adbd ./usr/bin/adbd.original
+    cp ../adbd ./usr/bin/adbd
+fi
+
+if [ "$DISABLE_LOGS" = true ]; then
+    # Set LOG_LEVEL=3
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' ./opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' ./opt/rockrobo/rrlog/rrlogmt.conf
+
+    #UPLOAD_METHOD=0
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlogmt.conf
+
+    # Add exit 0
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/misc.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/tar_extra_file.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/toprotation.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/topstop.sh
+
+    # Comment $IncludeConfig
+    sed -Ei 's/^(\$IncludeConfig)/#&/' ./etc/rsyslog.conf
+fi
+
+
+if [ "$RESTORE_RUBY" = true ]; then
+    echo "Generate random password for user ruby"
+    USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;`
+    #original password (<=v3254) file has the following credentials:
+    #   root:rockrobo
+    #   ruby:rockrobo
+    echo "Restore old usertable to enable user ruby"
+    cp ./etc/passwd- ./etc/passwd
+    cp ./etc/group- ./etc/group-
+    cp ./etc/shadow- ./etc/shadow
+    #cp ./etc/gshadow- ./etc/gshadow
+    #cp ./etc/subuid- ./etc/subuid
+    #cp ./etc/subgid- ./etc/subgid
+    #if this fails, then the password is rockrobo for user ruby
+    echo "ruby:$USER_PASSWORD" | chpasswd -c SHA512 -R $PWD
+    echo $USER_PASSWORD > "output/${FILENAME}.password"
+    ###
 fi
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
