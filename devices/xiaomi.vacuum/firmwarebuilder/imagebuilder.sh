@@ -268,7 +268,7 @@ if [ "$RESTORE_RUBY" = true ]; then
     #   ruby:rockrobo
     echo "Restore old usertable to enable user ruby"
     cp ./etc/passwd- ./etc/passwd
-    cp ./etc/group- ./etc/group-
+    cp ./etc/group- ./etc/group
     cp ./etc/shadow- ./etc/shadow
     #cp ./etc/gshadow- ./etc/gshadow
     #cp ./etc/subuid- ./etc/subuid
