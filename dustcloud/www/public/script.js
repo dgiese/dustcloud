@@ -94,11 +94,11 @@ function initMapDrag(){
 
     });
     document.addEventListener('mouseup', function(event){
-        dragStarted = false;
         document.removeEventListener('mousemove', move)
-        if(startPos.x === offset.x && startPos.y === offset.y){
+        if(startPos.x === offset.x && startPos.y === offset.y && dragStarted === true){
             console.log('set marker');
         }
+        dragStarted = false;
         startPos.x = offset.x;
         startPos.y = offset.y;
         localStorage.mapPosX = offset.x;
