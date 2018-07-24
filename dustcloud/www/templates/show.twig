@@ -1,0 +1,53 @@
+{% extends '_layout.twig' %}
+{% block title %}Dustcloud &rsaquo; Device {{ device.did }}{% endblock %}
+{% block head %}
+    <script type="text/javascript">
+    var did = "{{ device.did }}";
+    document.addEventListener("DOMContentLoaded", function() {
+        //startLastContactAjax();
+        startMapAjax();
+        initMapDrag();
+        initControls();
+    });
+    </script>
+{% endblock %}
+{% block content %}
+<a class="button" href="index.php" title="Back">&#8592;</a>
+<h2>Device {{ device.name }} (did: {{ device.did }})</h2>
+Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
+<div class="toggle">
+    <input type="checkbox" id="toggle_details"><label for="toggle_details"><h3>Details</h3></label>
+    <div class="content">
+        <table>
+            {% for key,value in device %}
+                {% if value and key != 'id' %}
+                    <tr><th>{{ key }}</th><td>{{ value }}</td></tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+</div>
+<div class="toggle">
+    <input type="checkbox" id="toggle_map"><label for="toggle_map"><h3>Map</h3></label>
+    <div class="content">
+        <div class="mapwrapper">
+            <img class="map">
+        </div>
+    </div>
+</div>
+<div class="toggle">
+    <input type="checkbox" id="toggle_controls" checked="checked"><label for="toggle_controls"><h3>Controls</h3></label>
+    <div class="content controls">
+        <select name="cmd">
+            <option value="get_status">get status</option>
+            <option value="get_consumable">get consumables</option>
+            <option value="get_clean_summary">get clean summary</option>
+            <option value="get_timer">get timers</option>
+        </select>
+        <button>Go</button>
+        <div id="loader" class="loader" style="visibility: hidden"></div>
+        <pre>{{ status.data }}</pre>
+        <div class="result"></div>
+    </div>
+</div>
+{% endblock %}

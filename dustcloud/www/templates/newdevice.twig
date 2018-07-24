@@ -1,0 +1,21 @@
+{% extends '_layout.twig' %}
+{% block title %}Dustcloud &rsaquo; {% if device.did %}Edit{% else %}New{% endif %} Device{% endblock %}
+{% block content %}
+<a class="button" href="index.php" title="Back">&#8592;</a>
+<h2>{% if device.did %}Edit{% else %}New{% endif %} Device</h2>
+{% if msgs %}
+<div class="confirm">
+{% for msg in msgs %}
+    {{ msg }}<br>
+{% endfor %}
+</div>
+{% endif %}
+<form method="POST">
+<table>
+    <tr><th>did</th><td><input type="text" name="did" value="{{ device.did }}" {% if device.did %}disabled="disabled" {% endif %}size="10"></td></tr>
+    <tr><th>enckey</th><td><input type="text" name="enckey" value="{{ device.enckey }}" size="16"></td></tr>
+    <tr><th>Name</th><td><input type="text" name="name" value="{{ device.name }}" size="20"></td></tr>
+    <tr><th></th><td><button type="submit" name="save" value="1">Save</button><button type="submit" class="no" name="delete" value="1">Delete</button></td></tr>
+</table>
+</form>
+{% endblock %}

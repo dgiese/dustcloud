@@ -1,0 +1,298 @@
+<?php
+# Author: Thomas Tsiakalakis [mail@tsia.de]
+# Copyright 2018 by Thomas Tsiakalakis
+
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+require __DIR__ . '/../bootstrap.php';
+
+use App\App;
+use App\Utils;
+
+header('Content-Type: application/json');
+switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
+    case 'last_contact':
+        $result = lastContact();
+        break;
+    case 'map':
+        $result = apicall('get_map');
+        break;
+    case 'device':
+        $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
+        apicall('run_command', 'cmd=' . urlencode($cmd));
+        $result = apiresponse();
+        break;
+    default:
+        header('Bad Request', true, 400);
+        $result = ['error' => 400, 'data' => 'Bad Request'];
+}
+echo json_encode($result);
+
+function lastContact(){
+    $db = App::db();
+    $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
+    $statement = $db->prepare("SELECT `last_contact` FROM `devices` WHERE `did` = ?");
+    $statement->bind_param("s", $did);
+    $statement->execute();
+    $result = $statement->get_result()->fetch_assoc();
+    $statement->close();
+    if(!$result){
+        header('Not Found', true, 404);
+        return ['error' => 404, 'data' => 'device not found'];
+    }else{
+        $lastContact = Utils::formatLastContact($result['last_contact']);
+        return ['error' => 0, 'data' => $lastContact];
+    }
+}
+
+function apicall($cmd, $postdata = null){
+    $db = App::db();
+    
+    $curl = curl_init();
+    $url = trim(App::config("cmd.server"), '/') . '/' . $cmd . '?';
+
+    foreach($_GET as $k => $v){
+        if($k !== 'cmd' && $k !== 'action'){
+            $url .= $k . '=' . urlencode($v) . '&';
+        }
+    }
+
+    $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
+    $sql = "INSERT INTO `cmdqueue` (`did`, `method`, `params`, `expire`) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 30 SECOND))";
+    $statement = $db->prepare($sql);
+    $statement->bind_param('sss', $did, $cmd, $postdata);
+    $statement->execute();
+    echo($statement->error);
+
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_HEADER, 0);
+    curl_setopt($curl, CURLOPT_POST, 1);
+    if($postdata){
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $postdata);
+    }
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+    $output = curl_exec($curl);
+    curl_close($curl);
+    $json = json_decode($output, true);
+    if(!$json){
+        header('Error', true, 500);
+        return ['error' => 500, 'data' => $output];
+    }
+
+    if(!$json['success']){
+        header('Error', true, 500);
+        return ['error' => 500, 'data' => $json['reason']];
+    }
+
+    unset($json['success']);
+
+    return ['error' => 0, 'data' => $json];
+}
+
+function apiresponse(){
+    $db = App::db();
+    $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
+    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT 0,1");
+    $statement->bind_param("s", $did);
+    $statement->execute();
+    $response = $statement->get_result()->fetch_assoc();
+    $statement->close();
+    $data = json_decode(str_replace("'", '"', $response['data']), true);
+    return [
+        'error' => 0,
+        'data' => $data,
+        'html' => (array_key_exists('result', $data) ? render_apiresponse($data['result']) : ''),
+    ];
+}
+
+
+function render_apiresponse($data){
+    $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
+    $result = [];
+    switch ($cmd) {
+        case 'get_status':
+            $result = [
+                [
+                    'key' => 'error',
+                    'value' => errorcodes($data[0]['error_code'])
+                ],
+                [
+                    'key' => 'status',
+                    'value' => statuscodes($data[0]['state'])
+                ],
+                [
+                    'key' => 'clean area',
+                    'value' => number_format($data[0]['clean_area'] / 1000000, 1) . 'm<sup>2</sup>'
+                ],
+                [
+                    'key' => 'cleaning',
+                    'value' => yesno($data[0]['in_cleaning'])
+                ],
+                [
+                    'key' => 'DND enabled',
+                    'value' => yesno($data[0]['dnd_enabled'])
+                ],
+                [
+                    'key' => 'battery',
+                    'value' => $data[0]['battery'] . '%',
+                ],
+                [
+                    'key' => 'clean time',
+                    'value' => number_format($data[0]['clean_time'] / 60, 0) . 'min',
+                ],
+                [
+                    'key' => 'fan power',
+                    'value' => $data[0]['fan_power'] . '%'
+                ],
+            ];
+            break;
+        case 'get_consumable':
+            $result = [
+                [
+                    'key' => 'main brush used',
+                    'value' => number_format($data[0]['main_brush_work_time'] / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'main brush remaining',
+                    'value' => number_format((1080000 - $data[0]['main_brush_work_time']) / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'side brush used',
+                    'value' => number_format($data[0]['side_brush_work_time'] / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'side brush remaining',
+                    'value' => number_format((720000 - $data[0]['side_brush_work_time']) / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'filter used',
+                    'value' => number_format($data[0]['filter_work_time'] / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'filter remaining',
+                    'value' => number_format((540000 - $data[0]['filter_work_time']) / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'sensor used',
+                    'value' => number_format($data[0]['sensor_dirty_time'] / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'sensor remaining',
+                    'value' => number_format((216000 - $data[0]['sensor_dirty_time']) / 3600, 1) . 'h'
+                ],
+            ];
+            break;
+        case 'get_clean_summary':
+            $result = [
+                [
+                    'key' => 'total duration',
+                    'value' => number_format($data[0] / 3600, 1) . 'h'
+                ],
+                [
+                    'key' => 'total area',
+                    'value' => number_format($data[1] / 1000000, 1) . 'm<sup>2</sup>'
+                ],
+                [
+                    'key' => 'number of runs',
+                    'value' => $data[2]
+                ],
+                [
+                    'key' => 'cleaning runs',
+                    'value' => implode('<br>', array_map(function($n){ return date('c', $n); }, $data[3]))
+                ],
+            ];
+            break;
+        case 'get_timer':
+            foreach($data as $item){
+                $result[] = [
+                    'key' => 'id',
+                    'value' => $item[0],
+                ];
+                $result[] = [
+                    'key' => 'date',
+                    'value' => date('c', $item[0] / 1000),
+                ];
+                $result[] = [
+                    'key' => 'enabled',
+                    'value' => yesno($item[1] === 'on'),
+                ];
+                $result[] = [
+                    'key' => 'time',
+                    'value' => $item[2][0],
+                ];
+                $result[] = [
+                    'key' => 'action',
+                    'value' => $item[2][1][0] . '(' . $item[2][1][1] . ')',
+                ];
+                $result[] = [
+                    'key' => ' ',
+                    'value' => '&nbsp;',
+                ];
+            }
+            break;
+    }
+    return App::renderTemplate('_result.twig', ['result' => $result]);
+}
+
+function statuscodes($i) {
+    $map = [
+        1 => 'Starting',
+        2 => 'Charger disconnected',
+        3 => 'Idle',
+        4 => 'Remote control active',
+        5 => 'Cleaning',
+        6 => 'Returning home',
+        7 => 'Manual mode',
+        8 => 'Charging',
+        9 => 'Charging problem',
+        10 => 'Paused',
+        11 => 'Spot cleaning',
+        12 => 'Error',
+        13 => 'Shutting down',
+        14 => 'Updating',
+        15 => 'Docking',
+        16 => 'Going to target',
+        17 => 'Zoned cleaning',
+    ];
+    return $map[$i];
+}
+function errorcodes($i) {
+    $map = [
+        0 => 'No error',
+        1 => 'Laser distance sensor error',
+        2 => 'Collision sensor error',
+        3 => 'Wheels on top of void, move robot',
+        4 => 'Clean hovering sensors, move robot',
+        5 => 'Clean main brush',
+        6 => 'Clean side brush',
+        7 => 'Main wheel stuck?',
+        8 => 'Device stuck, clean area',
+        9 => 'Dust collector missing',
+        10 => 'Clean filter',
+        11 => 'Stuck in magnetic barrier',
+        12 => 'Low battery',
+        13 => 'Charging fault',
+        14 => 'Battery fault',
+        15 => 'Wall sensors dirty, wipe them',
+        16 => 'Place me on flat surface',
+        17 => 'Side brushes problem, reboot me',
+        18 => 'Suction fan problem',
+        19 => 'Unpowered charging station',
+    ];
+    return $map[$i];
+}
+function yesno($i) {
+    if($i == 1){
+        return 'yes';
+    }
+    return 'no';
+}

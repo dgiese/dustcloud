@@ -3,12 +3,12 @@ define('APP_ROOT', __DIR__ . DIRECTORY_SEPARATOR);
 
 return [
     "mysql" => [
-        'host' => 'localhost',
+        'host' => '127.0.0.1',
         'database' => 'dustcloud',
-        'username' => 'user123',
-        'password' => '',
+        'username' => 'dustcloud',
+        'password' => 'Oehoh0ua',
     ],
-    'cmd.server' => 'http://localhost:1121/',
+    'cmd.server' => 'http://hermes.net.wurstsalat.cloud:8080/',
     "twig.cache" => "cache",
     "twig.templates" => "templates",
     'debug' => true,

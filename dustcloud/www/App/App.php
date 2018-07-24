@@ -41,12 +41,13 @@ class App {
     }
     
     public static function renderTemplate ($file, $data = [], $stopExecution = true) {
-        $loader = new Twig_Loader_Filesystem(APP_ROOT . DIRECTORY_SEPARATOR . App::config("twig.templates"));
-        $twig = new Twig_Environment($loader, array(
+        $loader = new \Twig_Loader_Filesystem(APP_ROOT . DIRECTORY_SEPARATOR . App::config("twig.templates"));
+        $twig = new \Twig_Environment($loader, array(
+            'debug' => App::config("debug"),
             'cache' => APP_ROOT . DIRECTORY_SEPARATOR . App::config("twig.cache"),
         ));
 
-        echo $twig->render($file, $data);
+        return $twig->render($file, $data);
         
         if ($stopExecution) {
             exit;

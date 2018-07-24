@@ -4,6 +4,53 @@ use \Datetime;
 
 class Utils {
 
+  public static function formatLastContact($lastContact){
+    $now = new \DateTime('now');
+    if($lastContact === '0000-00-00 00:00:00'){
+        $lastContact = null;
+    }
+    $result = [
+      'last_contact' => $lastContact,
+    ];
+    $lastContact = new \DateTime($lastContact);
+    $timerange = date_diff($lastContact, $now);
+    $format = self::getTimerangeFormat($timerange);
+    $seconds = $now->getTimestamp() - $lastContact->getTimestamp();
+    $result['timerange'] = $timerange->format($format);
+    $result['timerange_seconds'] = $seconds;
+    $result['is_online'] = $seconds <= 60;
+    return $result;
+  }
+
+  public static function getTimerangeFormat($timerange){
+    $values = [
+      'y' => 'Year',
+      'm' => 'Month',
+      'd' => 'Day',
+      'h' => 'Hour',
+      'i' => 'Minute',
+    ];
+    $format = [];
+
+    foreach($values as $k => $v){
+      $f = "%$k $v";
+      if($timerange->$k > 1){
+        $f .= 's';
+      }
+      if($timerange->$k >= 1){
+        $format[] = $f;
+      }  
+    }
+    
+    $f = '%s Second';
+    if($timerange->s != 1){
+      $f .= 's';
+    }
+    $format[] = $f;
+
+    return implode(' ', $format);
+  }
+
   public static function hex2str($hex)
   {
       $str = '';
@@ -13,11 +60,6 @@ class Utils {
       }
 
       return $str;
-  }
-
-  public static function includeStyleSheet()
-  {
-      echo '<link rel="stylesheet" href="style.css" type="text/css" />';
   }
 
   public static function printLastContact($last_contact_str)

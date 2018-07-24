@@ -1,6 +1,9 @@
 {
+    "require-dev": {
+        "kint-php/kint": "^2.2",
+        "kint-php/kint-twig": "^1.1"
+    },
     "require": {
-        "tetreum/perfect-print": "dev-master",
         "twig/twig": "^2.0"
     },
      "autoload": {
