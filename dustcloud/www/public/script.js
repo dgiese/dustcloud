@@ -13,10 +13,11 @@ function lastContactAjax(){
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if(xhr.status !== 200){
+                stopLastContactAjax();
                 alert("Error: " + xhr.status + ": " + xhr.statusText);
             }else if(xhr.response.error > 0){
-                alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                 stopLastContactAjax();
+                alert("Error: " + xhr.response.error + ": " + xhr.response.data);
             }else{
                 var element = document.querySelector('span.last_contact')
                 if(xhr.response.data.last_contact){
@@ -52,10 +53,11 @@ function mapAjax(){
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if(xhr.status !== 200){
+                stopMapAjax();
                 alert("Error: " + xhr.status + ": " + xhr.statusText);
             }else if(xhr.response.error > 0){
-                alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                 stopMapAjax();
+                alert("Error: " + xhr.response.error + ": " + xhr.response.data);
             }else{
                 var element = document.querySelector('img.map');
                 element.src = 'data:image/png;base64,' + xhr.response.data.imagedata;
