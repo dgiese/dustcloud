@@ -34,6 +34,10 @@ th, td {
     border-bottom: 1px solid #E1E1E1;
 }
 
+input {
+    height: 1em;
+}
+
 a.button,
 button {
     color: white;
