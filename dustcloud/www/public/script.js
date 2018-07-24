@@ -129,7 +129,7 @@ function initControls(){
             inputs[i].setAttribute('disabled', 'disabled');
         }
         var cmd = document.querySelector('.controls select').value;
-        var params = '[' + document.querySelector('.controls .inputs input').value + ']';
+        var params = getCmdParams(cmd);
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'api.php?action=device&did=' + did);
@@ -158,6 +158,22 @@ function initControls(){
             }
         };
     });
+}
+
+function getCmdParams(cmd){
+    var inputElements = document.querySelectorAll('.controls .inputs.' + cmd + ' input, .controls .inputs.' + cmd + ' select');
+    var inputs = {};
+    for (let i = 0; i < inputElements.length; i++) {
+        inputs[inputElements[i].name] = inputElements[i];
+    }
+    console.log(inputs);
+    switch (cmd) {
+        case 'get_clean_record':
+                return JSON.stringify([ parseInt(inputs.id.value) ]);
+            break;
+        default:
+            break;
+    }
 }
 
 function changeCmdDropdown(){
