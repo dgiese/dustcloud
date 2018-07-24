@@ -83,8 +83,6 @@ function initMapDrag(){
         startPos.y = parseInt(localStorage.mapPosY);
         offset.y = parseInt(localStorage.mapPosY);
     }
-    console.log(startPos);
-    console.log(offset);
     element.style = 'transform: translate(' + offset.x + 'px, ' + offset.y + 'px)';
 
     element.addEventListener('dragstart', function(dragevent){
@@ -121,27 +119,34 @@ function initMapDrag(){
 }
 
 function initControls(){
+    changeCmdDropdown();
+    document.querySelector('.controls select.cmd').addEventListener('change', changeCmdDropdown);
     document.querySelector('.controls button').addEventListener('click', function(){
         var loader = document.querySelector('#loader');
         loader.style = 'visibility: visible';
-        var button = document.querySelector('.controls button');
-        button.setAttribute('disabled', 'disabled');
-        var dropdown = document.querySelector('.controls select');
-        dropdown.setAttribute('disabled', 'disabled');
+        var inputs = document.querySelector('.controls input, .controls select, .controls.button');
+        for (let i = 0; i < inputs.length; i++) {
+            inputs[i].setAttribute('disabled', 'disabled');
+        }
         var cmd = document.querySelector('.controls select').value;
+        var params = '[' + document.querySelector('.controls .inputs input').value + ']';
+
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'api.php?action=device&did=' + did);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.responseType = 'json';
-        xhr.send('cmd=' + cmd);
+        var postdata = 'cmd=' + encodeURIComponent(cmd) + '&params=' + encodeURIComponent(params);
+        console.log(postdata);
+        xhr.send(postdata);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 loader.style = 'visibility: hidden';
-                button.removeAttribute('disabled');
-                dropdown.removeAttribute('disabled');
-                if(xhr.status !== 200){
+                for (let i = 0; i < inputs.length; i++) {
+                    inputs[i].removeAttribute('disabled');
+                }
+                if(xhr.status !== 200 && xhr.response === null){
                     alert("Error: " + xhr.status + ": " + xhr.statusText);
-                }else if(xhr.response === null || xhr.response.error > 0){
+                }else if(xhr.response.error > 0){
                     alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                     document.querySelector('.controls pre').innerHTML = '&nbsp;'
                     document.querySelector('.controls .result').innerHTML = '';
@@ -153,4 +158,16 @@ function initControls(){
             }
         };
     });
+}
+
+function changeCmdDropdown(){
+    var value = document.querySelector('.controls select.cmd').value;
+    var inputs = document.querySelectorAll('.controls .inputs');
+    for (let i = 0; i < inputs.length; i++) {
+        if(inputs[i].classList.contains(value)){
+            inputs[i].style = 'display: block';
+        }else{
+            inputs[i].style = 'display: none';
+        }
+    }
 }

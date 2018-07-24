@@ -38,10 +38,12 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
 <div class="toggle">
     <input type="checkbox" id="toggle_controls" checked="checked"><label for="toggle_controls"><h3>Controls</h3></label>
     <div class="content controls">
-        <select name="cmd">
+        <select name="cmd" class="cmd">
+            <option value="miIO.info">miIO Info</option>
             <option value="get_status">get status</option>
             <option value="get_consumable">get consumables</option>
             <option value="get_clean_summary">get clean summary</option>
+            <option value="get_clean_record">get clean record</option>
             <option value="get_timer">get timers</option>
             <option value="get_dnd_timer">get DND timer</option>
             <option value="get_custom_mode">get custom mode</option>
@@ -49,6 +51,9 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
         </select>
         <button>Go</button>
         <div id="loader" class="loader" style="visibility: hidden"></div>
+        <div class="inputs get_clean_record">
+            id: <input type="text" name="id" placeholder="id">
+        </div>
         <pre>{{ status.data }}</pre>
         <div class="result"></div>
     </div>

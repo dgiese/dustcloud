@@ -13,6 +13,8 @@
 #GNU General Public License for more details.
 
 require __DIR__ . '/../bootstrap.php';
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 use App\App;
 use App\Utils;
@@ -27,7 +29,8 @@ switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
         break;
     case 'device':
         $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
-        $result = apicall('run_command', 'cmd=' . urlencode($cmd));
+        $params = filter_input(INPUT_POST, 'params', FILTER_SANITIZE_STRING);
+        $result = apicall('run_command', 'cmd=' . urlencode($cmd) . '&params=' . urlencode($params));
         if($result['error'] === 0){
             $result = apiresponse();
         }
@@ -120,37 +123,74 @@ function render_apiresponse($data){
     $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
     $result = [];
     switch ($cmd) {
+        case 'miIO.info':
+            $result = [
+                [
+                    'key' => 'AP BSSID',
+                    'value' => $data['ap']['bssid'],
+                ],[
+                    'key' => 'AP SSID',
+                    'value' => $data['ap']['ssid'],
+                ],[
+                    'key' => 'AP RSSI',
+                    'value' => $data['ap']['rssi'] . 'dBm',
+                ],[
+                    'key' => ' ',
+                    'value' => '&nbsp;',
+                ],[
+                    'key' => 'firmware version',
+                    'value' => $data['fw_ver'],
+                ],[
+                    'key' => 'hardware version',
+                    'value' => $data['hw_ver'],
+                ],[
+                    'key' => 'uptime',
+                    'value' => number_format($data['life'] / 3600, 1) . 'h',
+                ],[
+                    'key' => 'mac address',
+                    'value' => $data['mac'],
+                ],[
+                    'key' => 'model',
+                    'value' => $data['model'],
+                ],[
+                    'key' => ' ',
+                    'value' => '&nbsp;',
+                ],[
+                    'key' => 'local ip',
+                    'value' => $data['netif']['localIp'],
+                ],[
+                    'key' => 'gateway',
+                    'value' => $data['netif']['gw'],
+                ],[
+                    'key' => 'netmask',
+                    'value' => $data['netif']['mask'],
+                ],
+            ];
+            break;
         case 'get_status':
             $result = [
                 [
                     'key' => 'error',
                     'value' => errorcodes($data[0]['error_code'])
-                ],
-                [
+                ],[
                     'key' => 'status',
                     'value' => statuscodes($data[0]['state'])
-                ],
-                [
+                ],[
                     'key' => 'clean area',
                     'value' => number_format($data[0]['clean_area'] / 1000000, 1) . 'm<sup>2</sup>'
-                ],
-                [
+                ],[
                     'key' => 'cleaning',
                     'value' => yesno($data[0]['in_cleaning'])
-                ],
-                [
+                ],[
                     'key' => 'DND enabled',
                     'value' => yesno($data[0]['dnd_enabled'])
-                ],
-                [
+                ],[
                     'key' => 'battery',
                     'value' => $data[0]['battery'] . '%',
-                ],
-                [
+                ],[
                     'key' => 'clean time',
                     'value' => number_format($data[0]['clean_time'] / 60, 0) . 'min',
-                ],
-                [
+                ],[
                     'key' => 'fan power',
                     'value' => $data[0]['fan_power'] . '%'
                 ],
@@ -161,32 +201,25 @@ function render_apiresponse($data){
                 [
                     'key' => 'main brush used',
                     'value' => number_format($data[0]['main_brush_work_time'] / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'main brush remaining',
                     'value' => number_format((1080000 - $data[0]['main_brush_work_time']) / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'side brush used',
                     'value' => number_format($data[0]['side_brush_work_time'] / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'side brush remaining',
                     'value' => number_format((720000 - $data[0]['side_brush_work_time']) / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'filter used',
                     'value' => number_format($data[0]['filter_work_time'] / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'filter remaining',
                     'value' => number_format((540000 - $data[0]['filter_work_time']) / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'sensor used',
                     'value' => number_format($data[0]['sensor_dirty_time'] / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'sensor remaining',
                     'value' => number_format((216000 - $data[0]['sensor_dirty_time']) / 3600, 1) . 'h'
                 ],
@@ -197,16 +230,13 @@ function render_apiresponse($data){
                 [
                     'key' => 'total duration',
                     'value' => number_format($data[0] / 3600, 1) . 'h'
-                ],
-                [
+                ],[
                     'key' => 'total area',
                     'value' => number_format($data[1] / 1000000, 1) . 'm<sup>2</sup>'
-                ],
-                [
+                ],[
                     'key' => 'number of runs',
                     'value' => $data[2]
-                ],
-                [
+                ],[
                     'key' => 'cleaning runs',
                     'value' => implode('<br>', array_map(function($n){ return date('c', $n); }, $data[3]))
                 ],
@@ -245,12 +275,10 @@ function render_apiresponse($data){
                 [
                     'key' => 'start',
                     'value' => $data[0]['start_hour'] . ':' . str_pad($data[0]['start_minute'], 2, '0', STR_PAD_LEFT),
-                ],
-                [
+                ],[
                     'key' => 'end',
                     'value' => $data[0]['end_hour'] . ':' . str_pad($data[0]['end_minute'], 2, '0', STR_PAD_LEFT),
-                ],
-                [
+                ],[
                     'key' => 'enabled',
                     'value' => yesno($data[0]['enabled']),
                 ],
@@ -269,6 +297,29 @@ function render_apiresponse($data){
                 [
                     'key' => 'result',
                     'value' => $data[0],
+                ],
+            ];
+            break;
+        case 'get_clean_record':
+            $result = [
+                [
+                    'key' => 'start',
+                    'value' => date('c', $data[0][0]),
+                ],[
+                    'key' => 'finish',
+                    'value' => date('c', $data[0][1]),
+                ],[
+                    'key' => 'duraion',
+                    'value' => number_format($data[0][2] / 60, 0) . 'min',
+                ],[
+                    'key' => 'area',
+                    'value' => number_format($data[0][3] / 1000000, 1) . 'm<sup>2</sup>',
+                ],[
+                    'key' => 'error',
+                    'value' => errorcodes($data[0][4]),
+                ],[
+                    'key' => 'completed',
+                    'value' => yesno($data[0][5]),
                 ],
             ];
             break;

@@ -89,7 +89,7 @@ select {
     cursor: pointer;
 }
 
-.toggle input {
+.toggle input[type="checkbox"] {
     display: none;
 }
 
