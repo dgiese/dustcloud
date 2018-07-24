@@ -1,3 +1,11 @@
+/* colors:
+    Blue: #00B0FF
+    Green: #00E676
+    Yellow: #FFCA28
+    Red: #EF5350
+    Dark Grey: #424242
+*/
+
 @font-face {
     font-family: system;
     font-style: normal;
@@ -51,7 +59,7 @@ a.button:hover,
 a.button:focus,
 button:hover,
 button:focus {
-    border-color: #888;
+    border-color: #424242;
     outline: 0;
 }
 
@@ -119,7 +127,7 @@ select {
     width: 512px;
     height: 512px;
     overflow: hidden;
-    background-color: #888888;
+    background-color: #424242;
 }
 
 img.map {
@@ -136,7 +144,7 @@ pre {
 .loader {
     display: inline-block;
     vertical-align: bottom;
-    border: 8px solid #f3f3f3;
+    border: 8px solid #F1F1F1;
     border-top: 8px solid #00B0FF;
     border-radius: 50%;
     width: 16px;
