@@ -30,7 +30,11 @@ switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
     case 'device':
         $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
         $params = filter_input(INPUT_POST, 'params', FILTER_SANITIZE_STRING);
-        $result = apicall('run_command', 'cmd=' . urlencode($cmd) . '&params=' . urlencode($params));
+        $postdata = 'cmd=' . urlencode($cmd);
+        if($params){
+            $postdata .= '&params=' . urlencode($params);
+        }
+        $result = apicall('run_command', $postdata);
         if($result['error'] === 0){
             $result = apiresponse();
         }
@@ -293,6 +297,12 @@ function render_apiresponse($data){
             ];
             break;
         case 'get_map_v1':
+        case 'app_start':
+        case 'app_stop':
+        case 'app_pause':
+        case 'app_charge':
+        case 'app_spot':
+        case 'find_me':
             $result = [
                 [
                     'key' => 'result',

@@ -39,7 +39,14 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
     <input type="checkbox" id="toggle_controls" checked="checked"><label for="toggle_controls"><h3>Controls</h3></label>
     <div class="content controls">
         <select name="cmd" class="cmd">
+            <option value="_custom">custom command</option>
             <option value="miIO.info">miIO Info</option>
+            <option value="find_me">find me</option>
+            <option value="app_charge">go back to dock</option>
+            <option value="app_start">start cleaning</option>
+            <option value="app_stop">stop cleaning</option>
+            <option value="app_pause">pause cleaning</option>
+            <option value="app_spot">start spot cleaning</option>
             <option value="get_status">get status</option>
             <option value="get_consumable">get consumables</option>
             <option value="get_clean_summary">get clean summary</option>
@@ -51,8 +58,16 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
         </select>
         <button>Go</button>
         <div id="loader" class="loader" style="visibility: hidden"></div>
+        <div class="inputs _custom">
+            <table>
+                <tr><th>Command</th><td><input type="text" name="cmd" placeholder="get_clean_record"></td></tr>
+                <tr><th>Parameters</th><td><input type="text" name="params" placeholder="[1534567890]"></td></tr>
+            </table>
+        </div>
         <div class="inputs get_clean_record">
-            id: <input type="text" name="id" placeholder="id">
+            <table>
+                <tr><th>ID</th><td><input type="text" name="id" placeholder="1534567890"></td></tr>
+            </table>
         </div>
         <pre>{{ status.data }}</pre>
         <div class="result"></div>

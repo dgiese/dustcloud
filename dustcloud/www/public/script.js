@@ -130,6 +130,9 @@ function initControls(){
         }
         var cmd = document.querySelector('.controls select').value;
         var params = getCmdParams(cmd);
+        if(cmd === '_custom'){
+            cmd = document.querySelector('.controls .inputs._custom input[name="params"]').value;
+        }
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'api.php?action=device&did=' + did);
@@ -168,10 +171,13 @@ function getCmdParams(cmd){
     }
     console.log(inputs);
     switch (cmd) {
+        case '_custom':
+                return inputs.params.value;
         case 'get_clean_record':
                 return JSON.stringify([ parseInt(inputs.id.value) ]);
             break;
         default:
+                return "";
             break;
     }
 }
