@@ -27,8 +27,10 @@ switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
         break;
     case 'device':
         $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
-        apicall('run_command', 'cmd=' . urlencode($cmd));
-        $result = apiresponse();
+        $result = apicall('run_command', 'cmd=' . urlencode($cmd));
+        if($result['error'] === 0){
+            $result = apiresponse();
+        }
         break;
     default:
         header('Bad Request', true, 400);
@@ -70,7 +72,6 @@ function apicall($cmd, $postdata = null){
     $statement = $db->prepare($sql);
     $statement->bind_param('sss', $did, $cmd, $postdata);
     $statement->execute();
-    echo($statement->error);
 
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -238,6 +239,38 @@ function render_apiresponse($data){
                     'value' => '&nbsp;',
                 ];
             }
+            break;
+        case 'get_dnd_timer':
+            $result = [
+                [
+                    'key' => 'start',
+                    'value' => $data[0]['start_hour'] . ':' . str_pad($data[0]['start_minute'], 2, '0', STR_PAD_LEFT),
+                ],
+                [
+                    'key' => 'end',
+                    'value' => $data[0]['end_hour'] . ':' . str_pad($data[0]['end_minute'], 2, '0', STR_PAD_LEFT),
+                ],
+                [
+                    'key' => 'enabled',
+                    'value' => yesno($data[0]['enabled']),
+                ],
+            ];
+            break;
+        case 'get_custom_mode':
+            $result = [
+                [
+                    'key' => 'fan power',
+                    'value' => $data[0] . '%',
+                ],
+            ];
+            break;
+        case 'get_map_v1':
+            $result = [
+                [
+                    'key' => 'result',
+                    'value' => $data[0],
+                ],
+            ];
             break;
     }
     return App::renderTemplate('_result.twig', ['result' => $result]);
