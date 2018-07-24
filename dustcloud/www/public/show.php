@@ -33,6 +33,7 @@ if(!$result){
     $statement->execute();
     $statusresult = $statement->get_result()->fetch_assoc();
     $statement->close();
+    $statusresult['data'] = json_encode(json_decode(str_replace("'", '"', $statusresult['data'])), JSON_PRETTY_PRINT);
 
     $templateData = [
         'device' => $result,

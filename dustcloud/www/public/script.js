@@ -155,7 +155,7 @@ function initControls(){
                     document.querySelector('.controls .result').innerHTML = '';
                 }else{
                     console.log(xhr.response.data);
-                    document.querySelector('.controls pre').innerText = JSON.stringify(xhr.response.data);
+                    document.querySelector('.controls pre').innerText = JSON.stringify(xhr.response.data, null, 2);
                     document.querySelector('.controls .result').innerHTML = xhr.response.html;
                 }
             }
@@ -174,7 +174,8 @@ function getCmdParams(cmd){
         case '_custom':
                 return inputs.params.value;
         case 'get_clean_record':
-                return JSON.stringify([ parseInt(inputs.id.value) ]);
+        case 'set_custom_mode':
+                return JSON.stringify([ parseInt(inputElements[0].value) ]);
             break;
         default:
                 return "";

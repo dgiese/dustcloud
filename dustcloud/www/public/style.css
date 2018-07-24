@@ -124,10 +124,17 @@ select {
 }
 
 .mapwrapper {
+    display: inline-block;
     width: 512px;
     height: 512px;
     overflow: hidden;
     background-color: #424242;
+    margin-right: 2rem;
+}
+
+.controlswrapper {
+    display: inline-block;
+    vertical-align: top;
 }
 
 img.map {
@@ -139,6 +146,19 @@ pre {
     padding: 20px;
     border-radius: 5px;
     font-family: monospace;
+}
+
+#shortpre:checked ~ label pre {
+    max-height: 30px;
+    overflow: hidden
+}
+
+#shortpre ~ label::before{
+    content: "";
+}
+
+#shortpre ~ label pre {
+    cursor: pointer;
 }
 
 .loader {
