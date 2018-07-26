@@ -10,6 +10,7 @@ ssh_host_rsa_key.pub
 *.md5
 composer.phar
 dustcloud/www/conf.php
+dustcloud/config.ini
 settings.json
 devices/xiaomi.vacuum/audio_generator/generate*
 dustcloud/www/cache/*

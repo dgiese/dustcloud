@@ -30,6 +30,7 @@ import re
 import base64
 from miio.protocol import Message
 import json
+import configparser
 
 try:
     import bottle
@@ -141,7 +142,10 @@ class CloudClient:
     Not safe to use from multiple threads. Each thread has to use its own instance.
     """
     def __init__(self):
-        self.db = pymysql.connect("localhost", "dustcloud", "", "dustcloud")
+        configParser = configparser.RawConfigParser()   
+        configFilePath = r'config.ini'
+        configParser.read(configFilePath)
+        self.db = pymysql.connect(configParser.get('mysql', 'host'), configParser.get('mysql', 'username'), configParser.get('mysql', 'password'), configParser.get('mysql', 'database'))
         self.cursor = self.db.cursor()
         self.expected_messages = {}
 
@@ -613,7 +617,7 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     # self.request.close()
 
     def http(self, firstdata):
-        self.cloud_sock.connect(http_redirect_address)
+        self.cloud_sock.connect(http_redirect_address.split)
         while True:
             if self.request.fileno() < 0:
                 break
