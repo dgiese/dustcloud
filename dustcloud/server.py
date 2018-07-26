@@ -45,8 +45,10 @@ except ImportError as e:
     have_build_map = False
     print("WARNING: Failed to import build_map.py: {}".format(e))
 
-# TODO: change my_cloudserver_ip to your CloudserverIP (the IP where this script is running)
-my_cloudserver_ip = "10.0.0.1"
+configParser = configparser.RawConfigParser()
+configFilePath = r'config.ini'
+configParser.read(configFilePath)
+my_cloudserver_ip = configParser.get('cloudserver', 'ip')
 
 blocked_methods_from_cloud_list = [
     'miIO.ota',
@@ -617,11 +619,11 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     # self.request.close()
 
     def http(self, firstdata):
-        self.cloud_sock.connect(http_redirect_address.split)
+        self.cloud_sock.connect(tuple(http_redirect_address))
         while True:
             if self.request.fileno() < 0:
                 break
-            r, w, x = select.select([self.request, self.cloud_sock], [], [])
+            r, _, _ = select.select([self.request, self.cloud_sock], [], [])
             for s in r:
                 data = s.recv(4096)
                 if not data:
