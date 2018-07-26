@@ -43,13 +43,18 @@ function delete($did){
 	$db = App::db();
 	$statement = $db->prepare("DELETE FROM `devices` WHERE `did` = ?");
 	$statement->bind_param("s", $did);
-	$statement->execute();
-	$statement->close();
+	$success = $statement->execute();
+	if(!$success){
+		$msg = 'MySQL Error: ' . $statement->errno . ': ' . $statement->error;
+		echo App::renderTemplate('newdevice.twig', ['msgs' => [$msg], 'device' => _getDeviceFromGlobals()]);
+	}else{
+		$statement->close();
 
-	$templateData = [
-		'msg' => 'Device ' . $did . ' successfully deleted.',
-	];
-	echo App::renderTemplate('success.twig', $templateData);
+		$templateData = [
+			'msg' => 'Device ' . $did . ' successfully deleted.',
+		];
+		echo App::renderTemplate('success.twig', $templateData);
+	}
 }
 
 function save($did){
@@ -87,7 +92,9 @@ function save($did){
 	}else{
 		echo App::renderTemplate('newdevice.twig', ['msgs' => $msgs, 'device' => _getDeviceFromGlobals()]);
 	}
-	$statement->close();
+	if($statement){
+		$statement->close();
+	}
 }
 
 function showEdit($did){
