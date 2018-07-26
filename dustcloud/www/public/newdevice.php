@@ -15,6 +15,7 @@
 require __DIR__ . '/../bootstrap.php';
 
 use App\App;
+use App\Utils;
 
 $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
 $isSave = filter_input(INPUT_POST, 'save', FILTER_VALIDATE_BOOLEAN);
@@ -101,7 +102,7 @@ function save($did){
 function showEdit($did){
 	$db = App::db();
 	$device = _getDeviceFromDb($did);
-	if(!$result){
+	if(!$device){
 		$templateData = [
 			'msg' => 'Device ' . $did . ' not found!',
 		];
