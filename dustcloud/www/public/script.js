@@ -155,7 +155,7 @@ function initControls(){
                     document.querySelector('.controls .result').innerHTML = '';
                 }else{
                     console.log(xhr.response.data);
-                    document.querySelector('.controls pre').innerText = JSON.stringify(xhr.response.data, null, 2);
+                    document.querySelector('.controls pre').innerText = JSON.stringify(xhr.response.data, null, 4);
                     document.querySelector('.controls .result').innerHTML = xhr.response.html;
                 }
             }
