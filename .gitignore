@@ -16,6 +16,8 @@ devices/xiaomi.vacuum/audio_generator/generate*
 dustcloud/www/cache/*
 !dustcloud/www/cache/.gitkeep
 dustcloud/www/vendor
+__pycache__
+.venv
 
 # IDE project files
 .idea
