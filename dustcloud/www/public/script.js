@@ -60,8 +60,10 @@ function mapAjax(){
                     alert("Error: " + xhr.status + ": " + xhr.statusText);
                 }
             }else if(xhr.response.error > 0){
-                stopMapAjax();
-                alert("Error: " + xhr.response.error + ": " + xhr.response.data);
+                if(xhr.response.data != "No map available"){
+                    stopMapAjax();
+                    alert("Error: " + xhr.response.error + ": " + xhr.response.data);
+                }
             }else{
                 var element = document.querySelector('img.map');
                 element.src = 'data:image/png;base64,' + xhr.response.data.imagedata;

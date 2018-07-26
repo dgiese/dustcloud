@@ -96,8 +96,11 @@ function apicall($cmd, $postdata = null){
         return ['error' => 500, 'data' => $output];
     }
 
+
     if(!$json['success']){
-        header('Error', true, 500);
+        if($cmd !== "get_map" && $json['reason']['data'] !== "No map available"){
+            header('Error', true, 500);
+        }
         return ['error' => 500, 'data' => $json['reason']];
     }
 
