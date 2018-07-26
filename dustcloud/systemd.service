@@ -1,0 +1,10 @@
+[Unit]
+Description=Dustcloud
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+ExecStart=/opt/dustcloud/.venv/bin/python3 /opt/dustcloud/dustcloud/server.py --enable-live-map --http-proxy localhost:8080
+
+[Install]
+WantedBy=multi-user.target
