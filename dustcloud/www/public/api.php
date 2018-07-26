@@ -20,6 +20,11 @@ use App\App;
 use App\Utils;
 
 header('Content-Type: application/json');
+if(App::config('demo', false)){
+    require_once 'api_demo.php';
+    die();
+}
+
 switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
     case 'last_contact':
         $result = lastContact();
