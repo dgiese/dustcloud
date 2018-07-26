@@ -46,7 +46,7 @@ class App {
         return self::getInstance()->db->getInstance();
     }
     
-    public static function renderTemplate ($file, $data = [], $stopExecution = true) {
+    public static function renderTemplate ($file, $data = []) {
         $loader = new \Twig_Loader_Filesystem(APP_ROOT . App::config('twig.templates', 'templates'));
         $twig = new \Twig_Environment($loader, array(
             'debug' => App::config('debug', true),
@@ -54,9 +54,5 @@ class App {
         ));
 
         return $twig->render($file, $data);
-        
-        if ($stopExecution) {
-            exit;
-        }
     }
 }

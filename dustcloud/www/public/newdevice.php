@@ -46,7 +46,7 @@ function delete($did){
 	$success = $statement->execute();
 	if(!$success){
 		$msg = 'MySQL Error: ' . $statement->errno . ': ' . $statement->error;
-		echo App::renderTemplate('newdevice.twig', ['msgs' => [$msg], 'device' => _getDeviceFromGlobals()]);
+		echo App::renderTemplate('newdevice.twig', ['msgs' => [$msg], 'device' => _getDeviceFromDb($did)]);
 	}else{
 		$statement->close();
 
@@ -99,11 +99,7 @@ function save($did){
 
 function showEdit($did){
 	$db = App::db();
-	$statement = $db->prepare("SELECT `did`, `name`, `enckey`, `forward_to_cloud`, `full_cloud_forward` FROM `devices` WHERE `did` = ?");
-	$statement->bind_param("s", $did);
-	$statement->execute();
-	$result = $statement->get_result()->fetch_assoc();
-	$statement->close();
+	$device = _getDeviceFromDb($did);
 	if(!$result){
 		$templateData = [
 			'msg' => 'Device ' . $did . ' not found!',
@@ -115,6 +111,18 @@ function showEdit($did){
 		];
 		echo App::renderTemplate('newdevice.twig', $templateData);
 	}
+}
+
+function _getDeviceFromDb($did){
+	$db = App::db();
+	$statement = $db->prepare("SELECT `did`, `name`, `enckey`, `forward_to_cloud`, `full_cloud_forward` FROM `devices` WHERE `did` = ?");
+	Utils::dberror($statement, $db);
+	$statement->bind_param("s", $did);
+	$success = $statement->execute();
+	Utils::dberror($success, $statement);
+	$result = $statement->get_result()->fetch_assoc();
+	$statement->close();
+	return $result;
 }
 
 function _getDeviceFromGlobals(){
