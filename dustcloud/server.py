@@ -59,7 +59,7 @@ status_methods = ['event.status', 'props', 'event.keepalive', 'event.remove', 'e
                   'event.click', '_sync.upLocalSceneRuningLog', '_async.store', '_otc.log', 'event.dry',
                   'event.no_motion', 'event.comfortable']
 cloud_server_address = ('ott.io.mi.com', 80)
-http_redirect_address = None
+http_proxy_address = None
 
 # dict of devices did -> [name, request_handler]
 devices = {}
@@ -598,28 +598,16 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 else:
                     process_runtime_map(data)
             else:
-                data += self.request.recv(64*1024)  # get the rest of the packet
-                print("Unknown message: {}".format(data))
-                if http_redirect_address:
-                    print("Entering http redirection mode, forwarding message to {}".format(http_redirect_address))
+                if http_proxy_address:
+                    print("Entering http proxy mode, forwarding message to {}".format(http_proxy_address))
                     self.http(data)
-                    # http = "HTTP/1.1 302 Found\n"
-                    # http = http + "Location: https://xxx/\n"
-                    # http = http + "Content-Length: 212\n"
-                    # http = http + "Content-Type: text/html; charset=iso-8859-1\n"
-                    # http = http + "\n"
-                    # http = http + "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n"
-                    # http = http + "<html><head>\n"
-                    # http = http + "<title>302 Found</title>\n"
-                    # http = http + "</head><body>\n"
-                    # http = http + "<h1>Found</h1>\n"
-                    # http = http + "<p>The document has moved <a href=\"https://xxx/\">here</a>.</p>\n"
-                    # http = http + "</body></html>"
-                    # self.request.send(http.encode('utf-8'))
-                    # self.request.close()
+                else:
+                    data += self.request.recv(64*1024)  # get the rest of the packet
+                    print("Unknown message: {}".format(data))
+                
 
     def http(self, firstdata):
-        self.cloud_sock.connect(tuple(http_redirect_address))
+        self.cloud_sock.connect(tuple(http_proxy_address))
         while True:
             if self.request.fileno() < 0:
                 break
@@ -630,7 +618,10 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                     self.request.close()
                     break
                 if s == self.request:
-                    self.cloud_sock.sendall(firstdata + data)
+                    if type(firstdata) is str:
+                        self.cloud_sock.sendall(firstdata.encode() + data)
+                    else:
+                        self.cloud_sock.sendall(firstdata + data)
                     firstdata = ""
                 if s == self.cloud_sock:
                     self.request.send(data)
@@ -806,11 +797,11 @@ Acts like the cloud to let the device think it is connected properly.
         default=ServerMode.TCP,
         required=False)
     parser.add_argument(
-        "-redirect", "--http-redirect",
+        "-proxy", "--http-proxy",
         type=str, default=None,
         metavar='<HOST>:<PORT>',
         required=False,
-        help="Enable http redirection to given address for messages that aren't based on the miio protocol. Off by default. Example: 1.2.3.4:12345.")
+        help="Enable http proxy to given address for messages that aren't based on the miio protocol. Off by default. Example: 1.2.3.4:12345.")
     parser.add_argument(
         "-sport", "--server-port",
         type=int, required=False,
@@ -837,11 +828,11 @@ Dustcloud web UI won't be able to send commands.
     if args.enable_live_map and not have_build_map:
         print("WARNING: Enabling live map feature failed, build_map.py is missing!")
 
-    http_redirect_address = args.http_redirect
-    if http_redirect_address:
-        http_redirect_address = http_redirect_address.split(":")
-        http_redirect_address[1] = int(http_redirect_address[1])
-        print("Enabled HTTP redirect to {}:{}".format(*http_redirect_address))
+    http_proxy_address = args.http_proxy
+    if http_proxy_address:
+        http_proxy_address = http_proxy_address.split(":")
+        http_proxy_address[1] = int(http_proxy_address[1])
+        print("Enabled HTTP proxy to {}:{}".format(*http_proxy_address))
 
     server_port = get_server_port(args)
     cmd_server_port = args.command_server_port
