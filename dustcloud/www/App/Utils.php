@@ -4,6 +4,14 @@ use \Datetime;
 
 class Utils {
 
+	public static function dbError($statement, $db){
+		if($statement === false){
+			$msg = 'MySQL Error: ' . $db->errno . ': ' . $db->error;
+			echo App::renderTemplate('error.twig', ['msg' => $msg]);
+			die();
+		}
+	}
+
 	public static function yesno($i) {
 		if($i == 1){
 			return 'yes';

@@ -23,8 +23,10 @@ $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
 $page = intval(filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT));
 $limit = ($page * $perpage) . ',' . $perpage;
 $statement = $db->prepare("SELECT `did` FROM `devices` WHERE `did` = ?");
+Utils::dberror($statement, $db);
 $statement->bind_param("s", $did);
-$statement->execute();
+$success = $statement->execute();
+Utils::dberror($success, $statement);
 $device = $statement->get_result()->fetch_assoc();
 $statement->close();
 if(!$device){
@@ -34,8 +36,10 @@ if(!$device){
     echo App::renderTemplate('error.twig', $templateData);
 }else{
     $statement = $db->prepare("SELECT * FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT " . $limit);
+    Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
-    $statement->execute();
+    $success = $statement->execute();
+    Utils::dberror($success, $statement);
     $result = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
     foreach($result as $key => $row){
         $result[$key]['data'] = Utils::prettyprint($row['data']);

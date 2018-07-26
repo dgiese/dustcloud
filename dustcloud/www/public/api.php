@@ -49,8 +49,10 @@ function lastContact(){
     $db = App::db();
     $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
     $statement = $db->prepare("SELECT `last_contact` FROM `devices` WHERE `did` = ?");
+    Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
-    $statement->execute();
+    $success = $statement->execute();
+    Utils::dberror($success, $statement);
     $result = $statement->get_result()->fetch_assoc();
     $statement->close();
     if(!$result){
@@ -77,8 +79,10 @@ function apicall($cmd, $postdata = null){
     $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
     $sql = "INSERT INTO `cmdqueue` (`did`, `method`, `params`, `expire`) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 30 SECOND))";
     $statement = $db->prepare($sql);
+    Utils::dberror($statement, $db);
     $statement->bind_param('sss', $did, $cmd, $postdata);
-    $statement->execute();
+    $success = $statement->execute();
+    Utils::dberror($success, $statement);
 
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -113,8 +117,10 @@ function apiresponse(){
     $db = App::db();
     $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
     $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT 0,1");
+    Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
-    $statement->execute();
+    $success = $statement->execute();
+    Utils::dberror($statement, $statement);
     $response = $statement->get_result()->fetch_assoc();
     $statement->close();
     $data = json_decode(str_replace("'", '"', $response['data']), true);

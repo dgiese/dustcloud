@@ -30,8 +30,10 @@ if(!$result){
     echo App::renderTemplate('error.twig', $templateData);
 }else{
     $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT 0,1");
+    Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
-    $statement->execute();
+    $success = $statement->execute();
+    Utils::dberror($success, $statement);
     $statusresult = $statement->get_result()->fetch_assoc();
     $statement->close();
     $statusresult['data'] = Utils::prettyprint($statusresult['data']);

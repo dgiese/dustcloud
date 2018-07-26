@@ -42,6 +42,7 @@ function deleteConfirmation($did){
 function delete($did){
 	$db = App::db();
 	$statement = $db->prepare("DELETE FROM `devices` WHERE `did` = ?");
+	Utils::dberror($statement, $db);
 	$statement->bind_param("s", $did);
 	$success = $statement->execute();
 	if(!$success){
