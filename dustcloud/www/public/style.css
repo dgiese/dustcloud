@@ -136,6 +136,11 @@ select {
     margin-right: 2rem;
 }
 
+.mapwrapper p {
+    text-align: center;
+    color: white;
+}
+
 .controlswrapper {
     display: inline-block;
     vertical-align: top;

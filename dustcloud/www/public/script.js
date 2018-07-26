@@ -48,6 +48,8 @@ function startMapAjax(){
     mapAjax();
 }
 function mapAjax(){
+    var img = document.querySelector('img.map');
+    var status = document.querySelector('.mapwrapper p');
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'api.php?action=map&did=' + did);
     xhr.responseType = 'json';
@@ -55,18 +57,21 @@ function mapAjax(){
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if(xhr.status !== 200){
+                img.src = 'about:blank';
+                status.innerText = 'No map available';
                 if(xhr.status !== 0){
                     stopMapAjax();
                     alert("Error: " + xhr.status + ": " + xhr.statusText);
                 }
             }else if(xhr.response.error > 0){
+                img.src = 'about:blank';
+                status.innerText = 'No map available';
                 if(xhr.response.data != "No map available"){
                     stopMapAjax();
                     alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                 }
             }else{
-                var element = document.querySelector('img.map');
-                element.src = 'data:image/png;base64,' + xhr.response.data.imagedata;
+                img.src = 'data:image/png;base64,' + xhr.response.data.imagedata;
             }
         }
     };
