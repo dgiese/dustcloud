@@ -13,6 +13,8 @@
 {% endblock %}
 {% block content %}
 <a class="button" href="index.php" title="Back">&#8592;</a>
+<a class="button" href="showlog.php?did={{ device.did }}" title="received message log">msg log</a>
+<a class="button" href="showcmdlog.php?did={{ device.did }}" title="sent message log">cmd log</a>
 <h2>Device {{ device.name }} (did: {{ device.did }})</h2>
 Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
 <div class="toggle">

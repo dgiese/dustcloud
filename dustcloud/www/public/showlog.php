@@ -16,31 +16,34 @@ require __DIR__ . '/../bootstrap.php';
 use App\App;
 use App\Utils;
 
+$perpage = 100;
+
 $db = App::db();
 $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
-$statement = $db->prepare("SELECT * FROM `devices` WHERE `did` = ?");
+$page = intval(filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT));
+$limit = ($page * $perpage) . ',' . $perpage;
+$statement = $db->prepare("SELECT `did` FROM `devices` WHERE `did` = ?");
 $statement->bind_param("s", $did);
 $statement->execute();
-$result = $statement->get_result()->fetch_assoc();
+$device = $statement->get_result()->fetch_assoc();
 $statement->close();
-if(!$result){
+if(!$device){
     $templateData = [
         'msg' => 'Device ' . $did . ' not found!',
     ];
     echo App::renderTemplate('error.twig', $templateData);
 }else{
-    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT 0,1");
+    $statement = $db->prepare("SELECT * FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT " . $limit);
     $statement->bind_param("s", $did);
     $statement->execute();
-    $statusresult = $statement->get_result()->fetch_assoc();
-    $statement->close();
-    $statusresult['data'] = Utils::prettyprint($statusresult['data']);
-    $result['forward_to_cloud'] = Utils::yesno($result['forward_to_cloud']);
-    $result['full_cloud_forward'] = Utils::yesno($result['full_cloud_forward']);
-
+    $result = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+    foreach($result as $key => $row){
+        $result[$key]['data'] = Utils::prettyprint($row['data']);
+    }
     $templateData = [
-        'device' => $result,
-        'status' => $statusresult,
+        'page' => $page,
+        'device' => $device,
+        'log' => $result,
     ];
-    echo App::renderTemplate('show.twig', $templateData);
+    echo App::renderTemplate('showlog.twig', $templateData);
 }

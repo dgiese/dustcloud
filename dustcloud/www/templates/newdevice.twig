@@ -15,6 +15,8 @@
     <tr><th>did</th><td><input type="text" name="did" value="{{ device.did }}" {% if device.did %}disabled="disabled" {% endif %}size="10"></td></tr>
     <tr><th>enckey</th><td><input type="text" name="enckey" value="{{ device.enckey }}" size="16"></td></tr>
     <tr><th>Name</th><td><input type="text" name="name" value="{{ device.name }}" size="20"></td></tr>
+    <tr><th>forward to cloud</th><td><input type="checkbox" name="forward_to_cloud" value="1"{% if device.forward_to_cloud %} checked="checked"{% endif %}></td></tr>
+    <tr><th>full cloud forward</th><td><input type="checkbox" name="full_cloud_forward" value="1"{% if device.full_cloud_forward %} checked="checked"{% endif %}></td></tr>
     <tr><th></th><td><button type="submit" name="save" value="1">Save</button><button type="submit" class="no" name="delete" value="1">Delete</button></td></tr>
 </table>
 </form>

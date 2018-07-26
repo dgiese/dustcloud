@@ -57,14 +57,16 @@ function save($did){
 	$msgs = [];
 	$enckey = filter_input(INPUT_POST, 'enckey', FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^[a-zA-Z0-9]+$/")));
 	$name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+	$forward_to_cloud = intval(filter_input(INPUT_POST, 'forward_to_cloud', FILTER_SANITIZE_NUMBER_INT));
+	$full_cloud_forward = intval(filter_input(INPUT_POST, 'full_cloud_forward', FILTER_SANITIZE_NUMBER_INT));
 	if(!$did){ // new device
 		$did = filter_input(INPUT_POST, 'did', FILTER_VALIDATE_INT);
 		if(!$did){
 			$msgs[] = 'You must enter a valid integer for did!';
 		}
-		$statement = $db->prepare("INSERT INTO `devices` SET `name` = ?, `enckey` = ?, `did` = ?");
+		$statement = $db->prepare("INSERT INTO `devices` (`name`, `enckey`, `forward_to_cloud`, `full_cloud_forward`, `did`) VALUES ( ?, ?, ?, ?, ?)");
 	}else{
-		$statement = $db->prepare("UPDATE `devices` SET `name` = ?, `enckey` = ? WHERE `did` = ?");
+		$statement = $db->prepare("UPDATE `devices` SET `name` = ?, `enckey` = ?, `forward_to_cloud` = ?, `full_cloud_forward` = ? WHERE `did` = ?");
 	}
 	if(!$statement){
 		$msgs[] = 'MySQL Error: ' . $db->errno . ': ' . $db->error;
@@ -73,7 +75,7 @@ function save($did){
 		$msgs[] = 'You must enter an alphanum string for enckey!';
 	}
 	if(count($msgs) === 0){
-		$statement->bind_param("sss", $name, $enckey, $did);
+		$statement->bind_param("ssdds", $name, $enckey, $forward_to_cloud, $full_cloud_forward, $did);
 		$success = $statement->execute();
 		if(!$success){
 			$msg = 'MySQL Error: ' . $statement->errno . ': ' . $statement->error;
@@ -90,7 +92,7 @@ function save($did){
 
 function showEdit($did){
 	$db = App::db();
-	$statement = $db->prepare("SELECT `did`, `name`, `enckey` FROM `devices` WHERE `did` = ?");
+	$statement = $db->prepare("SELECT `did`, `name`, `enckey`, `forward_to_cloud`, `full_cloud_forward` FROM `devices` WHERE `did` = ?");
 	$statement->bind_param("s", $did);
 	$statement->execute();
 	$result = $statement->get_result()->fetch_assoc();
