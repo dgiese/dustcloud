@@ -2,7 +2,7 @@
 
 namespace App;
 
- class DB {
+class DB {
     /**
      * @var \MySQLi
      */
