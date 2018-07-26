@@ -13,8 +13,10 @@ function lastContactAjax(){
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if(xhr.status !== 200){
-                stopLastContactAjax();
-                alert("Error: " + xhr.status + ": " + xhr.statusText);
+                if(xhr.status !== 0){
+                    stopLastContactAjax();
+                    alert("Error: " + xhr.status + ": " + xhr.statusText);
+                }
             }else if(xhr.response.error > 0){
                 stopLastContactAjax();
                 alert("Error: " + xhr.response.error + ": " + xhr.response.data);
@@ -53,8 +55,10 @@ function mapAjax(){
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if(xhr.status !== 200){
-                stopMapAjax();
-                alert("Error: " + xhr.status + ": " + xhr.statusText);
+                if(xhr.status !== 0){
+                    stopMapAjax();
+                    alert("Error: " + xhr.status + ": " + xhr.statusText);
+                }
             }else if(xhr.response.error > 0){
                 stopMapAjax();
                 alert("Error: " + xhr.response.error + ": " + xhr.response.data);
@@ -148,7 +152,9 @@ function initControls(){
                     inputs[i].removeAttribute('disabled');
                 }
                 if(xhr.status !== 200 && xhr.response === null){
-                    alert("Error: " + xhr.status + ": " + xhr.statusText);
+                    if(xhr.status !== 0){
+                        alert("Error: " + xhr.status + ": " + xhr.statusText);
+                    }
                 }else if(xhr.response.error > 0){
                     alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                     document.querySelector('.controls pre').innerHTML = '&nbsp;'

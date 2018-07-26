@@ -184,10 +184,10 @@ function render_apiresponse($data){
                     'value' => number_format($data[0]['clean_area'] / 1000000, 1) . 'm<sup>2</sup>'
                 ],[
                     'key' => 'cleaning',
-                    'value' => yesno($data[0]['in_cleaning'])
+                    'value' => Utils::yesno($data[0]['in_cleaning'])
                 ],[
                     'key' => 'DND enabled',
-                    'value' => yesno($data[0]['dnd_enabled'])
+                    'value' => Utils::yesno($data[0]['dnd_enabled'])
                 ],[
                     'key' => 'battery',
                     'value' => $data[0]['battery'] . '%',
@@ -258,7 +258,7 @@ function render_apiresponse($data){
                 ];
                 $result[] = [
                     'key' => 'enabled',
-                    'value' => yesno($item[1] === 'on'),
+                    'value' => Utils::yesno($item[1] === 'on'),
                 ];
                 $result[] = [
                     'key' => 'time',
@@ -284,7 +284,7 @@ function render_apiresponse($data){
                     'value' => $data[0]['end_hour'] . ':' . str_pad($data[0]['end_minute'], 2, '0', STR_PAD_LEFT),
                 ],[
                     'key' => 'enabled',
-                    'value' => yesno($data[0]['enabled']),
+                    'value' => Utils::yesno($data[0]['enabled']),
                 ],
             ];
             break;
@@ -329,7 +329,7 @@ function render_apiresponse($data){
                     'value' => errorcodes($data[0][4]),
                 ],[
                     'key' => 'completed',
-                    'value' => yesno($data[0][5]),
+                    'value' => Utils::yesno($data[0][5]),
                 ],
             ];
             break;
@@ -383,10 +383,4 @@ function errorcodes($i) {
         19 => 'Unpowered charging station',
     ];
     return $map[$i];
-}
-function yesno($i) {
-    if($i == 1){
-        return 'yes';
-    }
-    return 'no';
 }

@@ -4,148 +4,91 @@ use \Datetime;
 
 class Utils {
 
-  public static function formatLastContact($lastContact){
-    $now = new \DateTime('now');
-    if($lastContact === '0000-00-00 00:00:00'){
-        $lastContact = null;
-    }
-    $result = [
-      'last_contact' => $lastContact,
-    ];
-    $lastContact = new \DateTime($lastContact);
-    $timerange = date_diff($lastContact, $now);
-    $format = self::getTimerangeFormat($timerange);
-    $seconds = $now->getTimestamp() - $lastContact->getTimestamp();
-    $result['timerange'] = $timerange->format($format);
-    $result['timerange_seconds'] = $seconds;
-    $result['is_online'] = $seconds <= 60;
-    return $result;
-  }
+	public static function yesno($i) {
+		if($i == 1){
+			return 'yes';
+		}
+		return 'no';
+	}
 
-  public static function getTimerangeFormat($timerange){
-    $values = [
-      'y' => 'Year',
-      'm' => 'Month',
-      'd' => 'Day',
-      'h' => 'Hour',
-      'i' => 'Minute',
-    ];
-    $format = [];
+	public static function formatLastContact($lastContact){
+		$now = new \DateTime('now');
+		if($lastContact === '0000-00-00 00:00:00'){
+			$lastContact = null;
+		}
+		$result = [
+			'last_contact' => $lastContact,
+		];
+		$lastContact = new \DateTime($lastContact);
+		$timerange = date_diff($lastContact, $now);
+		$format = self::getTimerangeFormat($timerange);
+		$seconds = $now->getTimestamp() - $lastContact->getTimestamp();
+		$result['timerange'] = $timerange->format($format);
+		$result['timerange_seconds'] = $seconds;
+		$result['is_online'] = $seconds <= 60;
+		return $result;
+	}
 
-    foreach($values as $k => $v){
-      $f = "%$k $v";
-      if($timerange->$k > 1){
-        $f .= 's';
-      }
-      if($timerange->$k >= 1){
-        $format[] = $f;
-      }  
-    }
-    
-    $f = '%s Second';
-    if($timerange->s != 1){
-      $f .= 's';
-    }
-    $format[] = $f;
+	public static function getTimerangeFormat($timerange){
+		$values = [
+			'y' => 'Year',
+			'm' => 'Month',
+			'd' => 'Day',
+			'h' => 'Hour',
+			'i' => 'Minute',
+		];
+		$format = [];
 
-    return implode(' ', $format);
-  }
+		foreach($values as $k => $v){
+			$f = "%$k $v";
+			if($timerange->$k > 1){
+				$f .= 's';
+			}
+			if($timerange->$k >= 1){
+				$format[] = $f;
+			}
+		}
+		
+		$f = '%s Second';
+		if($timerange->s != 1){
+			$f .= 's';
+		}
+		$format[] = $f;
 
-  public static function hex2str($hex)
-  {
-      $str = '';
-      for ($i = 0; $i < strlen($hex); $i += 2)
-      {
-          $str .= chr(hexdec(substr($hex, $i, 2)));
-      }
+		return implode(' ', $format);
+	}
 
-      return $str;
-  }
+	public static function hex2str($hex)
+	{
+			$str = '';
+			for ($i = 0; $i < strlen($hex); $i += 2)
+			{
+					$str .= chr(hexdec(substr($hex, $i, 2)));
+			}
 
-  public static function printLastContact($last_contact_str)
-  {
-      $last_contact_date = new DateTime($last_contact_str);
-      $now = new DateTime("now");
-      $interval_seconds = $now->getTimestamp() - $last_contact_date->getTimestamp();
-      $interval = $now->diff($last_contact_date);
-      if ($interval_seconds <= 60)
-      {
-          $interval_class = "green";
-      }
-      else
-      {
-          $interval_class = "red";
-      }
+			return $str;
+	}
 
-      echo 'Last contact: '.$last_contact_str.' <span class="'.$interval_class.'">('.$interval->format('%a days %H:%I:%S ago').')</span><br />';
-  }
+	public static function printLastContact($last_contact_str)
+	{
+			$last_contact_date = new DateTime($last_contact_str);
+			$now = new DateTime("now");
+			$interval_seconds = $now->getTimestamp() - $last_contact_date->getTimestamp();
+			$interval = $now->diff($last_contact_date);
+			if ($interval_seconds <= 60)
+			{
+					$interval_class = "green";
+			}
+			else
+			{
+					$interval_class = "red";
+			}
 
-  # taken from https://stackoverflow.com/a/9776726
-  public static function prettyPrint($json)
-  {
-      $result = '';
-      $level = 0;
-      $in_quotes = false;
-      $in_escape = false;
-      $ends_line_level = null;
-      $json_length = strlen($json);
+			echo 'Last contact: '.$last_contact_str.' <span class="'.$interval_class.'">('.$interval->format('%a days %H:%I:%S ago').')</span><br />';
+	}
 
-      for ($i = 0; $i < $json_length; $i++)
-      {
-          $char = $json[$i];
-          $new_line_level = null;
-          $post = "";
-          if ($ends_line_level !== null)
-          {
-              $new_line_level = $ends_line_level;
-              $ends_line_level = null;
-          }
-          if ($in_escape)
-          {
-              $in_escape = false;
-          }
-          elseif ($char === '"' || $char === "'")
-          {
-              $in_quotes = !$in_quotes;
-          }
-          elseif (! $in_quotes)
-          {
-              switch ($char) {
-                  case '}': case ']':
-                      $level--;
-                      $ends_line_level = null;
-                      $new_line_level = $level;
-                      break;
-
-                  case '{': case '[':
-                      $level++;
-                      // no break
-                  case ',':
-                      $ends_line_level = $level;
-                      break;
-
-                  case ':':
-                      $post = " ";
-                      break;
-
-                  case " ": case "\t": case "\n": case "\r":
-                      $char = "";
-                      $ends_line_level = $new_line_level;
-                      $new_line_level = null;
-                      break;
-              }
-          }
-          elseif ($char === '\\')
-          {
-              $in_escape = true;
-          }
-          if ($new_line_level !== null)
-          {
-              $result .= "\n".str_repeat("  ", $new_line_level);
-          }
-          $result .= $char.$post;
-      }
-
-      return $result;
-    }
+	public static function prettyPrint($json)
+	{
+        return json_encode(json_decode(str_replace("'", '"', $json)), JSON_PRETTY_PRINT);
+	}
 }

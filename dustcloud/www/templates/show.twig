@@ -20,7 +20,7 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
     <div class="content">
         <table>
             {% for key,value in device %}
-                {% if value and key != 'id' %}
+                {% if value is not empty and key != 'id' %}
                     <tr><th>{{ key }}</th><td>{{ value }}</td></tr>
                 {% endif %}
             {% endfor %}

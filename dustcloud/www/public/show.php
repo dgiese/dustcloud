@@ -14,6 +14,7 @@
 
 require __DIR__ . '/../bootstrap.php';
 use App\App;
+use App\Utils;
 
 $db = App::db();
 $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
