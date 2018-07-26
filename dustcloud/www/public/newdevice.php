@@ -109,7 +109,7 @@ function showEdit($did){
 		echo App::renderTemplate('error.twig', $templateData);
 	}else{
 		$templateData = [
-			'device' => $result
+			'device' => $device
 		];
 		echo App::renderTemplate('newdevice.twig', $templateData);
 	}
