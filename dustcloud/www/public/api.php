@@ -66,7 +66,7 @@ function apicall($cmd, $postdata = null){
     $db = App::db();
     
     $curl = curl_init();
-    $url = trim(App::config("cmd.server"), '/') . '/' . $cmd . '?';
+    $url = trim(App::config('cmd.server', 'http://localhost:1121'), '/') . '/' . $cmd . '?';
 
     foreach($_GET as $k => $v){
         if($k !== 'cmd' && $k !== 'action'){

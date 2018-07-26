@@ -20,8 +20,15 @@ class App {
      * @param string $key
      * @return mixed
      */
-    public static function config ($key) {
-        return self::getInstance()->config[$key];
+    public static function config ($key, $default = null, $section = 'web') {
+        $config = self::getInstance()->config;
+        if(!array_key_exists($section, $config)){
+            return $default;
+        }
+        if(!array_key_exists($key, $config[$section])){
+            return $default;
+        }
+        return $config[$section][$key];
     }
 
     /**
@@ -34,17 +41,16 @@ class App {
 
     public static function db () {
         if (self::getInstance()->db === null) {
-            $conf = App::config("mysql");
-            self::getInstance()->db = new Db($conf["host"], $conf["username"], $conf["password"], $conf["database"]);
+            self::getInstance()->db = new Db(App::config('host', null, 'mysql'), App::config('username', null, 'mysql'), App::config('password', null, 'mysql'), App::config('database', null, 'mysql'));
         }
         return self::getInstance()->db->getInstance();
     }
     
     public static function renderTemplate ($file, $data = [], $stopExecution = true) {
-        $loader = new \Twig_Loader_Filesystem(APP_ROOT . DIRECTORY_SEPARATOR . App::config("twig.templates"));
+        $loader = new \Twig_Loader_Filesystem(APP_ROOT . App::config('twig.templates', 'templates'));
         $twig = new \Twig_Environment($loader, array(
-            'debug' => App::config("debug"),
-            'cache' => APP_ROOT . DIRECTORY_SEPARATOR . App::config("twig.cache"),
+            'debug' => App::config('debug', true),
+            'cache' => APP_ROOT . App::config('twig.cache', 'cache'),
         ));
 
         return $twig->render($file, $data);
