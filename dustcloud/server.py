@@ -46,7 +46,7 @@ except ImportError as e:
     print("WARNING: Failed to import build_map.py: {}".format(e))
 
 configParser = configparser.RawConfigParser()
-configFilePath = r'config.ini'
+configFilePath = os.path.dirname(os.path.realpath(__file__)) + '/config.ini'
 configParser.read(configFilePath)
 my_cloudserver_ip = configParser.get('cloudserver', 'ip')
 
@@ -144,9 +144,6 @@ class CloudClient:
     Not safe to use from multiple threads. Each thread has to use its own instance.
     """
     def __init__(self):
-        configParser = configparser.RawConfigParser()   
-        configFilePath = r'config.ini'
-        configParser.read(configFilePath)
         self.db = pymysql.connect(configParser.get('mysql', 'host'), configParser.get('mysql', 'username'), configParser.get('mysql', 'password'), configParser.get('mysql', 'database'))
         self.cursor = self.db.cursor()
         self.expected_messages = {}
