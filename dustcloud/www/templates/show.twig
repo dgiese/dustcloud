@@ -20,6 +20,13 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
 <div class="toggle">
     <input type="checkbox" id="toggle_details"><label for="toggle_details"><h3>Details</h3></label>
     <div class="content">
+            {% if device.model == "roborock.vacuum.c1" %}
+                <img src="//cdn.awsde0.fds.api.mi-img.com/miio.files/developer_1521011756p8fe09vn.png">
+            {% elseif device.model == "roborock.vacuum.e2" %}
+                <img src="//cdn.awsde0.fds.api.mi-img.com/miio.files/developer_15248201870e016847.png">
+            {% elseif device.model == "roborock.vacuum.s5" %}
+                <img src="//cdn.awsde0.fds.api.mi-img.com/miio.files/developer_1506499816h06qkus7.png">
+            {% endif %}
         <table>
             {% for key,value in device %}
                 {% if value is not empty and key != 'id' %}
