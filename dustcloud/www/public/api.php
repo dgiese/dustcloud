@@ -85,7 +85,7 @@ function apicall($cmd, $postdata = null){
     $sql = "INSERT INTO `cmdqueue` (`did`, `method`, `params`, `expire`) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 30 SECOND))";
     $statement = $db->prepare($sql);
     Utils::dberror($statement, $db);
-    $statement->bind_param('sss', $did, $cmd, $postdata);
+    $statement->bind_param('sss', $did, $cmd, strval($postdata));
     $success = $statement->execute();
     Utils::dberror($success, $statement);
 

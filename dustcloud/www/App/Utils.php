@@ -6,6 +6,7 @@ class Utils {
 
 	public static function dbError($statement, $db){
 		if($statement === false){
+            header('Error', true, 500);
 			$msg = 'MySQL Error: ' . $db->errno . ': ' . $db->error;
 			echo App::renderTemplate('error.twig', ['msg' => $msg]);
 			die();

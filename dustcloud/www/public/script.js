@@ -63,7 +63,7 @@ function mapAjax(){
                     stopMapAjax();
                     alert("Error: " + xhr.status + ": " + xhr.statusText);
                 }
-            }else if(xhr.response.error > 0){
+            }else if(!xhr.response || xhr.response.error > 0){
                 img.src = 'about:blank';
                 status.innerText = 'No map available';
                 if(xhr.response.data != "No map available"){
