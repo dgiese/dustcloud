@@ -142,7 +142,7 @@ function initControls(){
         var cmd = document.querySelector('.controls select').value;
         var params = getCmdParams(cmd);
         if(cmd === '_custom'){
-            cmd = document.querySelector('.controls .inputs._custom input[name="params"]').value;
+            cmd = document.querySelector('.controls .inputs._custom input[name="cmd"]').value;
         }
 
         var xhr = new XMLHttpRequest();
