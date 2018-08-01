@@ -71,6 +71,7 @@ function mapAjax(){
                     alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                 }
             }else{
+                status.innerText = '';
                 img.src = 'data:image/png;base64,' + xhr.response.data.imagedata;
             }
         }
