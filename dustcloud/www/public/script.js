@@ -81,8 +81,8 @@ function stopMapAjax(){
 }
 
 var dragStarted = false
-var offset = {x: -256, y: -256};
-var startPos = {x: -256, y: -256};
+var offset = {x: -512, y: -512};
+var startPos = {x: -512, y: -512};
 function initMapDrag(){
     var element = document.querySelector('img.map');
 
@@ -122,8 +122,8 @@ function initMapDrag(){
             offset.y += event.movementY;
             offset.x = (offset.x > 0) ? 0 : offset.x;
             offset.y = (offset.y > 0) ? 0 : offset.y;
-            offset.x = (offset.x < -512) ? -512 : offset.x;
-            offset.y = (offset.y < -512) ? -512 : offset.y;
+            offset.x = (offset.x < -1024) ? -1024 : offset.x;
+            offset.y = (offset.y < -1024) ? -1024 : offset.y;
             element.style = 'transform: translate(' + offset.x + 'px, ' + offset.y + 'px)';
         }
     }
