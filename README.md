@@ -1,18 +1,17 @@
 Welcome to our repository for hacking and rooting of the Xiaomi Smart Home Devices. We provide you methods how to root your device without opening it or breaking the warranty seal (on your own risk).
 
-We moved the documentation of the devices (photos, datasheets, uart logs, etc) to a new repo [dustcloud-documentation](https://github.com/dgiese/dustcloud-documentation)
+The documentation of the devices (photos, datasheets, uart logs, etc) was moved to a new repo [dustcloud-documentation](https://github.com/dgiese/dustcloud-documentation)
 
 Please take a look at the Dustcloud Wiki, which also contains instructions on how to root and flash your device: (https://github.com/dgiese/dustcloud/wiki)
 
 # Talks
+[latest, Aug 2018] I have given two talks at DEFCON26 (101-track and IoT-Village):  
+"Having fun with IoT: Reverse Engineering and Hacking of Xiaomi IoT Devices": [DEFCON26 101-track Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26/DEFCON26-Having_fun_with_IoT-Xiaomi.pdf)  
+"How-to modify ARM Cortex-M based firmware: A step-by-step approach for Xiaomi devices": [DEFCON26 IoT Village Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26-IoT-Village/DEFCON26-IoT-Village_How_to_Modify_Cortex_M_Firmware-Xiaomi.pdf)  
 
-Recording of our talk at 34C3 (2017): https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking
-
-You can find a more detailed version of our 34c3 presentation with more details [here](https://github.com/dgiese/dustcloud/raw/master/presentations/34c3-2017/34c3_Staubi-current_split_animation.pdf).
-
-We had a talk at Recon BRX 2018, the recording should be published in the next few months: (https://recon.cx/2018/brussels/)
-
-The Recon presentation can be found [here](https://github.com/dgiese/dustcloud/raw/master/presentations/Recon-BRX2018/recon_brx_2018-final-split.pdf)
+[Jul 2018] I was on tour in Taiwan@HITCON14 Community: [HITCON14 CMT slides](https://dgiese.scripts.mit.edu/talks/HITCON14CMT/hitcon14-iot-reveng-101-xiaomi.pdf)  
+[Feb 2018] We had a talk at [Recon BRX 2018](https://recon.cx/2018/brussels/). The presentation can be found [here](https://dgiese.scripts.mit.edu/talks/Recon-BRX2018/recon_brx_2018-final-split.pdf)  
+[Dec 2017] Our talk at 34C3: [Recording hosted at media.ccc.de]( https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking), [updated PDF](https://dgiese.scripts.mit.edu/talks/34c3-2017/34c3_Staubi-current_split_animation.pdf).  
 
 # Recommended resources / links
 
@@ -27,30 +26,33 @@ https://github.com/rytilahti/python-miio
 
 
 # Communication for the community
-Yes, there is a telegram channel. https://t.me/joinchat/Fl7Mm0iEV7Pgf9ngDyly-g
+Yes, there is a [telegram channel](https://t.me/joinchat/Fl7Mm0iEV7Pgf9ngDyly-g).
 
-If you do not want to use telegram, you can use the following channel: https://matrix.to/#/#dustcloud:matrix.org
+If you do not want to use telegram, you can use the [Matrix.to channel](https://matrix.to/#/#dustcloud:matrix.org)
 or our IRC-Channel `#dustcloudproject` on [Freenode](https://freenode.net/), which is bridged to the matrix channel. 
 
-We are communicating announcements over all channels. 
+In theory you can contact me via [twitter](https://twitter.com/dgi_DE).
+
+I am communicating announcements over all channels. 
 
 Please inform yourself in the forums and with the howtos before you post in this channel. Otherwise your message is very likely to be ignored.
 
+
 # Contact
-* Dennis Giese <dgi[at]posteo.de>
+* Dennis Giese <dgiese[at]mit.edu> / [twitter](https://twitter.com/dgi_DE)
 * Daniel Wegemer <daniel[at]wegemer.com>
 
 # Press information
-Iot will very likely become a very important topic in the future. 
-If you like to know more about IoT security, you can visit us at Northeastern University in Boston, US (Dennis) or at the TU Darmstadt, DE. Please contact us.
+IoT will very likely become a very important topic in the future. 
+If you like to know more about IoT security, you can visit me at Northeastern University in Boston, US. Please contact me.
 
 # Acknowledgements:
 ### Prof. Matthias Hollick at Secure Mobile Networking Lab (SEEMOO)
-<a href="https://www.seemoo.tu-darmstadt.de">![SEEMOO logo](https://github.com/dgiese/dustcloud/raw/master/gfx/seemoo.png)</a>
+<a href="https://www.seemoo.tu-darmstadt.de">![SEEMOO logo](https://github.com/dgiese/dustcloud-documentation/raw/master/gfx/seemoo.png)</a>
 ### Prof. Guevara Noubir (CCIS, Northeastern University)
-<a href="http://www.ccs.neu.edu/home/noubir/Home.html">![CCIS logo](https://github.com/dgiese/dustcloud/raw/master/gfx/CCISLogo_S_gR.png)</a>
+<a href="http://www.ccs.neu.edu/home/noubir/Home.html">![CCIS logo](https://github.com/dgiese/dustcloud-documentation/raw/master/gfx/CCISLogo_S_gR.png)</a>
 ### Ilfak Guilfanov / Hex-Rays: for their great tool "IDA Pro"
-<a href="https://www.hex-rays.com/">![Hex-rays logo](https://github.com/dgiese/dustcloud/raw/master/gfx/hex-rays.png)</a>
+<a href="https://www.hex-rays.com/">![Hex-rays logo](https://github.com/dgiese/dustcloud-documentation//raw/master/gfx/hex-rays.png)</a>
 # Media coverage:
 * https://www.golem.de/news/reverse-engineering-das-xiaomi-oekosystem-vom-hersteller-befreien-1802-132878.html
 * https://www.kaspersky.com/blog/xiaomi-mi-robot-hacked/12567/
