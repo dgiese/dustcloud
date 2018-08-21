@@ -98,6 +98,6 @@ class Utils {
 
 	public static function prettyPrint($json)
 	{
-        return json_encode(json_decode(str_replace("'", '"', $json)), JSON_PRETTY_PRINT);
+        return json_encode(json_decode($json), JSON_PRETTY_PRINT);
 	}
 }
