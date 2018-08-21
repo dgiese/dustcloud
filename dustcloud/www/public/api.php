@@ -32,6 +32,9 @@ switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
     case 'map':
         $result = apicall('get_map');
         break;
+    case 'status':
+        $result = lastStatus();
+        break;
     case 'device':
         $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
         $params = filter_input(INPUT_POST, 'params', FILTER_SANITIZE_STRING);
@@ -66,6 +69,29 @@ function lastContact(){
     }else{
         $lastContact = Utils::formatLastContact($result['last_contact']);
         return ['error' => 0, 'data' => $lastContact];
+    }
+}
+
+function lastStatus(){
+    $db = App::db();
+    $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
+    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `data` LIKE '%\"method\": \"event.status\"%' ORDER BY `timestamp` DESC LIMIT 0,1");
+    Utils::dberror($statement, $db);
+    $statement->bind_param("s", $did);
+    $success = $statement->execute();
+    Utils::dberror($success, $statement);
+    $result = $statement->get_result()->fetch_assoc();
+    $statement->close();
+    if(!$result){
+        header('Not Found', true, 404);
+        return ['error' => 404, 'data' => 'device not found'];
+    }else{
+        $data = json_decode($result['data'], true);
+        return [
+            'error' => 0,
+            'data' => ['result' => $data['params']],
+            'html' => (array_key_exists('params', $data) ? render_apiresponse($data['params'], 'get_status') : ''),
+        ];
     }
 }
 
@@ -122,6 +148,7 @@ function apicall($cmd, $postdata = null){
 function apiresponse(){
     $db = App::db();
     $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
+    $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
     $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT 0,1");
     Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
@@ -133,13 +160,12 @@ function apiresponse(){
     return [
         'error' => 0,
         'data' => $data,
-        'html' => (array_key_exists('result', $data) ? render_apiresponse($data['result']) : ''),
+        'html' => (array_key_exists('result', $data) ? render_apiresponse($data['result'], $cmd) : ''),
     ];
 }
 
 
-function render_apiresponse($data){
-    $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
+function render_apiresponse($data, $cmd){
     $result = [];
     switch ($cmd) {
         case 'miIO.info':

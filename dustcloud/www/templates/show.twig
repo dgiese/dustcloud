@@ -6,6 +6,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         startLastContactAjax();
         startMapAjax();
+        startStatusAjax();
         initMapDrag();
         initControls();
     });
@@ -34,6 +35,11 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
                 {% endif %}
             {% endfor %}
         </table>
+    </div>
+</div>
+<div class="toggle">
+    <input type="checkbox" id="toggle_status"><label for="toggle_status"><h3>Status</h3></label>
+    <div class="content status">
     </div>
 </div>
 <div class="toggle">

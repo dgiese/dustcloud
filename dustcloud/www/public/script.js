@@ -81,6 +81,34 @@ function stopMapAjax(){
     clearInterval(mapTimer);
 }
 
+var statusTimer;
+function startStatusAjax(){
+    statusTimer = window.setInterval(statusAjax, 1000);
+    statusAjax();
+}
+function statusAjax(){
+    var container = document.querySelector('div.content.status');
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'api.php?action=status&did=' + did);
+    xhr.responseType = 'json';
+    xhr.send();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if(xhr.status !== 200){
+                container.innerHTML = "";
+                if(xhr.status !== 0){
+                    stopMapAjax();
+                    alert("Error: " + xhr.status + ": " + xhr.statusText);
+                }
+            }else if(!xhr.response || xhr.response.error > 0){
+                container.innerHTML = "";
+            }else{
+                container.innerHTML = xhr.response.html;
+            }
+        }
+    };
+}
+
 var dragStarted = false
 var offset = {x: -256, y: -256};
 var startPos = {x: -256, y: -256};
