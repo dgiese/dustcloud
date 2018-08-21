@@ -149,7 +149,7 @@ function apiresponse(){
     $db = App::db();
     $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
     $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
-    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT 0,1");
+    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' AND `data` NOT LIKE '%\"method\": \"_sync.gen_presigned_url\"%' ORDER BY `timestamp` DESC LIMIT 0,1");
     Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
     $success = $statement->execute();

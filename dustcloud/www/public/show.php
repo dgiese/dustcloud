@@ -29,7 +29,7 @@ if(!$result){
     ];
     echo App::renderTemplate('error.twig', $templateData);
 }else{
-    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT 0,1");
+    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' AND `data` NOT LIKE '%\"method\": \"_sync.gen_presigned_url\"%' ORDER BY `timestamp` DESC LIMIT 0,1");
     Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
     $success = $statement->execute();
