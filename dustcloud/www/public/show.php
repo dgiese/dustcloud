@@ -36,13 +36,49 @@ if(!$result){
     Utils::dberror($success, $statement);
     $statusresult = $statement->get_result()->fetch_assoc();
     $statement->close();
+    $dataobject = json_decode($statusresult['data'], true);
     $statusresult['data'] = Utils::prettyprint($statusresult['data']);
     $result['forward_to_cloud'] = Utils::yesno($result['forward_to_cloud']);
     $result['full_cloud_forward'] = Utils::yesno($result['full_cloud_forward']);
 
+    $statement = $db->prepare("SELECT `data` FROM `statuslog` WHERE `did` = ? AND `direction` = 'client << dustcloud (cmd)' ORDER BY `timestamp` DESC LIMIT 0,1");
+    Utils::dberror($statement, $db);
+    $statement->bind_param("s", $did);
+    $success = $statement->execute();
+    Utils::dberror($success, $statement);
+    $cmdresult = $statement->get_result()->fetch_assoc();
+    $cmdresult['data'] = json_decode($cmdresult['data'], true);
+    $statement->close();
+    
     $templateData = [
         'device' => $result,
         'status' => $statusresult,
+        'lastcmd' => $cmdresult['data']['method'],
+        'commands' => commands(),
+        'html' => Utils::render_apiresponse($dataobject['result'], $cmdresult['data']['method']),
     ];
     echo App::renderTemplate('show.twig', $templateData);
+}
+
+
+function commands(){
+    return [
+        '_custom' => 'custom command',
+        'miIO.info' => 'miIO Info',
+        'find_me' => 'find me',
+        'app_charge' => 'go back to dock',
+        'app_start' => 'start cleaning',
+        'app_stop' => 'stop cleaning',
+        'app_pause' => 'pause cleaning',
+        'app_spot' => 'start spot cleaning',
+        'get_status' => 'get status',
+        'get_consumable' => 'get consumables',
+        'get_clean_summary' => 'get clean summary',
+        'get_clean_record' => 'get clean record',
+        'get_timer' => 'get timers',
+        'get_dnd_timer' => 'get DND timer',
+        'get_custom_mode' => 'get custom mode',
+        'get_map_v1' => 'get map v1',
+        'set_custom_mode' => 'set custom mode',
+    ];
 }

@@ -51,23 +51,9 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
         </div>
         <div class="controlswrapper">
             <select name="cmd" class="cmd">
-                <option value="_custom">custom command</option>
-                <option value="miIO.info">miIO Info</option>
-                <option value="find_me">find me</option>
-                <option value="app_charge">go back to dock</option>
-                <option value="app_start">start cleaning</option>
-                <option value="app_stop">stop cleaning</option>
-                <option value="app_pause">pause cleaning</option>
-                <option value="app_spot">start spot cleaning</option>
-                <option value="get_status">get status</option>
-                <option value="get_consumable">get consumables</option>
-                <option value="get_clean_summary">get clean summary</option>
-                <option value="get_clean_record">get clean record</option>
-                <option value="get_timer">get timers</option>
-                <option value="get_dnd_timer">get DND timer</option>
-                <option value="get_custom_mode">get custom mode</option>
-                <option value="get_map_v1">get map v1</option>
-                <option value="set_custom_mode">set custom mode</option>
+                {% for key,value in commands %}
+                    <option value="{{ key }}"{% if lastcmd == key %} selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
             </select>
             <button>Go</button>
             <div id="loader" class="loader" style="visibility: hidden"></div>
@@ -89,7 +75,7 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
             </div>
             <input type="checkbox" id="shortpre" checked="checked">
             <label for="shortpre"><pre>{{ status.data }}</pre></label>
-            <div class="result"></div>
+            <div class="result">{{ html|raw }}</div>
             <br class="clearboth">
         </div>
     </div>
