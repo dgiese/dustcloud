@@ -156,7 +156,7 @@ class CloudClient:
             pass
 
     def do_log(self, did, data, direction):
-        data = "%s" % data
+        data = json.dumps(data)
         try:
             self.cursor.execute("Insert into statuslog(did, data, direction) VALUES(%s, %s, %s)", (did, data, str(direction)))
             self.db.commit()
@@ -166,7 +166,7 @@ class CloudClient:
             self.db.rollback()
 
     def do_log_raw(self, did, data, direction):
-        data = "%s" % data
+        data = json.dumps(data)
         try:
             self.cursor.execute("Insert into raw(did, raw, direction) VALUES(%s, %s, %s)", (did, data, str(direction)))
             self.db.commit()
