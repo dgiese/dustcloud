@@ -7,6 +7,10 @@ switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
         readfile('demo/map.json');
         die();
         break;
+    case 'status':
+        readfile('demo/status.json');
+        die();
+        break;
     case 'device':
         $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
         switch($cmd){
