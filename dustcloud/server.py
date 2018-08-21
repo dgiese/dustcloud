@@ -74,7 +74,11 @@ def get_device(did):
         return None
 
 
+slam_content = ""
+map_content = bytes("")
 def process_runtime_map(data):
+    global slam_content
+    global map_content
     next = 32
     did = re.search(b'did=(.+?)\\n', data[next:next+32])
     if did:
@@ -90,29 +94,49 @@ def process_runtime_map(data):
     if slam_size:
         next = next + slam_size.span(1)[1] + 1
         slam_size = int(slam_size.group(1).decode())
+        slam_content += data[next:next+slam_size].decode()
+        print(slam_content)
+        next = next+slam_size
     else:
         print("Missing slam_size in ROCKROBO_MAP__ message")
-        return
-
-    slam_content = data[next:next+slam_size].decode()
-    next = next+slam_size
+        #return
 
     map_size = re.search(b'MAP=(.+?)\\n', data[next:next + 32])
     if map_size:
         next = next + map_size.span(1)[1] + 1
         map_size = int(map_size.group(1).decode())
+        map_content = data[next:next + map_size]
+        next = next + map_size
     else:
         print("Missing map_size in ROCKROBO_MAP__ message")
-        return
+        #return
 
-    map_content = data[next:next + map_size]
+    path_size = re.search(b'PATH=(.+?)\\n', data[next:next + 32])
+    if path_size:
+        next = next + path_size.span(1)[1] + 1
+        path_size = int(path_size.group(1).decode())
+        path_content = data[next:next + path_size]
+        next = next + path_size
+    else:
+        print("Missing path_size in ROCKROBO_MAP__ message")
+        #return
 
-    next = next + map_size
+    grid_size = re.search(b'GRID=(.+?)\\n', data[next:next + 32])
+    if grid_size:
+        next = next + grid_size.span(1)[1] + 1
+        grid_size = int(grid_size.group(1).decode())
+        grid_content = data[next:next + grid_size]
+        next = next + grid_size
+    else:
+        print("Missing grid_size in ROCKROBO_MAP__ message")
+        #return
+
+    
     if next != len(data):
         print("Parse error, discarding ROCKROBO_MAP__ message")
         return
 
-    navmap = build_map(slam_content, map_content)
+    navmap = build_map(slam_content, map_content, path_content, grid_content)
     device_maps[int(did)] = navmap.getvalue()
 
 
