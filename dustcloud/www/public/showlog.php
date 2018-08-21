@@ -48,6 +48,8 @@ if(!$device){
         'page' => $page,
         'device' => $device,
         'log' => $result,
+        'count' => count($result),
+        'perpage' => $perpage,
     ];
     echo App::renderTemplate('showlog.twig', $templateData);
 }
