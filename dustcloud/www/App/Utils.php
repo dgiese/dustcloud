@@ -107,6 +107,7 @@ class Utils {
 		$result = [];
 		switch ($cmd) {
 			case 'miIO.info':
+			case '_otc.info':
 				$result = [
 					[
 						'key' => 'AP BSSID',
@@ -151,6 +152,7 @@ class Utils {
 				];
 				break;
 			case 'get_status':
+			case 'event.status':
 				$result = [
 					[
 						'key' => 'error',
@@ -313,6 +315,7 @@ class Utils {
 				];
 				break;
 		}
+
 		return App::renderTemplate('_result.twig', ['result' => $result]);
 	}
 

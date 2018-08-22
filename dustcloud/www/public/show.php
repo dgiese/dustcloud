@@ -50,12 +50,15 @@ if(!$result){
     $cmdresult['data'] = json_decode($cmdresult['data'], true);
     $statement->close();
     
+    $dataToRender = (array_key_exists('params', $dataobject) ? $dataobject['params'] : $dataobject['result']);
+    $command = (array_key_exists('method', $dataobject) && substr($dataobject['method'], 0, 6) === 'event.') ? $dataobject['method'] : $cmdresult['data']['method'];
+
     $templateData = [
         'device' => $result,
         'status' => $statusresult,
         'lastcmd' => $cmdresult['data']['method'],
         'commands' => commands(),
-        'html' => Utils::render_apiresponse($dataobject['result'], $cmdresult['data']['method']),
+        'html' => Utils::render_apiresponse($dataToRender, $command),
     ];
     echo App::renderTemplate('show.twig', $templateData);
 }
