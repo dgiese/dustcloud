@@ -69,8 +69,16 @@ function routeAjax(full = false){
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if(xhr.status === 200){
-                if(xhr.response && xhr.response.length > 0){
-                    drawRoute(xhr.response);
+                if(xhr.response && xhr.response.data.length > 0){
+                    console.log("reset: " + parseInt(xhr.response.reset) + "/" + latestRouteTs);
+                    if(parseInt(xhr.response.reset) > latestRouteTs){
+                        console.log('reset');
+                        mapCanvasContext.clearRect(0, 0, 1024, 1024);
+                        latestRouteTs = xhr.response.reset;
+                        routeAjax(true);
+                    }else{
+                        drawRoute(xhr.response.data);
+                    }
                 }
             }
         }
