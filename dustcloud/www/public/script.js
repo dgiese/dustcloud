@@ -47,8 +47,67 @@ function startMapAjax(){
     mapTimer = window.setInterval(mapAjax, 5000);
     mapAjax();
 }
+
+var routeTimer;
+var latestRouteTs = 0;
+var prevDrawingPos = {x: 512, y: 512};
+var mapCanvas;
+var mapCanvasContext;
+function startRouteAjax(){
+    mapCanvas = document.querySelector('#mapcanvas');
+    mapCanvasContext = mapCanvas.getContext('2d');
+    
+    routeTimer = window.setInterval(routeAjax, 1000);
+    routeAjax(true);
+}
+
+function routeAjax(full = false){
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'api.php?action=' + (full ? 'full' : '') + 'route&did=' + did);
+    xhr.responseType = 'json';
+    xhr.send();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if(xhr.status === 200){
+                if(xhr.response && xhr.response.length > 0){
+                    drawRoute(xhr.response);
+                }
+            }
+        }
+    };
+}
+
+function drawRoute(data){
+    mapCanvasContext.beginPath();
+    var found = false;
+    for (let i = 0; i < data.length; i++) {
+        const element = data[i];
+        // *20 for correct scaling +/- 512 for shifting to correct position
+        const x = 512 + (element.x * 20);
+        const y = 512 - (element.y * 20);
+        console.log("t:" + element.t + "/" + latestRouteTs);
+        if(parseInt(element.t) > latestRouteTs){
+            if(found === false){
+                mapCanvasContext.moveTo(prevDrawingPos.x, prevDrawingPos.y);
+                console.log('moving to ' + prevDrawingPos.x + '/' + prevDrawingPos.y);
+                found = true;
+            }
+            console.log('drawing to ' + x + '/' + y);
+            mapCanvasContext.lineTo(x, y);
+        }
+
+        prevDrawingPos.x = x;
+        prevDrawingPos.y = y;
+    }
+
+    mapCanvasContext.strokeStyle = "red";
+    mapCanvasContext.lineWidth = 2;
+    mapCanvasContext.stroke();
+    latestRouteTs = parseInt(data[data.length - 1].t);
+}
+
 function mapAjax(){
-    var img = document.querySelector('img.map');
+    var img = document.querySelector('div.map img');
     var status = document.querySelector('.mapwrapper p');
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'api.php?action=map&did=' + did);
@@ -59,6 +118,7 @@ function mapAjax(){
             if(xhr.status !== 200){
                 img.src = 'about:blank';
                 status.innerText = 'No map available';
+                status.style = 'display: block';
                 if(xhr.status !== 0){
                     stopMapAjax();
                     alert("Error: " + xhr.status + ": " + xhr.statusText);
@@ -66,12 +126,14 @@ function mapAjax(){
             }else if(!xhr.response || xhr.response.error > 0){
                 img.src = 'about:blank';
                 status.innerText = 'No map available';
+                status.style = 'display: block';
                 if(xhr.response.data != "No map available"){
                     stopMapAjax();
                     alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                 }
             }else{
                 status.innerText = '';
+                status.style = 'display: none';
                 img.src = 'data:image/png;base64,' + xhr.response.data.imagedata;
             }
         }
@@ -113,13 +175,13 @@ var dragStarted = false
 var offset = {x: -256, y: -256};
 var startPos = {x: -256, y: -256};
 function initMapDrag(){
-    var element = document.querySelector('img.map');
+    var element = document.querySelector('div.map');
 
     if(parseInt(localStorage.mapPosX)){
         startPos.x = parseInt(localStorage.mapPosX);
         offset.x = parseInt(localStorage.mapPosX);
     }
-    if(localStorage.mapPosY){
+    if(parseInt(localStorage.mapPosY)){
         startPos.y = parseInt(localStorage.mapPosY);
         offset.y = parseInt(localStorage.mapPosY);
     }
@@ -141,8 +203,8 @@ function initMapDrag(){
         dragStarted = false;
         startPos.x = offset.x;
         startPos.y = offset.y;
-        localStorage.mapPosX = offset.x;
-        localStorage.mapPosY = offset.y;
+        localStorage.mapPosX = parseInt(offset.x);
+        localStorage.mapPosY = parseInt(offset.y);
     });
 
     function move(event){
@@ -179,7 +241,6 @@ function initControls(){
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.responseType = 'json';
         var postdata = 'cmd=' + encodeURIComponent(cmd) + '&params=' + encodeURIComponent(params);
-        console.log(postdata);
         xhr.send(postdata);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
@@ -196,7 +257,6 @@ function initControls(){
                     document.querySelector('.controls pre').innerHTML = '&nbsp;'
                     document.querySelector('.controls .result').innerHTML = '';
                 }else{
-                    console.log(xhr.response.data);
                     document.querySelector('.controls pre').innerText = JSON.stringify(xhr.response.data, null, 4);
                     document.querySelector('.controls .result').innerHTML = xhr.response.html;
                 }
@@ -211,7 +271,7 @@ function getCmdParams(cmd){
     for (let i = 0; i < inputElements.length; i++) {
         inputs[inputElements[i].name] = inputElements[i];
     }
-    console.log(inputs);
+
     switch (cmd) {
         case '_custom':
                 return inputs.params.value;

@@ -152,9 +152,17 @@ select {
     vertical-align: top;
 }
 
-img.map {
+div.map {
+    width: 1024px;
+    height: 1024px;
     background-color: #00B0FF;
     cursor: hand;
+}
+
+div.map canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 pre {

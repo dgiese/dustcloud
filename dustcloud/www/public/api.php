@@ -32,6 +32,12 @@ switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
     case 'map':
         $result = apicall('get_map');
         break;
+    case 'route':
+        $result = getRoute();
+        break;
+    case 'fullroute':
+        $result = getRoute(true);
+        break;
     case 'status':
         $result = lastStatus();
         break;
@@ -93,6 +99,17 @@ function lastStatus(){
             'html' => (array_key_exists('params', $data) ? Utils::render_apiresponse($data['params'], 'get_status') : ''),
         ];
     }
+}
+
+function getRoute($full = false){
+    $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
+    $all = $full ? '/all' : '';
+    $url = 'http://localhost:' . App::config('cloudserver.mapport', 8080) . '/' . $did;
+    $result = json_decode(file_get_contents($url . $all));
+    if(empty($result) && $all === '/all'){
+        $result = json_decode(file_get_contents('http://localhost:82/' . $did . '/prev'), true);
+    }
+    return $result;
 }
 
 function apicall($cmd, $postdata = null){

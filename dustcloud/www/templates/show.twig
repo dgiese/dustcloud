@@ -6,6 +6,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         startLastContactAjax();
         startMapAjax();
+        startRouteAjax();
         startStatusAjax();
         initMapDrag();
         initControls();
@@ -47,7 +48,10 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
     <div class="content controls">
         <div class="mapwrapper">
             <p>Loading map...</p>
-            <img class="map">
+            <div class="map">
+                <img>
+                <canvas id="mapcanvas" width="1024" height="1024">
+            </div>
         </div>
         <div class="controlswrapper">
             <select name="cmd" class="cmd">
