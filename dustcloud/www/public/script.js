@@ -70,7 +70,6 @@ function routeAjax(full = false){
         if (xhr.readyState === 4) {
             if(xhr.status === 200){
                 if(xhr.response && xhr.response.data.length > 0){
-                    console.log("reset: " + parseInt(xhr.response.reset) + "/" + latestRouteTs);
                     if(parseInt(xhr.response.reset) > latestRouteTs){
                         console.log('reset');
                         mapCanvasContext.clearRect(0, 0, 1024, 1024);
@@ -90,17 +89,14 @@ function drawRoute(data){
     var found = false;
     for (let i = 0; i < data.length; i++) {
         const element = data[i];
-        // *20 for correct scaling +/- 512 for shifting to correct position
-        const x = 512 + (element.x * 20);
-        const y = 512 - (element.y * 20);
-        console.log("t:" + element.t + "/" + latestRouteTs);
+        // *20 for correct scaling; y/x swapped +/- 512 for shifting to correct position
+        const x = 512 + (element.y * 20);
+        const y = 512 - (element.x * 20);
         if(parseInt(element.t) > latestRouteTs){
             if(found === false){
                 mapCanvasContext.moveTo(prevDrawingPos.x, prevDrawingPos.y);
-                console.log('moving to ' + prevDrawingPos.x + '/' + prevDrawingPos.y);
                 found = true;
             }
-            console.log('drawing to ' + x + '/' + y);
             mapCanvasContext.lineTo(x, y);
         }
 

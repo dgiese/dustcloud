@@ -47,7 +47,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 if did not in lastreset:
                     lastreset[did] = float(0)
 
-                slamdata[did].append({'t': float(slam[0]), 'x': float(slam[2]), 'y': float(slam[3]), 'z': float(slam[4])})
+                slamdata[did].append({'t': float(slam[0]), 'y': float(slam[2]), 'x': float(slam[3]), 'z': float(slam[4])})
             elif slam[1] == "resume":
                 if did in slamdata:
                     slamdata[did] = []
