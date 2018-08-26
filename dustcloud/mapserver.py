@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Author: Thomas Tsiakalakis [mail@tsia.de]
 # Copyright 2018 by Thomas Tsiakalakis
 
@@ -25,10 +27,12 @@ listenaddr = configParser.get('cloudserver', 'mapaddr')
 listenport = int(configParser.get('cloudserver', 'mapport'))
 
 slamdata = {}
+lastreset = {}
 class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request.recv(31).strip()
         httplength = data.find(b'\n')
+        print(data[0:httplength]);
         if data[0:14] == b"ROCKROBO_MAP__":
             print("===== {} =====".format(self.client_address[0]))
             payload = self.request.recv(int(data[15:31]) + 1)
@@ -39,18 +43,19 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             if slam[1] == "estimate":
                 if not did in slamdata:
                     slamdata[did] = []
-                if not did + "_prev" in slamdata:
-                    slamdata[did + "_prev"] = []
+
+                if did not in lastreset:
+                    lastreset[did] = float(0)
+
                 slamdata[did].append({'t': float(slam[0]), 'x': float(slam[2]), 'y': float(slam[3]), 'z': float(slam[4])})
-            elif slam[1] == "reset":
+            elif slam[1] == "resume":
                 if did in slamdata:
-                    if len(slamdata[did]) > 3:
-                        slamdata[did + "_prev"] = slamdata[did]
                     slamdata[did] = []
-        elif re.search(b'GET /([^ /]+)(/all|/prev)? HTTP/1\\.[0-9]', data[0:httplength]):
+                lastreset[did] = float(slam[0])
+        elif re.search(b'GET /([^ /]+)(/all)? HTTP/1\\.[0-9]', data[0:httplength]):
             print("===== {} =====".format(self.client_address[0]))
             print(data[0:httplength].decode())
-            matches = re.search(b'GET /([^ /]+)(/all|/prev)? HTTP/1\\.[0-9]', data[0:httplength])
+            matches = re.search(b'GET /([^ /]+)(/all)? HTTP/1\\.[0-9]', data[0:httplength])
             did = matches.group(1)
             print("HTTP Request for " + did.decode())
             printall = matches.group(2)
@@ -59,13 +64,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 http = "HTTP/1.0 200 OK\n"
                 http = http + "Content-Type: application/json; charset=UTF-8\n\n"
                 if printall == b"/all":
-                    print("all")
-                    http = http + json.dumps(slamdata[did.decode()])
-                elif printall == b"/prev":
-                    print("prev")
-                    http = http + json.dumps(slamdata[did.decode() + "_prev"])
+                    http = http + json.dumps({'reset': lastreset[did.decode()], 'data': slamdata[did.decode()]})
                 else:
-                    http = http + json.dumps(slamdata[did.decode()][-3:])
+                    http = http + json.dumps({'reset': lastreset[did.decode()], 'data': slamdata[did.decode()][-3:]})
             else:
                 print("Not Found")
                 http = "HTTP/1.0 404 Not Found\n"
