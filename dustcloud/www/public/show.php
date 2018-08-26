@@ -51,7 +51,7 @@ if(!$result){
     $statement->close();
     
     $dataToRender = (array_key_exists('params', $dataobject) ? $dataobject['params'] : $dataobject['result']);
-    $command = (array_key_exists('method', $dataobject) && substr($dataobject['method'], 0, 6) === 'event.') ? $dataobject['method'] : $cmdresult['data']['method'];
+    $command = (array_key_exists('method', $dataobject) && (substr($dataobject['method'], 0, 6) === 'event.' || $dataobject['method'] === '_otc.info')) ? $dataobject['method'] : $cmdresult['data']['method'];
 
     $templateData = [
         'device' => $result,

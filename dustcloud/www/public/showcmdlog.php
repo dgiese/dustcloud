@@ -35,7 +35,7 @@ if(!$device){
     ];
     echo App::renderTemplate('error.twig', $templateData);
 }else{
-    $statement = $db->prepare("SELECT * FROM `cmdqueue` WHERE `did` = ? ORDER BY `cmdid` DESC LIMIT " . $limit);
+    $statement = $db->prepare("SELECT * FROM `cmdqueue` WHERE `did` = ? AND `method` != 'get_map' ORDER BY `cmdid` DESC LIMIT " . $limit);
     Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
     $success = $statement->execute();
