@@ -42,6 +42,8 @@ function stopLastContactAjax(){
     clearInterval(lastContactTimer);
 }
 
+const mapsize = {x: 2048, y: 2048};
+const mapfactor = 2;
 var mapTimer;
 function startMapAjax(){
     mapTimer = window.setInterval(mapAjax, 5000);
@@ -50,7 +52,7 @@ function startMapAjax(){
 
 var routeTimer;
 var latestRouteTs = 0;
-var prevDrawingPos = {x: 512, y: 512};
+var prevDrawingPos = {x: mapsize.x/2, y: mapsize.y/2};
 var mapCanvas;
 var mapCanvasContext;
 function startRouteAjax(){
@@ -72,7 +74,7 @@ function routeAjax(full = false){
                 if(xhr.response && xhr.response.data.length > 0){
                     if(parseInt(xhr.response.reset) > latestRouteTs){
                         console.log('reset');
-                        mapCanvasContext.clearRect(0, 0, 1024, 1024);
+                        mapCanvasContext.clearRect(0, 0, mapsize.x, mapsize.y);
                         latestRouteTs = xhr.response.reset;
                         routeAjax(true);
                     }else{
@@ -90,8 +92,8 @@ function drawRoute(data){
     for (let i = 0; i < data.length; i++) {
         const element = data[i];
         // *20 for correct scaling; y/x swapped +/- 512 for shifting to correct position
-        const x = 512 + (element.y * 20);
-        const y = 512 - (element.x * 20);
+        const x = mapsize.x/2 + (element.y * 20 * mapfactor);
+        const y = mapsize.y/2 - (element.x * 20 * mapfactor);
         if(parseInt(element.t) > latestRouteTs){
             if(found === false){
                 mapCanvasContext.moveTo(prevDrawingPos.x, prevDrawingPos.y);
@@ -176,8 +178,8 @@ function statusAjax(){
 }
 
 var dragStarted = false
-var offset = {x: -256, y: -256};
-var startPos = {x: -256, y: -256};
+var offset =   {x: (mapsize.x/-4), y: (mapsize.y/-4)};
+var startPos = {x: (mapsize.x/-4), y: (mapsize.y/-4)};
 function initMapDrag(){
     var element = document.querySelector('div.map');
 
@@ -217,8 +219,8 @@ function initMapDrag(){
             offset.y += event.movementY;
             offset.x = (offset.x > 0) ? 0 : offset.x;
             offset.y = (offset.y > 0) ? 0 : offset.y;
-            offset.x = (offset.x < -512) ? -512 : offset.x;
-            offset.y = (offset.y < -512) ? -512 : offset.y;
+            offset.x = (offset.x < (mapsize.x/-2)) ? (mapsize.x/-2) : offset.x;
+            offset.y = (offset.y < (mapsize.y/-2)) ? (mapsize.x/-2) : offset.y;
             element.style = 'transform: translate(' + offset.x + 'px, ' + offset.y + 'px)';
         }
     }
