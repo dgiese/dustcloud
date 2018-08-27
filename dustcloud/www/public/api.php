@@ -104,7 +104,7 @@ function lastStatus(){
 function getRoute($full = false){
     $did = filter_input(INPUT_GET, 'did', FILTER_VALIDATE_INT);
     $all = $full ? '/all' : '';
-    $url = 'http://localhost:' . App::config('cloudserver.mapport', 8080) . '/' . $did;
+    $url = 'http://localhost:' . App::config('mapport', 8080, 'cloudserver') . '/' . $did;
     $result = json_decode(file_get_contents($url . $all));
     if(empty($result) && $all === '/all'){
         $result = json_decode(file_get_contents('http://localhost:82/' . $did . '/prev'), true);
