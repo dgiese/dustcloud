@@ -39,7 +39,7 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
     </div>
 </div>
 <div class="toggle">
-    <input type="checkbox" id="toggle_status"><label for="toggle_status"><h3>Status</h3></label>
+    <input type="checkbox" id="toggle_status" checked="checked"><label for="toggle_status"><h3>Status</h3></label>
     <div class="content status">
         <div class="mapwrapper">
             <p>Loading map...</p>
@@ -52,7 +52,7 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
     </div>
 </div>
 <div class="toggle">
-    <input type="checkbox" id="toggle_controls" checked="checked"><label for="toggle_controls"><h3>Controls</h3></label>
+    <input type="checkbox" id="toggle_controls"><label for="toggle_controls"><h3>Controls</h3></label>
     <div class="content controls">
         <select name="cmd" class="cmd">
             {% for key,value in commands %}
