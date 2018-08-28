@@ -155,7 +155,7 @@ function startStatusAjax(){
     statusAjax();
 }
 function statusAjax(){
-    var container = document.querySelector('div.content.status');
+    var container = document.querySelector('div.content.status .statuswrapper');
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'api.php?action=status&did=' + did);
     xhr.responseType = 'json';

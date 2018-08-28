@@ -147,7 +147,7 @@ select {
     color: white;
 }
 
-.controlswrapper {
+.statuswrapper {
     display: inline-block;
     vertical-align: top;
 }

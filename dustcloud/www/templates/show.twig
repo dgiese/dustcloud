@@ -41,11 +41,6 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
 <div class="toggle">
     <input type="checkbox" id="toggle_status"><label for="toggle_status"><h3>Status</h3></label>
     <div class="content status">
-    </div>
-</div>
-<div class="toggle">
-    <input type="checkbox" id="toggle_controls" checked="checked"><label for="toggle_controls"><h3>Controls</h3></label>
-    <div class="content controls">
         <div class="mapwrapper">
             <p>Loading map...</p>
             <div class="map">
@@ -53,35 +48,39 @@ Last contact: <span class="last_contact" data-did="{{ device.did }}">...</span>
                 <canvas id="mapcanvas" width="2048" height="2048">
             </div>
         </div>
-        <div class="controlswrapper">
-            <select name="cmd" class="cmd">
-                {% for key,value in commands %}
-                    <option value="{{ key }}"{% if lastcmd == key %} selected="selected"{% endif %}>{{ value }}</option>
-                {% endfor %}
-            </select>
-            <button>Go</button>
-            <div id="loader" class="loader" style="visibility: hidden"></div>
-            <div class="inputs _custom">
-                <table>
-                    <tr><th>Command</th><td><input type="text" name="cmd" placeholder="get_clean_record"></td></tr>
-                    <tr><th>Parameters</th><td><input type="text" name="params" placeholder="[1534567890]"></td></tr>
-                </table>
-            </div>
-            <div class="inputs get_clean_record">
-                <table>
-                    <tr><th>ID</th><td><input type="number" name="id" step="1" maxlength="10" placeholder="1534567890"></td></tr>
-                </table>
-            </div>
-            <div class="inputs set_custom_mode">
-                <table>
-                    <tr><th>fan power</th><td><input type="number" name="power" min="0" max="100" placeholder="77">%</td></tr>
-                </table>
-            </div>
-            <input type="checkbox" id="shortpre" checked="checked">
-            <label for="shortpre"><pre>{{ status.data }}</pre></label>
-            <div class="result">{{ html|raw }}</div>
-            <br class="clearboth">
+        <div class="statuswrapper"></div>
+    </div>
+</div>
+<div class="toggle">
+    <input type="checkbox" id="toggle_controls" checked="checked"><label for="toggle_controls"><h3>Controls</h3></label>
+    <div class="content controls">
+        <select name="cmd" class="cmd">
+            {% for key,value in commands %}
+                <option value="{{ key }}"{% if lastcmd == key %} selected="selected"{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+        <button>Go</button>
+        <div id="loader" class="loader" style="visibility: hidden"></div>
+        <div class="inputs _custom">
+            <table>
+                <tr><th>Command</th><td><input type="text" name="cmd" placeholder="get_clean_record"></td></tr>
+                <tr><th>Parameters</th><td><input type="text" name="params" placeholder="[1534567890]"></td></tr>
+            </table>
         </div>
+        <div class="inputs get_clean_record">
+            <table>
+                <tr><th>ID</th><td><input type="number" name="id" step="1" maxlength="10" placeholder="1534567890"></td></tr>
+            </table>
+        </div>
+        <div class="inputs set_custom_mode">
+            <table>
+                <tr><th>fan power</th><td><input type="number" name="power" min="0" max="100" placeholder="77">%</td></tr>
+            </table>
+        </div>
+        <input type="checkbox" id="shortpre" checked="checked">
+        <label for="shortpre"><pre>{{ status.data }}</pre></label>
+        <div class="result">{{ html|raw }}</div>
+        <br class="clearboth">
     </div>
 </div>
 {% endblock %}
