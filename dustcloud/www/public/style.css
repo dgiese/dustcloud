@@ -133,6 +133,11 @@ select {
     content: '–';
 }
 
+.last_contact {
+    font-family: monospace;
+    font-size: .9rem;
+}
+
 .mapwrapper {
     display: inline-block;
     width: 650px;
