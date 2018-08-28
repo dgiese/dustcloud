@@ -135,8 +135,8 @@ select {
 
 .mapwrapper {
     display: inline-block;
-    width: 1024px;
-    height: 1024px;
+    width: 650px;
+    height: 650px;
     overflow: hidden;
     background-color: #424242;
     margin-right: 2rem;
@@ -148,7 +148,8 @@ select {
 }
 
 .controlswrapper {
-    display: block;
+    display: inline-block;
+    vertical-align: top;
 }
 
 div.map {
