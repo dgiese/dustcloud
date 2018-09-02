@@ -52,6 +52,7 @@ function startMapAjax(){
 
 var routeTimer;
 var latestRouteTs = 0;
+var prevDrawingPos = {x: false, y: false};
 var mapCanvas;
 var mapCanvasContext;
 function startRouteAjax(){
@@ -94,13 +95,20 @@ function drawRoute(data){
         const x = mapsize.x/2 + (element.y * 20 * mapfactor);
         const y = mapsize.y/2 - (element.x * 20 * mapfactor);
         if(parseInt(element.t) > latestRouteTs){
-            if(found === false){
+            if(found === false && prevDrawingPos.x === false && prevDrawingPos.y === false){
                 mapCanvasContext.moveTo(x, y);
+                found = true;
+            }else if(found === false){
+                mapCanvasContext.moveTo(prevDrawingPos.x, prevDrawingPos.y);
+                mapCanvasContext.lineTo(x, y);
                 found = true;
             }else{
                 mapCanvasContext.lineTo(x, y);
+                found = true;
             }
         }
+        prevDrawingPos.x = x;
+        prevDrawingPos.y = y;
     }
 
     mapCanvasContext.strokeStyle = "red";
