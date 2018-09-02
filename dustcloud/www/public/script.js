@@ -52,7 +52,6 @@ function startMapAjax(){
 
 var routeTimer;
 var latestRouteTs = 0;
-var prevDrawingPos = {x: mapsize.x/2, y: mapsize.y/2};
 var mapCanvas;
 var mapCanvasContext;
 function startRouteAjax(){
@@ -96,14 +95,12 @@ function drawRoute(data){
         const y = mapsize.y/2 - (element.x * 20 * mapfactor);
         if(parseInt(element.t) > latestRouteTs){
             if(found === false){
-                mapCanvasContext.moveTo(prevDrawingPos.x, prevDrawingPos.y);
+                mapCanvasContext.moveTo(x, y);
                 found = true;
+            }else{
+                mapCanvasContext.lineTo(x, y);
             }
-            mapCanvasContext.lineTo(x, y);
         }
-
-        prevDrawingPos.x = x;
-        prevDrawingPos.y = y;
     }
 
     mapCanvasContext.strokeStyle = "red";
@@ -199,10 +196,18 @@ function initMapDrag(){
     element.addEventListener('mousedown', function(downevent){
         dragStarted = true;
         document.addEventListener('mousemove', move);
-
     });
-    document.addEventListener('mouseup', function(event){
-        document.removeEventListener('mousemove', move)
+    document.addEventListener('mouseup', moveEnd);
+
+    element.addEventListener('touchstart', function(downevent){
+        dragStarted = true;
+        document.addEventListener('touchmove', move);
+    });
+    document.addEventListener('touchend', moveEnd);
+    
+    function moveEnd(event){
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('touchmove', move);
         if(startPos.x === offset.x && startPos.y === offset.y && dragStarted === true){
             console.log('set marker');
         }
@@ -211,7 +216,7 @@ function initMapDrag(){
         startPos.y = offset.y;
         localStorage.mapPosX = parseInt(offset.x);
         localStorage.mapPosY = parseInt(offset.y);
-    });
+    };
 
     function move(event){
         if(dragStarted){
