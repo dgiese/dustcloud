@@ -32,6 +32,10 @@ Options:
   --adbd                    replace xiaomis custom adbd with generic adbd version
   --disable-logs            disables most log files creations and log uploads on the vacuum
   --ruby                    restores user ruby (can do sudo) and assigns a random password
+  --unprovisioned           Access your network in unprovisioned mode (currently only wpa2psk is supported)
+                            --unprovisioned wpa2psk
+                            --ssid YOUR_SSID
+                            --psk YOUR_WIRELESS_PASSWORD
   -h, --help                prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
@@ -49,6 +53,7 @@ PUBLIC_KEYS=()
 RESTORE_RUBY=false
 PATCH_ADBD=false
 DISABLE_XIAOMI=false
+UNPROVISIONED=false
 DISABLE_LOGS=false
 while [[ $# -gt 0 ]]; do
 key="$1"
@@ -94,7 +99,20 @@ case $key in
     --ruby)
     RESTORE_RUBY=true
     shift
-    ;;    
+    ;;
+    --unprovisioned)
+    UNPROVISIONED=true
+    WIFIMODE="$2"
+    shift
+    ;;
+    --ssid)
+    SSID="$2"
+    shift
+    ;;
+    --psk)
+    PSK="$2"
+    shift
+    ;;
     -h|--help)
     print_help
     exit 0
@@ -104,6 +122,10 @@ case $key in
     ;;
 esac
 done
+
+BASEDIR=$(dirname "$0")
+echo "Scriptpath: $BASEDIR"
+
 
 if [[ $EUID -ne 0 ]]; then
     echo "You must be a root user" 2>&1
@@ -232,6 +254,35 @@ if [ "$DISABLE_XIAOMI" = true ]; then
     echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
     #echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
     #echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
+fi
+if [ "$UNPROVISIONED" = true ]; then
+    echo "implementing unprovisioned mode"
+    if [ -z $WIFIMODE ]; then
+        echo "You need to specify a Wifi Mode: currently only wpa2psk is supported"
+        exit 1
+    fi
+    echo "Wifimode: $WIFIMODE"
+    if [ "$WIFIMODE" = "wpa2psk" ]; then
+
+        if [ -z $SSID ]; then
+            echo "No SSID given, please use --ssid YOURSSID"
+            exit 1
+        fi
+        if [ -z $PSK ]; then
+            echo "No PSK (Wireless Password) given, please use --psk YOURPASSWORD"
+            exit 1
+        fi
+
+        mkdir ./opt/unprovisioned
+        cp $BASEDIR/unprovisioned/start_wifi.sh ./opt/unprovisioned
+        chmod +x ./opt/unprovisioned/start_wifi.sh
+        cp $BASEDIR/unprovisioned/rc.local ./etc/
+        chmod +x ./etc/rc.local
+        cp $BASEDIR/unprovisioned/wpa_supplicant.conf.wpa2psk ./opt/unprovisioned/wpa_supplicant.conf
+
+        sed -i 's/#SSID#/'$SSID'/g' ./opt/unprovisioned/wpa_supplicant.conf
+        sed -i 's/#PSK#/'$PSK'/g' ./opt/unprovisioned/wpa_supplicant.conf
+    fi
 fi
 
 if [ "$PATCH_ADBD" = true ]; then
