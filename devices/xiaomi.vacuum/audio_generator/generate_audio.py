@@ -49,6 +49,10 @@ if engine == 'gtts':
         # import engine
         from gtts import gTTS
 
+if engine == 'aws':
+    genders = ['female','male']
+    gender = select_item('Available Voices:', genders)
+
 # read input file
 try:
     filereader = csv.reader(open(input_file), delimiter=",")
@@ -71,13 +75,41 @@ for filename, text in filereader:
         os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
         os.remove(path + ".mp3")
     elif engine == "aws":
-        os.system("aws polly synthesize-speech --output-format mp3 --voice-id Vicki --text '" + text + "' " + path + ".mp3")
+        # https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
+        if language == "de":
+            if gender == "female":
+                voice = "Vicki"
+            if gender == "male":
+                voice = "Hans"
+        elif language == "fr":
+            if gender == "female":
+                voice = "Celine"
+            if gender == "male":
+                voice = "Mathieu"
+        elif language == "ca":
+            voice = "Chantal" # No male voice
+        elif language == "es":
+            if gender == "female":
+                voice = "Conchita"
+            if gender == "male":
+                voice = "Enrique"
+        elif language == "pl":
+            if gender == "female":
+                voice = "Ewa"
+            if gender == "male":
+                voice = "Jacek"
+        else: # if language not available, use en
+            if gender == "female":
+                voice = "Amy"
+            if gender == "male":
+                voice = "Brian"
+        os.system("aws polly synthesize-speech --output-format mp3 --voice-id " + voice + " --text \"" + text + "\" " + path + ".mp3")
         os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
         os.remove(path + ".mp3")
     elif engine == "espeak":
-        os.system("espeak -v " + language + " '" + text + "' -w " + path)
+        os.system("espeak -v " + language + " \"" + text + "\" -w " + path)
     elif engine == "espeak-ng":
-        os.system("espeak-ng -v " + language + " '" + text + "' -w " + path)
+        os.system("espeak-ng -v " + language + " \"" + text + "\" -w " + path)
     elif engine == "macos":
         # remove "-v Anna" if you want to use your system language, leave this as german default
         # format is recommendation from https://stackoverflow.com/a/9732070

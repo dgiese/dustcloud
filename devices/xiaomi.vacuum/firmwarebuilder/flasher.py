@@ -123,8 +123,7 @@ def main():
     known_token = args.token
     firmware = args.firmware
     
-    if len(known_token) == 16:
-        known_token = str(binascii.hexlify(bytes(known_token, encoding="utf8")))
+
         
     if not args.firmware:
         print('You should specify firmware file name to install')
@@ -148,7 +147,9 @@ def main():
         print('Sending handshake to get token')
         m = vacuum.do_discover()
         vacuum.token = m.checksum
-
+    else:
+        if len(known_token) == 16:
+            known_token = str(binascii.hexlify(bytes(known_token, encoding="utf8")))
     try:
         s = vacuum.status()
         if s.state == 'Updating':

@@ -1,0 +1,9 @@
+network={
+        ssid="#SSID#"
+        scan_ssid=1
+        proto=RSN
+        key_mgmt=WPA-PSK
+        pairwise=CCMP
+        group=CCMP
+        psk="#PSK#"
+}
