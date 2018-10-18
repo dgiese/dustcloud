@@ -43,7 +43,7 @@ switch(filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING)){
         break;
     case 'device':
         $cmd = filter_input(INPUT_POST, 'cmd', FILTER_SANITIZE_STRING);
-        $params = filter_input(INPUT_POST, 'params', FILTER_SANITIZE_STRING);
+        $params = filter_input(INPUT_POST, 'params', FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
         $postdata = 'cmd=' . urlencode($cmd);
         if($params){
             $postdata .= '&params=' . urlencode($params);
