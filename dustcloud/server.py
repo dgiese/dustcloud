@@ -75,7 +75,7 @@ def get_device(did):
 
 
 slam_content = ""
-map_content = bytes("")
+map_content = bytes("", 'utf-8')
 def process_runtime_map(data):
     global slam_content
     global map_content
@@ -136,7 +136,7 @@ def process_runtime_map(data):
         print("Parse error, discarding ROCKROBO_MAP__ message")
         return
 
-    navmap = build_map(slam_content, map_content, path_content, grid_content)
+    navmap = build_map(slam_content, map_content)
     device_maps[int(did)] = navmap.getvalue()
 
 
@@ -184,6 +184,7 @@ class CloudClient:
             data = json.dumps(data)
         except Exception as e:
             data = "%s" % data
+
         try:
             self.cursor.execute("Insert into statuslog(did, data, direction) VALUES(%s, %s, %s)", (did, data, str(direction)))
             self.db.commit()

@@ -42,13 +42,83 @@ function stopLastContactAjax(){
     clearInterval(lastContactTimer);
 }
 
+const mapsize = {x: 2048, y: 2048};
+const mapfactor = 2;
 var mapTimer;
 function startMapAjax(){
     mapTimer = window.setInterval(mapAjax, 5000);
     mapAjax();
 }
+
+var routeTimer;
+var latestRouteTs = 0;
+var prevDrawingPos = {x: false, y: false};
+var mapCanvas;
+var mapCanvasContext;
+function startRouteAjax(){
+    mapCanvas = document.querySelector('#mapcanvas');
+    mapCanvasContext = mapCanvas.getContext('2d');
+    
+    routeTimer = window.setInterval(routeAjax, 1000);
+    routeAjax(true);
+}
+
+function routeAjax(full = false){
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'api.php?action=' + (full ? 'full' : '') + 'route&did=' + did);
+    xhr.responseType = 'json';
+    xhr.send();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if(xhr.status === 200){
+                if(xhr.response && xhr.response.data.length > 0){
+                    if(parseInt(xhr.response.reset) > latestRouteTs){
+                        console.log('reset');
+                        mapCanvasContext.clearRect(0, 0, mapsize.x, mapsize.y);
+                        latestRouteTs = xhr.response.reset;
+                        routeAjax(true);
+                    }else{
+                        drawRoute(xhr.response.data);
+                    }
+                }
+            }
+        }
+    };
+}
+
+function drawRoute(data){
+    mapCanvasContext.beginPath();
+    var found = false;
+    for (let i = 0; i < data.length; i++) {
+        const element = data[i];
+        // *20 for correct scaling; y/x swapped +/- 512 for shifting to correct position
+        const x = mapsize.x/2 + (element.y * 20 * mapfactor);
+        const y = mapsize.y/2 - (element.x * 20 * mapfactor);
+        if(parseInt(element.t) > latestRouteTs){
+            if(found === false && prevDrawingPos.x === false && prevDrawingPos.y === false){
+                mapCanvasContext.moveTo(x, y);
+                found = true;
+            }else if(found === false){
+                mapCanvasContext.moveTo(prevDrawingPos.x, prevDrawingPos.y);
+                mapCanvasContext.lineTo(x, y);
+                found = true;
+            }else{
+                mapCanvasContext.lineTo(x, y);
+                found = true;
+            }
+        }
+        prevDrawingPos.x = x;
+        prevDrawingPos.y = y;
+    }
+
+    mapCanvasContext.strokeStyle = "red";
+    mapCanvasContext.lineWidth = 2;
+    mapCanvasContext.stroke();
+    latestRouteTs = parseInt(data[data.length - 1].t);
+}
+
 function mapAjax(){
-    var img = document.querySelector('img.map');
+    var img = document.querySelector('div.map img');
     var status = document.querySelector('.mapwrapper p');
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'api.php?action=map&did=' + did);
@@ -59,6 +129,7 @@ function mapAjax(){
             if(xhr.status !== 200){
                 img.src = 'about:blank';
                 status.innerText = 'No map available';
+                status.style = 'display: block';
                 if(xhr.status !== 0){
                     stopMapAjax();
                     alert("Error: " + xhr.status + ": " + xhr.statusText);
@@ -66,12 +137,14 @@ function mapAjax(){
             }else if(!xhr.response || xhr.response.error > 0){
                 img.src = 'about:blank';
                 status.innerText = 'No map available';
+                status.style = 'display: block';
                 if(xhr.response.data != "No map available"){
                     stopMapAjax();
                     alert("Error: " + xhr.response.error + ": " + xhr.response.data);
                 }
             }else{
                 status.innerText = '';
+                status.style = 'display: none';
                 img.src = 'data:image/png;base64,' + xhr.response.data.imagedata;
             }
         }
@@ -87,7 +160,7 @@ function startStatusAjax(){
     statusAjax();
 }
 function statusAjax(){
-    var container = document.querySelector('div.content.status');
+    var container = document.querySelector('div.content.status .statuswrapper');
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'api.php?action=status&did=' + did);
     xhr.responseType = 'json';
@@ -110,16 +183,16 @@ function statusAjax(){
 }
 
 var dragStarted = false
-var offset = {x: -256, y: -256};
-var startPos = {x: -256, y: -256};
+var offset =   {x: (mapsize.x/-4), y: (mapsize.y/-4)};
+var startPos = {x: (mapsize.x/-4), y: (mapsize.y/-4)};
 function initMapDrag(){
-    var element = document.querySelector('img.map');
+    var element = document.querySelector('div.map');
 
     if(parseInt(localStorage.mapPosX)){
         startPos.x = parseInt(localStorage.mapPosX);
         offset.x = parseInt(localStorage.mapPosX);
     }
-    if(localStorage.mapPosY){
+    if(parseInt(localStorage.mapPosY)){
         startPos.y = parseInt(localStorage.mapPosY);
         offset.y = parseInt(localStorage.mapPosY);
     }
@@ -131,19 +204,27 @@ function initMapDrag(){
     element.addEventListener('mousedown', function(downevent){
         dragStarted = true;
         document.addEventListener('mousemove', move);
-
     });
-    document.addEventListener('mouseup', function(event){
-        document.removeEventListener('mousemove', move)
+    document.addEventListener('mouseup', moveEnd);
+
+    element.addEventListener('touchstart', function(downevent){
+        dragStarted = true;
+        document.addEventListener('touchmove', move);
+    });
+    document.addEventListener('touchend', moveEnd);
+    
+    function moveEnd(event){
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('touchmove', move);
         if(startPos.x === offset.x && startPos.y === offset.y && dragStarted === true){
             console.log('set marker');
         }
         dragStarted = false;
         startPos.x = offset.x;
         startPos.y = offset.y;
-        localStorage.mapPosX = offset.x;
-        localStorage.mapPosY = offset.y;
-    });
+        localStorage.mapPosX = parseInt(offset.x);
+        localStorage.mapPosY = parseInt(offset.y);
+    };
 
     function move(event){
         if(dragStarted){
@@ -151,8 +232,8 @@ function initMapDrag(){
             offset.y += event.movementY;
             offset.x = (offset.x > 0) ? 0 : offset.x;
             offset.y = (offset.y > 0) ? 0 : offset.y;
-            offset.x = (offset.x < -512) ? -512 : offset.x;
-            offset.y = (offset.y < -512) ? -512 : offset.y;
+            offset.x = (offset.x < (mapsize.x/-2)) ? (mapsize.x/-2) : offset.x;
+            offset.y = (offset.y < (mapsize.y/-2)) ? (mapsize.x/-2) : offset.y;
             element.style = 'transform: translate(' + offset.x + 'px, ' + offset.y + 'px)';
         }
     }
@@ -179,7 +260,6 @@ function initControls(){
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.responseType = 'json';
         var postdata = 'cmd=' + encodeURIComponent(cmd) + '&params=' + encodeURIComponent(params);
-        console.log(postdata);
         xhr.send(postdata);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
@@ -196,7 +276,6 @@ function initControls(){
                     document.querySelector('.controls pre').innerHTML = '&nbsp;'
                     document.querySelector('.controls .result').innerHTML = '';
                 }else{
-                    console.log(xhr.response.data);
                     document.querySelector('.controls pre').innerText = JSON.stringify(xhr.response.data, null, 4);
                     document.querySelector('.controls .result').innerHTML = xhr.response.html;
                 }
@@ -211,7 +290,7 @@ function getCmdParams(cmd){
     for (let i = 0; i < inputElements.length; i++) {
         inputs[inputElements[i].name] = inputElements[i];
     }
-    console.log(inputs);
+
     switch (cmd) {
         case '_custom':
                 return inputs.params.value;

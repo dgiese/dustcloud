@@ -133,10 +133,15 @@ select {
     content: '–';
 }
 
+.last_contact {
+    font-family: monospace;
+    font-size: .9rem;
+}
+
 .mapwrapper {
     display: inline-block;
-    width: 512px;
-    height: 512px;
+    width: 650px;
+    height: 650px;
     overflow: hidden;
     background-color: #424242;
     margin-right: 2rem;
@@ -147,14 +152,36 @@ select {
     color: white;
 }
 
-.controlswrapper {
+.statuswrapper {
     display: inline-block;
     vertical-align: top;
 }
 
-img.map {
+div.map {
+    width: 2048px;
+    height: 2048px;
     background-color: #00B0FF;
     cursor: hand;
+}
+
+div.map img {
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2048px;
+    height: 2048px;
+}
+    
+div.map canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 pre {

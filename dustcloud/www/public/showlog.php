@@ -35,7 +35,7 @@ if(!$device){
     ];
     echo App::renderTemplate('error.twig', $templateData);
 }else{
-    $statement = $db->prepare("SELECT * FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' ORDER BY `timestamp` DESC LIMIT " . $limit);
+    $statement = $db->prepare("SELECT * FROM `statuslog` WHERE `did` = ? AND `direction` = 'client >> dustcloud' AND `data` NOT LIKE '%\"method\": \"_sync.gen_presigned_url\"%' ORDER BY `timestamp` DESC LIMIT " . $limit);
     Utils::dberror($statement, $db);
     $statement->bind_param("s", $did);
     $success = $statement->execute();
@@ -48,6 +48,8 @@ if(!$device){
         'page' => $page,
         'device' => $device,
         'log' => $result,
+        'count' => count($result),
+        'perpage' => $perpage,
     ];
     echo App::renderTemplate('showlog.twig', $templateData);
 }
