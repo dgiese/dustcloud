@@ -173,7 +173,7 @@ function apiresponse(){
     Utils::dberror($statement, $statement);
     $response = $statement->get_result()->fetch_assoc();
     $statement->close();
-    $data = json_decode(str_replace("'", '"', $response['data']), true);
+    $data = json_decode($response['data'], true);
     return [
         'error' => 0,
         'data' => $data,
