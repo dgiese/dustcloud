@@ -37,7 +37,7 @@ else
 $mysqli = App::db();
 
 echo "<a href=\"index.php\">Index</a><br>";
-$res = $mysqli->query("SELECT * FROM devices WHERE did = '".$did."'");
+$res = $mysqli->query("SELECT * FROM devices WHERE did = '".$mysqli->real_escape_string($did)."'");
 
 $res->data_seek(0);
 while ($row = $res->fetch_assoc())
@@ -47,7 +47,7 @@ while ($row = $res->fetch_assoc())
     Utils::printLastContact($row['last_contact']);
 }
 echo "<hr>";
-$res = $mysqli->query("SELECT * FROM cmdqueue WHERE did = '".$did."' ORDER BY CMDID DESC LIMIT 100");
+$res = $mysqli->query("SELECT * FROM cmdqueue WHERE did = '".$mysqli->real_escape_string($did)."' ORDER BY CMDID DESC LIMIT 100");
 $res->data_seek(0);
 while ($row = $res->fetch_assoc())
 {

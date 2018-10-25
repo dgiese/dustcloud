@@ -126,7 +126,7 @@ if ($full_cloud_forward == "1" || $full_cloud_forward == "0")
 
 <?php
     // Last client message
-    $res = $db->query("SELECT * FROM statuslog WHERE did = '".$did."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
+    $res = $db->query("SELECT * FROM statuslog WHERE did = '".$db->real_escape_string($did)."' and direction = 'client >> dustcloud' ORDER by timestamp DESC");
     $res->data_seek(0);
     $row = $res->fetch_assoc();
     if ($row)
