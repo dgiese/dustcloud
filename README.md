@@ -1,17 +1,19 @@
-Welcome to our repository for hacking and rooting of the Xiaomi Smart Home Devices. We provide you methods how to root your device without opening it or breaking the warranty seal (on your own risk).
+Welcome to our repository for reverse engineering and rooting of the Xiaomi Smart Home Devices. We provide you methods how to root your device without opening it or breaking the warranty seal (on your own risk).
 
 The documentation of the devices (photos, datasheets, uart logs, etc) was moved to a new repo [dustcloud-documentation](https://github.com/dgiese/dustcloud-documentation)
 
 Please take a look at the Dustcloud Wiki, which also contains instructions on how to root and flash your device: (https://github.com/dgiese/dustcloud/wiki)
 
 # Talks
-[latest, Aug 2018] I have given two talks at DEFCON26 (101-track and IoT-Village):  
-"Having fun with IoT: Reverse Engineering and Hacking of Xiaomi IoT Devices": [DEFCON26 101-track Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26/DEFCON26-Having_fun_with_IoT-Xiaomi.pdf)  
-"How-to modify ARM Cortex-M based firmware: A step-by-step approach for Xiaomi devices": [DEFCON26 IoT Village Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26-IoT-Village/DEFCON26-IoT-Village_How_to_Modify_Cortex_M_Firmware-Xiaomi.pdf)  
+The content of the presentation differs from event to event. If you want to get an overview of the topics I am talking about, you find the overview here: [Overview over all topics in presentations](http://dontvacuum.me/talks/topics.html)
+[Sep 2018] I was invited by [BeyondSecurity](https://www.beyondsecurity.com/) to give a talk at BeVX 2018 in Hong Kong: [BeVX 2018 slides](http://dontvacuum.me/talks/BeVX-2018/BeVX.html)
+[Aug 2018] I have given two talks at DEFCON26 (101-track and IoT-Village), both are recorded:  
+"Having fun with IoT: Reverse Engineering and Hacking of Xiaomi IoT Devices": [DEFCON26 101-track Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26/DEFCON26-Having_fun_with_IoT-Xiaomi.html)  
+"How-to modify ARM Cortex-M based firmware: A step-by-step approach for Xiaomi devices": [DEFCON26 IoT Village Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26-IoT-Village/DEFCON26-IoT-Village_How_to_Modify_Cortex_M_Firmware-Xiaomi.html)  
 
-[Jul 2018] I was on tour in Taiwan@HITCON14 Community: [HITCON14 CMT slides](https://dgiese.scripts.mit.edu/talks/HITCON14CMT/hitcon14-iot-reveng-101-xiaomi.pdf)  
-[Feb 2018] We had a talk at [Recon BRX 2018](https://recon.cx/2018/brussels/). The presentation can be found [here](https://dgiese.scripts.mit.edu/talks/Recon-BRX2018/recon_brx_2018-final-split.pdf)  
-[Dec 2017] Our talk at 34C3: [Recording hosted at media.ccc.de]( https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking), [updated PDF](https://dgiese.scripts.mit.edu/talks/34c3-2017/34c3_Staubi-current_split_animation.pdf).  
+[Jul 2018] I was on tour in Taiwan@HITCON14 Community: [HITCON14 CMT slides](https://dgiese.scripts.mit.edu/talks/HITCON14CMT/hitcon14-iot-reveng-101-xiaomi.html)  
+[Feb 2018] We had a talk at [Recon BRX 2018](https://recon.cx/2018/brussels/). The presentation can be found [here](https://dgiese.scripts.mit.edu/talks/Recon-BRX2018/recon_brx_2018.html)  
+[Dec 2017] Our talk at 34C3: [Recording hosted at media.ccc.de]( https://media.ccc.de/v/34c3-9147-unleash_your_smart-home_devices_vacuum_cleaning_robot_hacking), [updated PDF](https://dgiese.scripts.mit.edu/talks/34c3-2017/34c3.html).  
 
 # Recommended resources / links
 
