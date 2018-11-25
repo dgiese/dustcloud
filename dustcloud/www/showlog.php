@@ -43,7 +43,7 @@ $mysqli = App::db();
 echo "<a href=\"index.php\">Index</a><br>";
 
 
-$res = $mysqli->query("SELECT * FROM devices WHERE did = '".$did."'");
+$res = $mysqli->query("SELECT * FROM devices WHERE did = '".$mysqli->real_escape_string($did)."'");
 $res->data_seek(0);
 while ($row = $res->fetch_assoc())
 {
@@ -55,11 +55,11 @@ echo "<a href=\"".$url1."&longlog=1\">2000 messages without refresh</a><br>";
 echo "<hr>";
 if ($longlog == 1)
 {
-    $res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' ORDER by id DESC LIMIT 2000");
+    $res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$mysqli->real_escape_string($did)."' ORDER by id DESC LIMIT 2000");
 }
 else
 {
-    $res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$did."' ORDER by id DESC LIMIT 100");
+    $res = $mysqli->query("SELECT * FROM statuslog WHERE did = '".$mysqli->real_escape_string($did)."' ORDER by id DESC LIMIT 100");
 }
 $res->data_seek(0);
 while ($row = $res->fetch_assoc())
