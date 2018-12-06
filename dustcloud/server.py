@@ -13,6 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import os
 import socketserver
 import sys
 import socket
@@ -30,6 +31,7 @@ import re
 import base64
 from miio.protocol import Message
 import json
+import configparser
 
 try:
     import bottle
@@ -44,8 +46,10 @@ except ImportError as e:
     have_build_map = False
     print("WARNING: Failed to import build_map.py: {}".format(e))
 
-# TODO: change my_cloudserver_ip to your CloudserverIP (the IP where this script is running)
-my_cloudserver_ip = "10.0.0.1"
+configParser = configparser.RawConfigParser()
+configFilePath = os.path.dirname(os.path.realpath(__file__)) + '/config.ini'
+configParser.read(configFilePath)
+my_cloudserver_ip = configParser.get('cloudserver', 'ip')
 
 blocked_methods_from_cloud_list = [
     'miIO.ota',
@@ -56,7 +60,7 @@ status_methods = ['event.status', 'props', 'event.keepalive', 'event.remove', 'e
                   'event.click', '_sync.upLocalSceneRuningLog', '_async.store', '_otc.log', 'event.dry',
                   'event.no_motion', 'event.comfortable']
 cloud_server_address = ('ott.io.mi.com', 80)
-http_redirect_address = None
+http_proxy_address = None
 
 # dict of devices did -> [name, request_handler]
 devices = {}
@@ -70,7 +74,11 @@ def get_device(did):
         return None
 
 
+slam_content = ""
+map_content = bytes("", 'utf-8')
 def process_runtime_map(data):
+    global slam_content
+    global map_content
     next = 32
     did = re.search(b'did=(.+?)\\n', data[next:next+32])
     if did:
@@ -86,24 +94,44 @@ def process_runtime_map(data):
     if slam_size:
         next = next + slam_size.span(1)[1] + 1
         slam_size = int(slam_size.group(1).decode())
+        slam_content += data[next:next+slam_size].decode()
+        print(slam_content)
+        next = next+slam_size
     else:
         print("Missing slam_size in ROCKROBO_MAP__ message")
-        return
-
-    slam_content = data[next:next+slam_size].decode()
-    next = next+slam_size
+        #return
 
     map_size = re.search(b'MAP=(.+?)\\n', data[next:next + 32])
     if map_size:
         next = next + map_size.span(1)[1] + 1
         map_size = int(map_size.group(1).decode())
+        map_content = data[next:next + map_size]
+        next = next + map_size
     else:
         print("Missing map_size in ROCKROBO_MAP__ message")
-        return
+        #return
 
-    map_content = data[next:next + map_size]
+    path_size = re.search(b'PATH=(.+?)\\n', data[next:next + 32])
+    if path_size:
+        next = next + path_size.span(1)[1] + 1
+        path_size = int(path_size.group(1).decode())
+        path_content = data[next:next + path_size]
+        next = next + path_size
+    else:
+        print("Missing path_size in ROCKROBO_MAP__ message")
+        #return
 
-    next = next + map_size
+    grid_size = re.search(b'GRID=(.+?)\\n', data[next:next + 32])
+    if grid_size:
+        next = next + grid_size.span(1)[1] + 1
+        grid_size = int(grid_size.group(1).decode())
+        grid_content = data[next:next + grid_size]
+        next = next + grid_size
+    else:
+        print("Missing grid_size in ROCKROBO_MAP__ message")
+        #return
+
+    
     if next != len(data):
         print("Parse error, discarding ROCKROBO_MAP__ message")
         return
@@ -141,7 +169,7 @@ class CloudClient:
     Not safe to use from multiple threads. Each thread has to use its own instance.
     """
     def __init__(self):
-        self.db = pymysql.connect("localhost", "dustcloud", "", "dustcloud")
+        self.db = pymysql.connect(configParser.get('mysql', 'host'), configParser.get('mysql', 'username'), configParser.get('mysql', 'password'), configParser.get('mysql', 'database'))
         self.cursor = self.db.cursor()
         self.expected_messages = {}
 
@@ -152,7 +180,11 @@ class CloudClient:
             pass
 
     def do_log(self, did, data, direction):
-        data = "%s" % data
+        try:
+            data = json.dumps(data)
+        except Exception as e:
+            data = "%s" % data
+
         try:
             self.cursor.execute("Insert into statuslog(did, data, direction) VALUES(%s, %s, %s)", (did, data, str(direction)))
             self.db.commit()
@@ -162,7 +194,10 @@ class CloudClient:
             self.db.rollback()
 
     def do_log_raw(self, did, data, direction):
-        data = "%s" % data
+        try:
+            data = json.dumps(data)
+        except Exception as e:
+            data = "%s" % data
         try:
             self.cursor.execute("Insert into raw(did, raw, direction) VALUES(%s, %s, %s)", (did, data, str(direction)))
             self.db.commit()
@@ -592,39 +627,30 @@ class SingleTCPHandler(socketserver.BaseRequestHandler):
                 else:
                     process_runtime_map(data)
             else:
-                data += self.request.recv(64*1024)  # get the rest of the packet
-                print("Unknown message: {}".format(data))
-                if http_redirect_address:
-                    print("Entering http redirection mode, forwarding message to {}".format(http_redirect_address))
+                if http_proxy_address:
+                    print("Entering http proxy mode, forwarding message to {}".format(http_proxy_address))
                     self.http(data)
-                    # http = "HTTP/1.1 302 Found\n"
-                    # http = http + "Location: https://xxx/\n"
-                    # http = http + "Content-Length: 212\n"
-                    # http = http + "Content-Type: text/html; charset=iso-8859-1\n"
-                    # http = http + "\n"
-                    # http = http + "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n"
-                    # http = http + "<html><head>\n"
-                    # http = http + "<title>302 Found</title>\n"
-                    # http = http + "</head><body>\n"
-                    # http = http + "<h1>Found</h1>\n"
-                    # http = http + "<p>The document has moved <a href=\"https://xxx/\">here</a>.</p>\n"
-                    # http = http + "</body></html>"
-                    # self.request.send(http.encode('utf-8'))
-                    # self.request.close()
+                else:
+                    data += self.request.recv(64*1024)  # get the rest of the packet
+                    print("Unknown message: {}".format(data))
+                
 
     def http(self, firstdata):
-        self.cloud_sock.connect(http_redirect_address)
+        self.cloud_sock.connect(tuple(http_proxy_address))
         while True:
             if self.request.fileno() < 0:
                 break
-            r, w, x = select.select([self.request, self.cloud_sock], [], [])
+            r, _, _ = select.select([self.request, self.cloud_sock], [], [])
             for s in r:
                 data = s.recv(4096)
                 if not data:
                     self.request.close()
                     break
                 if s == self.request:
-                    self.cloud_sock.sendall(firstdata + data)
+                    if type(firstdata) is str:
+                        self.cloud_sock.sendall(firstdata.encode() + data)
+                    else:
+                        self.cloud_sock.sendall(firstdata + data)
                     firstdata = ""
                 if s == self.cloud_sock:
                     self.request.send(data)
@@ -800,11 +826,11 @@ Acts like the cloud to let the device think it is connected properly.
         default=ServerMode.TCP,
         required=False)
     parser.add_argument(
-        "-redirect", "--http-redirect",
+        "-proxy", "--http-proxy",
         type=str, default=None,
         metavar='<HOST>:<PORT>',
         required=False,
-        help="Enable http redirection to given address for messages that aren't based on the miio protocol. Off by default. Example: 1.2.3.4:12345.")
+        help="Enable http proxy to given address for messages that aren't based on the miio protocol. Off by default. Example: 1.2.3.4:12345.")
     parser.add_argument(
         "-sport", "--server-port",
         type=int, required=False,
@@ -831,11 +857,11 @@ Dustcloud web UI won't be able to send commands.
     if args.enable_live_map and not have_build_map:
         print("WARNING: Enabling live map feature failed, build_map.py is missing!")
 
-    http_redirect_address = args.http_redirect
-    if http_redirect_address:
-        http_redirect_address = http_redirect_address.split(":")
-        http_redirect_address[1] = int(http_redirect_address[1])
-        print("Enabled HTTP redirect to {}:{}".format(*http_redirect_address))
+    http_proxy_address = args.http_proxy
+    if http_proxy_address:
+        http_proxy_address = http_proxy_address.split(":")
+        http_proxy_address[1] = int(http_proxy_address[1])
+        print("Enabled HTTP proxy to {}:{}".format(*http_proxy_address))
 
     server_port = get_server_port(args)
     cmd_server_port = args.command_server_port

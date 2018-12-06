@@ -1,0 +1,11 @@
+{% extends '_layout.twig' %}
+{% block title %}Dustcloud &rsaquo; Confirmation{% endblock %}
+{% block content %}
+<div class="confirm">
+<form method="POST">
+Do you really want to {{ msg }}?<br><br>
+<a class="button no" href="index.php">No</a>
+<button class="yes" type="submit" name="delete" value="2">Yes</button>
+</form>
+</div>
+{% endblock %}

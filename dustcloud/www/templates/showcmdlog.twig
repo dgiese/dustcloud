@@ -1,0 +1,26 @@
+{% extends '_layout.twig' %}
+{% block title %}Dustcloud &rsaquo; Log for {{ device.did }}{% endblock %}
+{% block content %}
+<a class="button" href="show.php?did={{ device.did }}" title="Back">&#8592;</a>
+<h2>Log for {{ device.name }} (did: {{ device.did }})</h2>
+<a class="button" href="?did={{ device.did }}&page={{ page - 1 }}"{% if page <= 0 %} style="visibility: hidden"{% endif %}>prev</a>
+Page {{ page + 1 }}
+{% if count == perpage %}
+    <a class="button" href="?did={{ device.did }}&page={{ page + 1 }}">next</a>
+{% endif %}
+
+<table>
+    <tr>
+        {% for key,value in log.0 %}
+            <th>{{ key }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in log %}
+        <tr>
+            {% for key,value in row %}
+                <td>{{ value }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

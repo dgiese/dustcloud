@@ -36,6 +36,7 @@ def build_map(slam_log_data, map_image_data):
     map_image = map_image.rotate(-90)
 
     red = (255, 0, 0, 255)
+    green = (0, 255, 0, 255)
     grey = (125, 125, 125, 255)  # background color
     transparent = (0, 0, 0, 0)
 
@@ -65,7 +66,7 @@ def build_map(slam_log_data, map_image_data):
     # draw current position
     def ellipsebb(x, y):
         return x-3, y-3, x+3, y+3
-    draw.ellipse(ellipsebb(x, y), red)
+    draw.ellipse(ellipsebb(x, y), green)
 
     # rotate image back by 90°
     map_image = map_image.rotate(90)
@@ -73,7 +74,6 @@ def build_map(slam_log_data, map_image_data):
     # crop image
     bgcolor_image = Image.new('RGBA', map_image.size, grey)
     cropbox = ImageChops.subtract(map_image, bgcolor_image).getbbox()
-    map_image = map_image.crop(cropbox)
 
     # and replace background with transparent pixels
     pixdata = map_image.load()

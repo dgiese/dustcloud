@@ -1,0 +1,8 @@
+<table>
+{% for row in result %}
+    <tr>
+        <th>{{ row.key }}</th>
+        <td>{{ row.value|raw }}</td>
+    </tr>
+{% endfor %}
+</table>

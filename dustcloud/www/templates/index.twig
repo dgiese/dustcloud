@@ -1,0 +1,41 @@
+{% extends '_layout.twig' %}
+{% block title %}Dustcloud &rsaquo; Devices{% endblock %}
+{% block content %}
+<h2>Devices</h2>
+<table>
+    <tr><th></th><th></th><th>did</th><th>Name</th><th>Model</th><th>Mac Address</th><th>Firmware</th><th colspan="2">Last Contact</th></tr>
+    {% for device in devices %}
+    <tr>
+        <td>
+            <a class="button" href="show.php?did={{ device.did }}">&#8594;</a>
+            <a class="button" href="newdevice.php?did={{ device.did }}" title="Edit Device">E</a>
+        </td>
+        <td>
+            <img src="
+            {% if device.model == "roborock.vacuum.c1" %}
+                //cdn.awsde0.fds.api.mi-img.com/miio.files/developer_1521011756p8fe09vn.png
+            {% elseif device.model == "roborock.vacuum.e2" %}
+                //cdn.awsde0.fds.api.mi-img.com/miio.files/developer_15248201870e016847.png
+            {% elseif device.model == "roborock.vacuum.s5" %}
+                //cdn.awsde0.fds.api.mi-img.com/miio.files/developer_1506499816h06qkus7.png
+            {% else %}
+                " style="visibility:hidden"
+            {% endif %}
+            " height="84">
+        </td>
+        <td>{{ device.did }}</td>
+        <td>{{ device.name }}</td>
+        <td>{{ device.model }}</td>
+        <td>{{ device.mac }}</td>
+        <td>{{ device.fw }}</td>
+        {% if device.last_contact %}
+            <td>{{ device.last_contact }}</td>
+            <td class="{% if device.is_online %}online{% else %}offline{% endif %}">({{ device.timerange }} ago)</td>
+        {% else %}
+            <td>never</td><td></td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>
+<a class="button" href="newdevice.php" title="Add Device">+</a>
+{% endblock %}
