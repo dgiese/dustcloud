@@ -5,8 +5,8 @@ The documentation of the devices (photos, datasheets, uart logs, etc) was moved 
 Please take a look at the Dustcloud Wiki, which also contains instructions on how to root and flash your device: (https://github.com/dgiese/dustcloud/wiki)
 
 # Talks
-The content of the presentation differs from event to event. If you want to get an overview of the topics I am talking about, you find the overview here: [Overview over all topics in presentations](http://dontvacuum.me/talks/topics.html)
-[Sep 2018] I was invited by [BeyondSecurity](https://www.beyondsecurity.com/) to give a talk at BeVX 2018 in Hong Kong: [BeVX 2018 slides](http://dontvacuum.me/talks/BeVX-2018/BeVX.html)
+The content of the presentation differs from event to event. If you want to get an overview of the topics I am talking about, you find the overview here: [Overview over all topics in presentations](http://dontvacuum.me/talks/topics.html)  
+[Sep 2018] I was invited by [BeyondSecurity](https://www.beyondsecurity.com/) to give a talk at BeVX 2018 in Hong Kong: [BeVX 2018 slides](http://dontvacuum.me/talks/BeVX-2018/BeVX.html)  
 [Aug 2018] I have given two talks at DEFCON26 (101-track and IoT-Village), both are recorded:  
 "Having fun with IoT: Reverse Engineering and Hacking of Xiaomi IoT Devices": [DEFCON26 101-track Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26/DEFCON26-Having_fun_with_IoT-Xiaomi.html)  
 "How-to modify ARM Cortex-M based firmware: A step-by-step approach for Xiaomi devices": [DEFCON26 IoT Village Slides](https://dgiese.scripts.mit.edu/talks/DEFCON26-IoT-Village/DEFCON26-IoT-Village_How_to_Modify_Cortex_M_Firmware-Xiaomi.html)  
@@ -26,6 +26,8 @@ Roboter-Forum.com: German speaking forum with a lot of information about all sor
 Python-miio: Python library & console tool for controlling Xiaomi smart appliances. 
 https://github.com/rytilahti/python-miio
 
+Interesting Robotics class project "ROS on Xiaomi Robot" (by N. Dave, S. Pozder, J. Tan and P. Terrasi) advised by Prof. Hanumant Singh@NEU Field Robotics Lab: 
+https://gitlab.com/EECE-5698-Group-7
 
 # Communication for the community
 Yes, there is a [telegram channel](https://t.me/joinchat/Fl7Mm0iEV7Pgf9ngDyly-g).
