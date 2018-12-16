@@ -30,6 +30,7 @@ Options:
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
   --adbd                    replace xiaomis custom adbd with generic adbd version
+  --replace-rrlogd          replace rrlogd with custom version
   --disable-logs            disables most log files creations and log uploads on the vacuum
   --ruby                    restores user ruby (can do sudo) and assigns a random password
   --unprovisioned           Access your network in unprovisioned mode (currently only wpa2psk is supported)
@@ -94,6 +95,10 @@ case $key in
     ;;
     --adbd)
     PATCH_ADBD=true
+    shift
+    ;;
+    --replace-rrlogd)
+    REPLACE_RRLOGD="$2"
     shift
     ;;
     --ruby)
@@ -185,6 +190,13 @@ SOUNDFILE=$(readlink -f "$SOUNDFILE")
 if [ "$PATCH_ADBD" = true ]; then
     if [ ! -f ./adbd ]; then
         echo "File adbd not found, cannot replace adbd in image!"
+        exit 1
+    fi
+fi
+
+if [ -n "$REPLACE_RRLOGD" ]; then
+    if [ ! -r "$REPLACE_RRLOGD" ]; then
+        echo "$REPLACE_RRLOGD not found!"
         exit 1
     fi
 fi
@@ -312,6 +324,12 @@ if [ "$DISABLE_LOGS" = true ]; then
     sed -Ei 's/^(\$IncludeConfig)/#&/' ./etc/rsyslog.conf
 fi
 
+if [ -n "$REPLACE_RRLOGD" ]; then
+    echo "replacing rrlog"
+    cp $REPLACE_RRLOGD ./opt/rockrobo/rrlog/rrlogd
+    chmod 0755 ./opt/rockrobo/rrlog/rrlogd
+    echo "$(pwd)"
+fi
 
 if [ "$RESTORE_RUBY" = true ]; then
     echo "Generate random password for user ruby"
