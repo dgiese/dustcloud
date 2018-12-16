@@ -31,6 +31,7 @@ Options:
   --disable-xiaomi          disable xiaomi servers using hosts file
   --dummycloud-path PATH    Provide the path to dummycloud
   --adbd                    replace xiaomis custom adbd with generic adbd version
+  --patch-rrlogd            patch rrlogd to disable log encryption
   --disable-logs            disables most log files creations and log uploads on the vacuum
   --ruby                    restores user ruby (can do sudo) and assigns a random password
   --unprovisioned           Access your network in unprovisioned mode (currently only wpa2psk is supported)
@@ -57,6 +58,7 @@ DISABLE_XIAOMI=false
 UNPROVISIONED=false
 DISABLE_LOGS=false
 ENABLE_DUMMYCLOUD=false
+PATCH_RRLOGD=false
 while [[ $# -gt 0 ]]; do
 key="$1"
 
@@ -96,6 +98,10 @@ case $key in
     ;;
     --adbd)
     PATCH_ADBD=true
+    shift
+    ;;
+    --patch-rrlogd)
+    PATCH_RRLOGD=true
     shift
     ;;
     --ruby)
@@ -331,6 +337,27 @@ if [ "$DISABLE_LOGS" = true ]; then
     sed -Ei 's/^(\$IncludeConfig)/#&/' ./etc/rsyslog.conf
 fi
 
+if [ "$PATCH_RRLOGD" = true ]; then
+    bspatch=$(type -p bspatch)
+
+    if [ -n "$bspatch" ]; then
+        echo "checking if we can patch rrlogd"
+
+        rrlog_md5sum=$(md5sum ./opt/rockrobo/rrlog/rrlogd | cut -d ' ' -f 1)
+        rrlog_patch="$BASEDIR/../rrlog/$rrlog_md5sum/rrlogd.binarypatch"
+
+        if [ -r "$rrlog_patch" ]; then
+            echo "creating backup of rrlogd"
+            cp ./opt/rockrobo/rrlog/rrlogd ./opt/rockrobo/rrlog/rrlogd.bak
+
+            echo "patching rrlogd ($rrlog_md5sum)"
+            $bspatch \
+                ./opt/rockrobo/rrlog/rrlogd.bak \
+                ./opt/rockrobo/rrlog/rrlogd \
+                $rrlog_patch || echo "ERROR: patching rrlogd failed!"
+        fi
+    fi
+fi
 
 if [ "$RESTORE_RUBY" = true ]; then
     echo "Generate random password for user ruby"
