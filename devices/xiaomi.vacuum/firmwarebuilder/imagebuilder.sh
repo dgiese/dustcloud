@@ -201,12 +201,21 @@ if [ "$PATCH_ADBD" = true ]; then
 fi
 
 # Generate SSH Host Keys
-echo "Generate SSH Host Keys"
-rm -f ssh_host_*
-ssh-keygen -N "" -t rsa -f ssh_host_rsa_key
-ssh-keygen -N "" -t dsa -f ssh_host_dsa_key
-ssh-keygen -N "" -t ecdsa -f ssh_host_ecdsa_key
-ssh-keygen -N "" -t ed25519 -f ssh_host_ed25519_key
+echo "Generate SSH Host Keys if necessary"
+
+if [ ! -r ssh_host_rsa_key ]; then
+    ssh-keygen -N "" -t rsa -f ssh_host_rsa_key
+fi
+if [ ! -r ssh_host_dsa_key ]; then
+    ssh-keygen -N "" -t dsa -f ssh_host_dsa_key
+fi
+if [ ! -r ssh_host_ecdsa_key ]; then
+    ssh-keygen -N "" -t ecdsa -f ssh_host_ecdsa_key
+fi
+if [ ! -r ssh_host_ed25519_key ]; then
+    ssh-keygen -N "" -t ed25519 -f ssh_host_ed25519_key
+fi
+
 echo "decrypt soundfile"
 ccrypt -d -K "$PASSWORD_SND" "$SOUNDFILE"
 mkdir sounds
@@ -388,7 +397,6 @@ done
 
 rm -rf image
 rm -rf sounds
-rm -f ssh_host_*
 echo "pack new firmware"
 PATCHED="${FILENAME}_patched.pkg"
 tar -czf "$PATCHED" disk.img
