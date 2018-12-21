@@ -29,6 +29,7 @@ Options:
                             -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
+  --dummycloud              install and enbale dummycloud
   --adbd                    replace xiaomis custom adbd with generic adbd version
   --disable-logs            disables most log files creations and log uploads on the vacuum
   --ruby                    restores user ruby (can do sudo) and assigns a random password
@@ -55,6 +56,7 @@ PATCH_ADBD=false
 DISABLE_XIAOMI=false
 UNPROVISIONED=false
 DISABLE_LOGS=false
+ENABLE_DUMMYCLOUD=false
 while [[ $# -gt 0 ]]; do
 key="$1"
 
@@ -98,6 +100,10 @@ case $key in
     ;;
     --ruby)
     RESTORE_RUBY=true
+    shift
+    ;;
+    --dummycloud)
+    ENABLE_DUMMYCLOUD=true
     shift
     ;;
     --unprovisioned)
@@ -328,6 +334,38 @@ if [ "$RESTORE_RUBY" = true ]; then
     echo "ruby:$USER_PASSWORD" | chpasswd -c SHA512 -R $PWD
     echo $USER_PASSWORD > "output/${FILENAME}.password"
     ###
+fi
+
+if [ "$ENABLE_DUMMYCLOUD" = true ]; then
+    echo "Installing dummycloud"
+    DUMMYCLOUD_DIR="$BASEDIR/../../../dummycloud"
+
+    cp $DUMMYCLOUD_DIR/build/dummycloud ./usr/local/bin/dummycloud
+    chmod 0755 ./usr/local/bin/dummycloud
+    cp $DUMMYCLOUD_DIR/doc/dummycloud.conf ./etc/init/dummycloud.conf
+
+    cat $DUMMYCLOUD_DIR/doc/etc_hosts-snippet.txt >> ./etc/hosts
+
+    sed -i 's/exit 0//' ./etc/rc.local
+    cat $DUMMYCLOUD_DIR/doc/etc_rc.local-snippet.txt >> ./etc/rc.local
+    cat >> ./etc/rc.local <<EOF
+
+exit 0
+EOF
+
+    # UPLOAD_METHOD   0:NO_UPLOAD    1:FTP    2:FDS
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlogmt.conf
+
+    # Let the script cleanup logs
+    sed -i 's/nice.*//' ./opt/rockrobo/rrlog/tar_extra_file.sh
+
+    # Disable collecting device info to /dev/shm/misc.log
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/misc.sh
+
+    # Disable logging of 'top'
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/toprotation.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/topstop.sh
 fi
 
 echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
