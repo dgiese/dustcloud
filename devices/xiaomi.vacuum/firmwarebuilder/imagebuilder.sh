@@ -277,18 +277,18 @@ if [ "$DISABLE_XIAOMI" = true ]; then
 fi
 if [ "$UNPROVISIONED" = true ]; then
     echo "implementing unprovisioned mode"
-    if [ -z $WIFIMODE ]; then
+    if [ -z "$WIFIMODE" ]; then
         echo "You need to specify a Wifi Mode: currently only wpa2psk is supported"
         exit 1
     fi
     echo "Wifimode: $WIFIMODE"
     if [ "$WIFIMODE" = "wpa2psk" ]; then
 
-        if [ -z $SSID ]; then
+        if [ -z "$SSID" ]; then
             echo "No SSID given, please use --ssid YOURSSID"
             exit 1
         fi
-        if [ -z $PSK ]; then
+        if [ -z "$PSK" ]; then
             echo "No PSK (Wireless Password) given, please use --psk YOURPASSWORD"
             exit 1
         fi
@@ -300,8 +300,8 @@ if [ "$UNPROVISIONED" = true ]; then
         chmod +x ./etc/rc.local
         cp $BASEDIR/unprovisioned/wpa_supplicant.conf.wpa2psk ./opt/unprovisioned/wpa_supplicant.conf
 
-        sed -i 's/#SSID#/'$SSID'/g' ./opt/unprovisioned/wpa_supplicant.conf
-        sed -i 's/#PSK#/'$PSK'/g' ./opt/unprovisioned/wpa_supplicant.conf
+        sed -i 's/#SSID#/'"$SSID"'/g' ./opt/unprovisioned/wpa_supplicant.conf
+        sed -i 's/#PSK#/'"$PSK"'/g' ./opt/unprovisioned/wpa_supplicant.conf
     fi
 fi
 
