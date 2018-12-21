@@ -29,7 +29,7 @@ Options:
                             -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
   -t, --timezone            timezone to be used in vacuum
   --disable-xiaomi          disable xiaomi servers using hosts file
-  --dummycloud              install and enbale dummycloud
+  --dummycloud-path PATH    Provide the path to dummycloud
   --adbd                    replace xiaomis custom adbd with generic adbd version
   --disable-logs            disables most log files creations and log uploads on the vacuum
   --ruby                    restores user ruby (can do sudo) and assigns a random password
@@ -102,11 +102,12 @@ case $key in
     RESTORE_RUBY=true
     shift
     ;;
-    --dummycloud)
-	if [ -f ./dummycloud ]; then
+    --dummycloud-path)
+    DUMMYCLOUD_PATH=$2
+    if [ -r $DUMMYCLOUD_PATH/dummycloud ]; then
         ENABLE_DUMMYCLOUD=true
     else
-        echo "dummycloud binary not found! Please download it from https://github.com/dgiese/dustcloud and put the binary in this folder"
+        echo "dummycloud binary not found! Please download it from https://github.com/dgiese/dustcloud"
         exit 1
     fi
     shift
@@ -343,20 +344,17 @@ fi
 
 if [ "$ENABLE_DUMMYCLOUD" = true ]; then
     echo "Installing dummycloud"
-    DUMMYCLOUD_DIR="$BASEDIR/../../../dummycloud"
 
-    cp $DUMMYCLOUD_DIR/build/dummycloud ./usr/local/bin/dummycloud
+    cp $DUMMYCLOUD_PATH/dummycloud ./usr/local/bin/dummycloud
     chmod 0755 ./usr/local/bin/dummycloud
-    cp $DUMMYCLOUD_DIR/doc/dummycloud.conf ./etc/init/dummycloud.conf
+    cp $DUMMYCLOUD_PATH/doc/dummycloud.conf ./etc/init/dummycloud.conf
 
-    cat $DUMMYCLOUD_DIR/doc/etc_hosts-snippet.txt >> ./etc/hosts
+    cat $DUMMYCLOUD_PATH/doc/etc_hosts-snippet.txt >> ./etc/hosts
 
     sed -i 's/exit 0//' ./etc/rc.local
-    cat $DUMMYCLOUD_DIR/doc/etc_rc.local-snippet.txt >> ./etc/rc.local
-    cat >> ./etc/rc.local <<EOF
-
-exit 0
-EOF
+    cat $DUMMYCLOUD_PATH/doc/etc_rc.local-snippet.txt >> ./etc/rc.local
+    echo >> ./etc/rc.local
+    echo "exit 0" >> ./etc/rc.local
 
     # UPLOAD_METHOD   0:NO_UPLOAD    1:FTP    2:FDS
     sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlog.conf
