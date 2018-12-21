@@ -1,4 +1,18 @@
-# Audio Generator for Xiaomi Vacuum Generation 1
+# Audio Generator for Xiaomi Vacuum Generation 1 & Generation 2
+
+# Author: Dennis Giese [dennis@dontvacuum.me]
+# Copyright 2017 by Dennis Giese
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
 It is possible to create new language files which can be integrated into the rooted firmware. To generate the language files you can use the `generate_audio.py` script in this folder.
 
 It will read the content auf audio_xx.csv (whereby xx is a country language code like de_de or en_US) and use one of the supported engines to generate mp3 files for inclusion in the firmware. The language codes are the [ISO-639-1](https://en.wikipedia.org/wiki/ISO_639-1) format, so that the engine can use a voice with suitable pronounciation.
