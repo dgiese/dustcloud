@@ -103,7 +103,12 @@ case $key in
     shift
     ;;
     --dummycloud)
-    ENABLE_DUMMYCLOUD=true
+	if [ -f ./dummycloud ]; then
+        ENABLE_DUMMYCLOUD=true
+    else
+        echo "dummycloud binary not found! Please download it from https://github.com/dgiese/dustcloud and put the binary in this folder"
+        exit 1
+    fi
     shift
     ;;
     --unprovisioned)
