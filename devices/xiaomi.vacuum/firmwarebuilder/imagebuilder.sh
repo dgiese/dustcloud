@@ -141,7 +141,7 @@ case $key in
 esac
 done
 
-BASEDIR=$(dirname "$0")
+BASEDIR=$(readlink -f $(dirname "$0"))
 echo "Scriptpath: $BASEDIR"
 
 
