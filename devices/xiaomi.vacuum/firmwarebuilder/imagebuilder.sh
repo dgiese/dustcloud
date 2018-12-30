@@ -25,40 +25,41 @@ function cleanup_and_exit ()
     fi
 }
 
-print_help()
+function print_usage()
+{
+echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
+--public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-xiaomi|--dummycloud-path=PATH
+--adbd|--patch-rrlogd|--disable-logs|--ruby|--unprovisioned|--help]"
+}
+
+function print_help()
 {
     cat << EOF
-usage: sudo ./imagebuilder.sh -f v11_003194.pkg [-s english.pkg] [-k id_rsa.pub ] [ -t Europe/Berlin ] [--disable-xiaomi]
 
 Options:
-  -f, --firmware            path to firmware file
-  -s, --soundfile           path to sound file
-  -k, --public-key          path to ssh public key to be added to authorized_keys file
-                            if need to add multiple keys set -k as many times as you need:
-                            -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
-  -t, --timezone            timezone to be used in vacuum
-  --disable-xiaomi          disable xiaomi servers using hosts file
-  --dummycloud-path PATH    Provide the path to dummycloud
-  --adbd                    replace xiaomis custom adbd with generic adbd version
-  --patch-rrlogd            patch rrlogd to disable log encryption
-  --disable-logs            disables most log files creations and log uploads on the vacuum
-  --ruby                    restores user ruby (can do sudo) and assigns a random password
-  --unprovisioned           Access your network in unprovisioned mode (currently only wpa2psk is supported)
-                            --unprovisioned wpa2psk
-                            --ssid YOUR_SSID
-                            --psk YOUR_WIRELESS_PASSWORD
-  -h, --help                prints this message
+  -f, --firmware=PATH        Path to firmware file
+  -s, --soundfile=PATH       Path to sound file
+  -k, --public-key=PATH      Path to ssh public key to be added to authorized_keys file
+                             if need to add multiple keys set -k as many times as you need:
+                             -k ./local_key.pub -k ~/.ssh/id_rsa.pub -k /root/ssh/id_rsa.pub
+  -t, --timezone             Timezone to be used in vacuum
+  --disable-firmware-updates Disable xiaomi servers using hosts file for firmware updates
+  --dummycloud-path=PATH     Provide the path to dummycloud
+  --replace-adbd             Replace xiaomis custom adbd with generic adbd version
+  --patch-rrlogd             Patch rrlogd to disable log encryption
+  --disable-logs             Disables most log files creations and log uploads on the vacuum
+  --ruby                     Restores user ruby (can do sudo) and assigns a random password
+  --unprovisioned            Access your network in unprovisioned mode (currently only wpa2psk is supported)
+                             --unprovisioned wpa2psk
+                             --ssid YOUR_SSID
+                             --psk YOUR_WIRELESS_PASSWORD
+  -h, --help                 Prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
 
 Report bugs to: https://github.com/dgiese/dustcloud/issues
 EOF
 }
-
-if [[ $# -eq 0 ]]; then
-    print_help
-    exit 0
-fi
 
 # Check if we have GNU readlink
 # see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
@@ -71,94 +72,105 @@ else
 fi
 
 PUBLIC_KEYS=()
-RESTORE_RUBY=false
-PATCH_ADBD=false
-DISABLE_XIAOMI=false
-UNPROVISIONED=false
-DISABLE_LOGS=false
-ENABLE_DUMMYCLOUD=false
-PATCH_RRLOGD=false
-while [[ $# -gt 0 ]]; do
-key="$1"
+RESTORE_RUBY=0
+PATCH_ADBD=0
+DISABLE_XIAOMI=0
+UNPROVISIONED=0
+DISABLE_LOGS=0
+ENABLE_DUMMYCLOUD=0
+PATCH_RRLOGD=0
 
-case $key in
-    -f|--firmware)
-    FIRMWARE="$2"
+while test -n "$1"; do
+    PARAM="$1"
+    ARG="$2"
     shift
-    shift
-    ;;
-    -s|--soundfile)
-    SOUNDFILE_PATH="$2"
-    shift
-    shift
-    ;;
-    -k|--public-key)
-    if [ -f "$2" ]; then
-        PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink -f "$2")
-    else
-        echo "File $2 not found!"
-        exit 1
-    fi
-    shift
-    shift
-    ;;
-    -t|--timezone)
-    TIMEZONE="$2"
-    shift
-    shift
-    ;;
-    --disable-xiaomi)
-    DISABLE_XIAOMI=true
-    shift
-    ;;
-    --disable-logs)
-    DISABLE_LOGS=true
-    shift
-    ;;
-    --adbd)
-    PATCH_ADBD=true
-    shift
-    ;;
-    --patch-rrlogd)
-    PATCH_RRLOGD=true
-    shift
-    ;;
-    --ruby)
-    RESTORE_RUBY=true
-    shift
-    ;;
-    --dummycloud-path)
-    DUMMYCLOUD_PATH=$2
-    if [ -r $DUMMYCLOUD_PATH/dummycloud ]; then
-        ENABLE_DUMMYCLOUD=true
-    else
-        echo "dummycloud binary not found! Please download it from https://github.com/dgiese/dustcloud"
-        exit 1
-    fi
-    shift
-    ;;
-    --unprovisioned)
-    UNPROVISIONED=true
-    WIFIMODE="$2"
-    shift
-    ;;
-    --ssid)
-    SSID="$2"
-    shift
-    ;;
-    --psk)
-    PSK="$2"
-    shift
-    ;;
-    -h|--help)
-    print_help
-    exit 0
-    ;;
-    *)
-    shift
-    ;;
-esac
+    case ${PARAM} in
+        *-*=*)
+            ARG=${PARAM#*=}
+            PARAM=${PARAM%%=*}
+            set -- "----noarg=${PARAM}" "$@"
+    esac
+    case ${PARAM} in
+        *-help|-h)
+            print_usage
+            print_help
+            exit 0
+            ;;
+        *-firmware|-f)
+            FIRMWARE_PATH="$ARG"
+            shift
+            ;;
+        *-soundfile|-s)
+            SOUNDFILE_PATH="$ARG"
+            shift
+            ;;
+        *-public-key|-k)
+            # check if the key file exists
+            if [ -r "$ARG" ]; then
+                PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink -f "$ARG")
+            else
+                echo "Public key $ARG doesn't exist or is not readable"
+                cleanup_and_exit 1
+            fi
+            shift
+            ;;
+        *-timezone|-t)
+            TIMEZONE="$ARG"
+            shift
+            ;;
+        *-disable-firmware-updates)
+            DISABLE_XIAOMI=1
+            ;;
+        *-disable-logs)
+            DISABLE_LOGS=1
+            ;;
+        *-replace-adbd)
+            REPLACE_ADBD=1
+            ;;
+        *-enable-ruby)
+            RESTORE_RUBY=1
+            ;;
+        *--patch-rrlogd)
+            PATCH_RRLOGD=1
+            ;;
+        *-dummycloud-path)
+            DUMMYCLOUD_PATH="$ARG"
+            if [ -r "$DUMMYCLOUD_PATH/dummycloud" ]; then
+                ENABLE_DUMMYCLOUD=1
+            else
+                echo "The dummycloud binary hasn't been found in $DUMMYCLOUD_PATH"
+                echo "Please download it from https://github.com/dgiese/dustcloud"
+                cleanup_and_exit 1
+            fi
+            shift
+            ;;
+        *-unprovisioned)
+            UNPROVISIONED=1
+            WIFIMODE="$ARG"
+            shift
+            ;;
+        *-ssid)
+            SSID="$ARG"
+            shift
+            ;;
+        *-psk)
+            PSK="$ARG"
+            shift
+            ;;
+        ----noarg)
+            echo "$ARG does not take an argument"
+            cleanup_and_exit
+            ;;
+        -*)
+            echo Unknown Option "$PARAM". Exit.
+            cleanup_and_exit 1
+            ;;
+        *)
+            print_usage
+            ;;
+    esac
 done
+
 
 SCRIPT="$0"
 SCRIPTDIR=$(dirname "${0}")
@@ -204,12 +216,12 @@ TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
 
-if [ ! -r "$FIRMWARE" ]; then
+if [ ! -r "$FIRMWARE_PATH" ]; then
     echo "You need to specify an existing firmware file, e.g. v11_003194.pkg"
     exit 1
 fi
-FIRMWARE=$(readlink -f "$FIRMWARE")
-FIRMWARE_BASENAME=$(basename $FIRMWARE)
+FIRMWARE_PATH=$(readlink -f "$FIRMWARE_PATH")
+FIRMWARE_BASENAME=$(basename $FIRMWARE_PATH)
 FIRMWARE_FILENAME="${FIRMWARE_BASENAME%.*}"
 
 if [ ! -r "$SOUNDFILE_PATH" ]; then
@@ -218,7 +230,7 @@ if [ ! -r "$SOUNDFILE_PATH" ]; then
 fi
 SOUNDFILE_PATH=$(readlink -f "$SOUNDFILE_PATH")
 
-if [ "$PATCH_ADBD" = true ]; then
+if [ $PATCH_ADBD -eq 1 ]; then
     if [ ! -f ./adbd ]; then
         echo "File adbd not found, cannot replace adbd in image!"
         exit 1
@@ -258,7 +270,7 @@ popd
 echo "Decrypt firmware"
 FW_DIR="$FW_TMPDIR/fw"
 mkdir -p "$FW_DIR"
-cp "$FIRMWARE" "$FW_DIR/$FIRMWARE_FILENAME"
+cp "$FIRMWARE_PATH" "$FW_DIR/$FIRMWARE_FILENAME"
 $CCRYPT -d -K "$PASSWORD_FW" "$FW_DIR/$FIRMWARE_FILENAME"
 
 echo "Unpack firmware"
@@ -308,7 +320,7 @@ for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
 done
 chmod 600 $IMG_DIR/root/.ssh/authorized_keys
 
-if [ "$DISABLE_XIAOMI" = true ]; then
+if [ $DISABLE_XIAOMI -eq 1 ]; then
     echo "reconfiguring network traffic to xiaomi"
     # comment out this section if you do not want do disable the xiaomi cloud
     # or redirect it
@@ -317,7 +329,8 @@ if [ "$DISABLE_XIAOMI" = true ]; then
     #echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
     #echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
 fi
-if [ "$UNPROVISIONED" = true ]; then
+
+if [ $UNPROVISIONED -eq 1 ]; then
     echo "Implementing unprovisioned mode"
     if [ -z "$WIFIMODE" ]; then
         echo "You need to specify a Wifi Mode: currently only wpa2psk is supported"
@@ -350,13 +363,13 @@ if [ "$UNPROVISIONED" = true ]; then
     fi
 fi
 
-if [ "$PATCH_ADBD" = true ]; then
+if [ $PATCH_ADBD -eq 1 ]; then
     echo "replacing adbd"
     cp $IMG_DIR/usr/bin/adbd $IMG_DIR/usr/bin/adbd.xiaomi
     cp $BASEDIR/adbd $IMG_DIR/usr/bin/adbd
 fi
 
-if [ "$DISABLE_LOGS" = true ]; then
+if [ $DISABLE_LOGS -eq 1 ]; then
     # Set LOG_LEVEL=3
     sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' $IMG_DIR/opt/rockrobo/rrlog/rrlog.conf
     sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' $IMG_DIR/opt/rockrobo/rrlog/rrlogmt.conf
@@ -377,7 +390,7 @@ if [ "$DISABLE_LOGS" = true ]; then
     sed -Ei 's/^(\$IncludeConfig)/#&/' $IMG_DIR/etc/rsyslog.conf
 fi
 
-if [ "$PATCH_RRLOGD" = true ]; then
+if [ $PATCH_RRLOGD -eq 1 ]; then
     bspatch=$(type -p bspatch)
 
     if [ -n "$bspatch" ]; then
@@ -399,7 +412,7 @@ if [ "$PATCH_RRLOGD" = true ]; then
     fi
 fi
 
-if [ "$RESTORE_RUBY" = true ]; then
+if [ $RESTORE_RUBY -eq 1 ]; then
     echo "Generate random password for user ruby"
     USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;`
     #original password (<=v3254) file has the following credentials:
@@ -418,7 +431,7 @@ if [ "$RESTORE_RUBY" = true ]; then
     ###
 fi
 
-if [ "$ENABLE_DUMMYCLOUD" = true ]; then
+if [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     echo "Installing dummycloud"
 
     cp $DUMMYCLOUD_PATH/dummycloud $IMG_DIR/usr/local/bin/dummycloud
