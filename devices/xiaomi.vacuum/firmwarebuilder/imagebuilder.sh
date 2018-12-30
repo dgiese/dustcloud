@@ -79,6 +79,7 @@ DISABLE_XIAOMI=0
 UNPROVISIONED=0
 DISABLE_LOGS=0
 ENABLE_DUMMYCLOUD=0
+ENABLE_VALETUDO=0
 PATCH_RRLOGD=0
 
 while test -n "$1"; do
@@ -141,6 +142,17 @@ while test -n "$1"; do
             else
                 echo "The dummycloud binary hasn't been found in $DUMMYCLOUD_PATH"
                 echo "Please download it from https://github.com/dgiese/dustcloud"
+                cleanup_and_exit 1
+            fi
+            shift
+            ;;
+        *-valetudo-path)
+            VALETUDO_PATH="$ARG"
+            if [ -r "$VALETUDO_PATH/valetudo" ]; then
+                ENABLE_VALETUDO=1
+            else
+                echo "The valetudo binary hasn't been found in $VALETUDO_PATH"
+                echo "Please download it from https://github.com/Hypfer/Valetudo"
                 cleanup_and_exit 1
             fi
             shift
@@ -463,6 +475,14 @@ if [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     # Disable logging of 'top'
     sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/toprotation.sh
     sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/topstop.sh
+fi
+
+if [ $ENABLE_VALETUDO -eq 1 ]; then
+    echo "Installing valetudo"
+
+    cp $VALETUDO_PATH/valetudo $IMG_DIR/usr/local/bin/valetudo
+    chmod 0755 $IMG_DIR/usr/local/bin/valetudo
+    cp $VALETUDO_PATH/deployment/valetudo.conf $IMG_DIR/etc/init/valetudo.conf
 fi
 
 if [ -n "$NTPSERVER" ]; then
