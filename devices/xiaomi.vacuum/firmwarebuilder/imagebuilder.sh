@@ -51,6 +51,16 @@ if [[ $# -eq 0 ]]; then
     exit 0
 fi
 
+# Check if we have GNU readlink
+# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+readlink -f imagebuilder.sh 2> /dev/null
+if [ $? -eq 0 ]; then
+    echo "Compatible readlink found!"
+else
+    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
+    exit 1
+fi
+
 PUBLIC_KEYS=()
 RESTORE_RUBY=false
 PATCH_ADBD=false
@@ -164,15 +174,6 @@ fi
 
 if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
     echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
-    exit 1
-fi
-
-# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
-readlink -f imagebuilder.sh 2> /dev/null
-if [[ $? -eq 0 ]]; then
-    echo "compatible readlink found!"
-else
-    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
     exit 1
 fi
 
