@@ -16,6 +16,15 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+function cleanup_and_exit ()
+{
+    if test "$1" = 0 -o -z "$1" ; then
+        exit 0
+    else
+        exit $1
+    fi
+}
+
 print_help()
 {
     cat << EOF
@@ -167,14 +176,10 @@ if [[ $OSTYPE == darwin* ]]; then
     echo "Running on a Mac, adjusting commands accordingly"
 fi
 
-if [ ! -f /usr/bin/ccrypt -a "$IS_MAC" = false ]; then
-    echo "Ccrypt not found! Please install it (e.g. by apt install ccrypt)"
-    exit 1
-fi
-
-if [ ! -f /usr/local/bin/ccrypt -a "$IS_MAC" = true ]; then
-    echo "Ccrypt not found! Please install it (e.g. by brew install ccrypt)"
-    exit 1
+CCRYPT="$(type -p ccrypt)"
+if [ ! -x "$CCRYPT" ]; then
+    echo "ccrypt not found! Please install it (e.g. by (apt|brew|dnf|zypper) install ccrypt)"
+    cleanup_and_exit 1
 fi
 
 if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
@@ -225,14 +230,14 @@ if [ ! -r ssh_host_ed25519_key ]; then
 fi
 
 echo "decrypt soundfile"
-ccrypt -d -K "$PASSWORD_SND" "$SOUNDFILE"
+$CCRYPT -d -K "$PASSWORD_SND" "$SOUNDFILE"
 mkdir sounds
 cd sounds
 echo "unpack soundfile"
 tar -xzf "$SOUNDFILE"
 cd ..
 echo "decrypt firmware"
-ccrypt -d -K "$PASSWORD_FW" "$FIRMWARE"
+$CCRYPT -d -K "$PASSWORD_FW" "$FIRMWARE"
 echo "unpack firmware"
 tar -xzf "$FIRMWARE"
 if [ ! -f disk.img ]; then
@@ -434,7 +439,7 @@ if [ ! -f "$PATCHED" ]; then
 fi
 rm -f disk.img
 echo "encrypt firmware"
-ccrypt -e -K "$PASSWORD_FW" "$PATCHED"
+$CCRYPT -e -K "$PASSWORD_FW" "$PATCHED"
 mkdir -p output
 mv "${PATCHED}.cpt" "output/${BASENAME}"
 
