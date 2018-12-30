@@ -155,8 +155,8 @@ BASEDIR=$(dirname "$0")
 echo "Scriptpath: $BASEDIR"
 
 
-if [[ $EUID -ne 0 ]]; then
-    echo "You must be a root user" 2>&1
+if [ $EUID -ne 0 ]; then
+    echo "You need root privileges to execute this script"
     exit 1
 fi
 
