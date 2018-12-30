@@ -88,7 +88,7 @@ case $key in
     shift
     ;;
     -s|--soundfile)
-    SOUNDFILE="$2"
+    SOUNDFILE_PATH="$2"
     shift
     shift
     ;;
@@ -199,7 +199,7 @@ if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
     exit 1
 fi
 
-SOUNDFILE=${SOUNDFILE:-"english.pkg"}
+SOUNDFILE_PATH=${SOUNDFILE_PATH:-"english.pkg"}
 TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
@@ -209,14 +209,14 @@ if [ ! -r "$FIRMWARE" ]; then
     exit 1
 fi
 FIRMWARE=$(readlink -f "$FIRMWARE")
-BASENAME=$(basename $FIRMWARE)
-FILENAME="${BASENAME%.*}"
+FIRMWARE_BASENAME=$(basename $FIRMWARE)
+FIRMWARE_FILENAME="${FIRMWARE_BASENAME%.*}"
 
-if [ ! -r "$SOUNDFILE" ]; then
-    echo "Sound file $SOUNDFILE not found!"
+if [ ! -r "$SOUNDFILE_PATH" ]; then
+    echo "Sound file $SOUNDFILE_PATH not found!"
     exit 1
 fi
-SOUNDFILE=$(readlink -f "$SOUNDFILE")
+SOUNDFILE_PATH=$(readlink -f "$SOUNDFILE_PATH")
 
 if [ "$PATCH_ADBD" = true ]; then
     if [ ! -f ./adbd ]; then
@@ -241,67 +241,84 @@ if [ ! -r ssh_host_ed25519_key ]; then
     ssh-keygen -N "" -t ed25519 -f ssh_host_ed25519_key
 fi
 
-echo "decrypt soundfile"
-$CCRYPT -d -K "$PASSWORD_SND" "$SOUNDFILE"
-mkdir sounds
-cd sounds
-echo "unpack soundfile"
-tar -xzf "$SOUNDFILE"
-cd ..
-echo "decrypt firmware"
-$CCRYPT -d -K "$PASSWORD_FW" "$FIRMWARE"
-echo "unpack firmware"
-tar -xzf "$FIRMWARE"
-if [ ! -f disk.img ]; then
+FW_TMPDIR="$(pwd)/$(mktemp -d fw.XXXXXX)"
+
+echo "Decrypt soundfile .."
+SND_DIR="$FW_TMPDIR/sounds"
+SND_FILE=$(basename $SOUNDFILE_PATH)
+mkdir -p $SND_DIR
+cp "$SOUNDFILE_PATH" "$SND_DIR/$SND_FILE"
+$CCRYPT -d -K "$PASSWORD_SND" "$SND_DIR/$SND_FILE"
+
+echo "Unpack soundfile .."
+pushd "$SND_DIR"
+tar -xzf "$SND_FILE"
+popd
+
+echo "Decrypt firmware"
+FW_DIR="$FW_TMPDIR/fw"
+mkdir -p "$FW_DIR"
+cp "$FIRMWARE" "$FW_DIR/$FIRMWARE_FILENAME"
+$CCRYPT -d -K "$PASSWORD_FW" "$FW_DIR/$FIRMWARE_FILENAME"
+
+echo "Unpack firmware"
+pushd "$FW_DIR"
+tar -xzf "$FIRMWARE_FILENAME"
+if [ ! -r disk.img ]; then
     echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
     exit 1
 fi
-mkdir image
+popd
+
+IMG_DIR="$FW_TMPDIR/image"
+mkdir -p "$IMG_DIR"
 
 if [ "$IS_MAC" = true ]; then
     #ext4fuse doesn't support write properly
     #ext4fuse disk.img image -o force
-    fuse-ext2 disk.img image -o rw+
+    fuse-ext2 "$FW_DIR/disk.img" "$IMG_DIR" -o rw+
 else
-    mount -o loop disk.img image
+    mount -o loop "$FW_DIR/disk.img" "$IMG_DIR"
 fi
-cd image
-echo "patch ssh host keys"
-cat ../ssh_host_rsa_key > ./etc/ssh/ssh_host_rsa_key
-cat ../ssh_host_rsa_key.pub > ./etc/ssh/ssh_host_rsa_key.pub
-cat ../ssh_host_dsa_key > ./etc/ssh/ssh_host_dsa_key
-cat ../ssh_host_dsa_key.pub > ./etc/ssh/ssh_host_dsa_key.pub
-cat ../ssh_host_ecdsa_key > ./etc/ssh/ssh_host_ecdsa_key
-cat ../ssh_host_ecdsa_key.pub > ./etc/ssh/ssh_host_ecdsa_key.pub
-cat ../ssh_host_ed25519_key > ./etc/ssh/ssh_host_ed25519_key
-cat ../ssh_host_ed25519_key.pub > ./etc/ssh/ssh_host_ed25519_key.pub
-echo "disable SSH firewall rule"
-sed -i -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' ./opt/rockrobo/watchdog/rrwatchdoge.conf
-echo "integrate SSH authorized_keys"
-mkdir ./root/.ssh
-chmod 700 ./root/.ssh
 
-if [ -f ./root/.ssh/authorized_keys ]; then
-    echo "removing obsolete authorized_keys from Xiaomi image"
-    rm ./root/.ssh/authorized_keys
+echo "Replace ssh host keys"
+cat ssh_host_rsa_key > $IMG_DIR/etc/ssh/ssh_host_rsa_key
+cat ssh_host_rsa_key.pub > $IMG_DIR/etc/ssh/ssh_host_rsa_key.pub
+cat ssh_host_dsa_key > $IMG_DIR/etc/ssh/ssh_host_dsa_key
+cat ssh_host_dsa_key.pub > $IMG_DIR/etc/ssh/ssh_host_dsa_key.pub
+cat ssh_host_ecdsa_key > $IMG_DIR/etc/ssh/ssh_host_ecdsa_key
+cat ssh_host_ecdsa_key.pub > $IMG_DIR/etc/ssh/ssh_host_ecdsa_key.pub
+cat ssh_host_ed25519_key > $IMG_DIR/etc/ssh/ssh_host_ed25519_key
+cat ssh_host_ed25519_key.pub > $IMG_DIR/etc/ssh/ssh_host_ed25519_key.pub
+
+echo "Disable SSH firewall rule"
+sed -i -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' $IMG_DIR/opt/rockrobo/watchdog/rrwatchdoge.conf
+
+echo "Add SSH authorized_keys"
+mkdir $IMG_DIR/root/.ssh
+chmod 700 $IMG_DIR/root/.ssh
+
+if [ -r $IMG_DIR/root/.ssh/authorized_keys ]; then
+    echo "Removing obsolete authorized_keys from Xiaomi image"
+    rm $IMG_DIR/root/.ssh/authorized_keys
 fi
 
 for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
-    cat "${PUBLIC_KEYS[$i]}" >> ./root/.ssh/authorized_keys
+    cat "${PUBLIC_KEYS[$i]}" >> $IMG_DIR/root/.ssh/authorized_keys
 done
-chmod 600 ./root/.ssh/authorized_keys
+chmod 600 $IMG_DIR/root/.ssh/authorized_keys
 
 if [ "$DISABLE_XIAOMI" = true ]; then
     echo "reconfiguring network traffic to xiaomi"
     # comment out this section if you do not want do disable the xiaomi cloud
     # or redirect it
-    echo "0.0.0.0       awsbj0-files.fds.api.xiaomi.com" >> ./etc/hosts
-    echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> ./etc/hosts
+    echo "0.0.0.0       awsbj0-files.fds.api.xiaomi.com" >> $IMG_DIR/etc/hosts
+    echo "0.0.0.0       awsbj0.fds.api.xiaomi.com" >> $IMG_DIR/etc/hosts
     #echo "0.0.0.0       ott.io.mi.com" >> ./etc/hosts
     #echo "0.0.0.0       ot.io.mi.com" >> ./etc/hosts
 fi
 if [ "$UNPROVISIONED" = true ]; then
-    echo "implementing unprovisioned mode"
+    echo "Implementing unprovisioned mode"
     if [ -z "$WIFIMODE" ]; then
         echo "You need to specify a Wifi Mode: currently only wpa2psk is supported"
         exit 1
@@ -318,43 +335,46 @@ if [ "$UNPROVISIONED" = true ]; then
             exit 1
         fi
 
-        mkdir ./opt/unprovisioned
-        cp $BASEDIR/unprovisioned/start_wifi.sh ./opt/unprovisioned
+        mkdir $IMG_DIR/opt/unprovisioned
+        cp $BASEDIR/unprovisioned/start_wifi.sh $IMG_DIR/opt/unprovisioned
         chmod +x ./opt/unprovisioned/start_wifi.sh
-        cp $BASEDIR/unprovisioned/rc.local ./etc/
-        chmod +x ./etc/rc.local
-        cp $BASEDIR/unprovisioned/wpa_supplicant.conf.wpa2psk ./opt/unprovisioned/wpa_supplicant.conf
 
-        sed -i 's/#SSID#/'"$SSID"'/g' ./opt/unprovisioned/wpa_supplicant.conf
-        sed -i 's/#PSK#/'"$PSK"'/g' ./opt/unprovisioned/wpa_supplicant.conf
+        sed -i 's/exit 0//' $IMG_DIR/etc/rc.local
+        cat $BASEDIR/unprovisioned/rc.local >> $IMG_DIR/etc/rc.local
+        echo "exit 0" >> $IMG_DIR/etc/rc.local
+
+        cp $BASEDIR/unprovisioned/wpa_supplicant.conf.wpa2psk $IMG_DIR/opt/unprovisioned/wpa_supplicant.conf
+
+        sed -i 's/#SSID#/'"$SSID"'/g' $IMG_DIR/opt/unprovisioned/wpa_supplicant.conf
+        sed -i 's/#PSK#/'"$PSK"'/g'   $IMG_DIR/opt/unprovisioned/wpa_supplicant.conf
     fi
 fi
 
 if [ "$PATCH_ADBD" = true ]; then
     echo "replacing adbd"
-    cp ./usr/bin/adbd ./usr/bin/adbd.original
-    cp ../adbd ./usr/bin/adbd
+    cp $IMG_DIR/usr/bin/adbd $IMG_DIR/usr/bin/adbd.xiaomi
+    cp $BASEDIR/adbd $IMG_DIR/usr/bin/adbd
 fi
 
 if [ "$DISABLE_LOGS" = true ]; then
     # Set LOG_LEVEL=3
-    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' ./opt/rockrobo/rrlog/rrlog.conf
-    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' ./opt/rockrobo/rrlog/rrlogmt.conf
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' $IMG_DIR/opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' $IMG_DIR/opt/rockrobo/rrlog/rrlogmt.conf
 
     #UPLOAD_METHOD=0
-    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlog.conf
-    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlogmt.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' $IMG_DIR/opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' $IMG_DIR/opt/rockrobo/rrlog/rrlogmt.conf
 
     # Let the script cleanup logs
-    sed -i 's/nice.*//' ./opt/rockrobo/rrlog/tar_extra_file.sh
+    sed -i 's/nice.*//' $IMG_DIR/opt/rockrobo/rrlog/tar_extra_file.sh
 
     # Add exit 0
-    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/misc.sh
-    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/toprotation.sh
-    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/topstop.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/misc.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/toprotation.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/topstop.sh
 
     # Comment $IncludeConfig
-    sed -Ei 's/^(\$IncludeConfig)/#&/' ./etc/rsyslog.conf
+    sed -Ei 's/^(\$IncludeConfig)/#&/' $IMG_DIR/etc/rsyslog.conf
 fi
 
 if [ "$PATCH_RRLOGD" = true ]; then
@@ -363,17 +383,17 @@ if [ "$PATCH_RRLOGD" = true ]; then
     if [ -n "$bspatch" ]; then
         echo "checking if we can patch rrlogd"
 
-        rrlog_md5sum=$(md5sum ./opt/rockrobo/rrlog/rrlogd | cut -d ' ' -f 1)
+        rrlog_md5sum=$(md5sum $IMG_DIR/opt/rockrobo/rrlog/rrlogd | cut -d ' ' -f 1)
         rrlog_patch="$BASEDIR/../rrlog/$rrlog_md5sum/rrlogd.binarypatch"
 
         if [ -r "$rrlog_patch" ]; then
             echo "creating backup of rrlogd"
-            cp ./opt/rockrobo/rrlog/rrlogd ./opt/rockrobo/rrlog/rrlogd.bak
+            cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi
 
             echo "patching rrlogd ($rrlog_md5sum)"
             $bspatch \
-                ./opt/rockrobo/rrlog/rrlogd.bak \
-                ./opt/rockrobo/rrlog/rrlogd \
+                $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi \
+                $IMG_DIR/opt/rockrobo/rrlog/rrlogd \
                 $rrlog_patch || echo "ERROR: patching rrlogd failed!"
         fi
     fi
@@ -386,79 +406,85 @@ if [ "$RESTORE_RUBY" = true ]; then
     #   root:rockrobo
     #   ruby:rockrobo
     echo "Restore old usertable to enable user ruby"
-    cp ./etc/passwd- ./etc/passwd
-    cp ./etc/group- ./etc/group
-    cp ./etc/shadow- ./etc/shadow
+    cp $IMG_DIR/etc/passwd- $IMG_DIR/etc/passwd
+    cp $IMG_DIR/etc/group-  $IMG_DIR/etc/group
+    cp $IMG_DIR/etc/shadow- $IMG_DIR/etc/shadow
     #cp ./etc/gshadow- ./etc/gshadow
     #cp ./etc/subuid- ./etc/subuid
     #cp ./etc/subgid- ./etc/subgid
     #if this fails, then the password is rockrobo for user ruby
     echo "ruby:$USER_PASSWORD" | chpasswd -c SHA512 -R $PWD
-    echo $USER_PASSWORD > "output/${FILENAME}.password"
+    echo $USER_PASSWORD > "output/${FIRMWARE_FILENAME}.password"
     ###
 fi
 
 if [ "$ENABLE_DUMMYCLOUD" = true ]; then
     echo "Installing dummycloud"
 
-    cp $DUMMYCLOUD_PATH/dummycloud ./usr/local/bin/dummycloud
-    chmod 0755 ./usr/local/bin/dummycloud
-    cp $DUMMYCLOUD_PATH/doc/dummycloud.conf ./etc/init/dummycloud.conf
+    cp $DUMMYCLOUD_PATH/dummycloud $IMG_DIR/usr/local/bin/dummycloud
+    chmod 0755 $IMG_DIR/usr/local/bin/dummycloud
+    cp $DUMMYCLOUD_PATH/doc/dummycloud.conf $IMG_DIR/etc/init/dummycloud.conf
 
-    cat $DUMMYCLOUD_PATH/doc/etc_hosts-snippet.txt >> ./etc/hosts
+    cat $DUMMYCLOUD_PATH/doc/etc_hosts-snippet.txt >> $IMG_DIR/etc/hosts
 
-    sed -i 's/exit 0//' ./etc/rc.local
-    cat $DUMMYCLOUD_PATH/doc/etc_rc.local-snippet.txt >> ./etc/rc.local
-    echo >> ./etc/rc.local
-    echo "exit 0" >> ./etc/rc.local
+    sed -i 's/exit 0//' $IMG_DIR/etc/rc.local
+    cat $DUMMYCLOUD_PATH/doc/etc_rc.local-snippet.txt >> $IMG_DIR/etc/rc.local
+    echo >> $IMG_DIR/etc/rc.local
+    echo "exit 0" >> $IMG_DIR/etc/rc.local
 
     # UPLOAD_METHOD   0:NO_UPLOAD    1:FTP    2:FDS
-    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlog.conf
-    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' ./opt/rockrobo/rrlog/rrlogmt.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' $IMG_DIR/opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\10/' $IMG_DIR/opt/rockrobo/rrlog/rrlogmt.conf
 
     # Let the script cleanup logs
-    sed -i 's/nice.*//' ./opt/rockrobo/rrlog/tar_extra_file.sh
+    sed -i 's/nice.*//' $IMG_DIR/opt/rockrobo/rrlog/tar_extra_file.sh
 
     # Disable collecting device info to /dev/shm/misc.log
-    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/misc.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/misc.sh
 
     # Disable logging of 'top'
-    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/toprotation.sh
-    sed -i '/^\#!\/bin\/bash$/a exit 0' ./opt/rockrobo/rrlog/topstop.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/toprotation.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/topstop.sh
 fi
 
-echo "#you can add your server line by line" > ./opt/rockrobo/watchdog/ntpserver.conf
-echo "0.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
-echo "1.de.pool.ntp.org" >> ./opt/rockrobo/watchdog/ntpserver.conf
-echo "$TIMEZONE" > ./etc/timezone
+echo "#you can add your server line by line" > $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+echo "0.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+echo "1.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+echo "$TIMEZONE" > $IMG_DIR/etc/timezone
 # Replace chinese soundfiles with english soundfiles
-cp ../sounds/*.wav ./opt/rockrobo/resources/sounds/prc/
+cp -f $SND_DIR/*.wav $IMG_DIR/opt/rockrobo/resources/sounds/prc/
 
-cd ..
-while [ `umount image; echo $?` -ne 0 ]; do
+while [ $(umount $IMG_DIR; echo $?) -ne 0 ]; do
     echo "waiting for unmount..."
     sleep 2
 done
 
-rm -rf image
-rm -rf sounds
-echo "pack new firmware"
-PATCHED="${FILENAME}_patched.pkg"
-tar -czf "$PATCHED" disk.img
-if [ ! -f "$PATCHED" ]; then
+echo "Pack new firmware"
+pushd $FW_DIR
+PATCHED="${FIRMWARE_FILENAME}_patched.pkg"
+tar -czf "$PATCHED" $FW_DIR/disk.img
+if [ ! -r "$PATCHED" ]; then
     echo "File $PATCHED not found! Packing the firmware was unsuccessful."
     exit 1
 fi
-rm -f disk.img
-echo "encrypt firmware"
+
+echo "Encrypt firmware"
 $CCRYPT -e -K "$PASSWORD_FW" "$PATCHED"
+popd
+
+echo "Copy firmware to output/${FIRMWARE_BASENAME} and creating checksums"
 mkdir -p output
-mv "${PATCHED}.cpt" "output/${BASENAME}"
+mv "$FW_DIR/${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
 
 if [ "$IS_MAC" = true ]; then
-    md5 "output/${BASENAME}" > "output/${FILENAME}.md5"
+    md5 "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 else
-    md5sum "output/${BASENAME}" > "output/${FILENAME}.md5"
+    md5sum "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 fi
 
-cat "output/${FILENAME}.md5"
+echo "Cleaning up"
+rm -rf $FW_TMPDIR
+
+echo "FINISHED"
+cat "output/${FIRMWARE_FILENAME}.md5"
+exit 0
