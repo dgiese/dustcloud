@@ -204,7 +204,7 @@ TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
 
-if [[ ! -f "$FIRMWARE" ]]; then
+if [ ! -r "$FIRMWARE" ]; then
     echo "You need to specify an existing firmware file, e.g. v11_003194.pkg"
     exit 1
 fi
@@ -212,8 +212,8 @@ FIRMWARE=$(readlink -f "$FIRMWARE")
 BASENAME=$(basename $FIRMWARE)
 FILENAME="${BASENAME%.*}"
 
-if [ ! -f "$SOUNDFILE" ]; then
-    echo "File $SOUNDFILE not found!"
+if [ ! -r "$SOUNDFILE" ]; then
+    echo "Sound file $SOUNDFILE not found!"
     exit 1
 fi
 SOUNDFILE=$(readlink -f "$SOUNDFILE")
