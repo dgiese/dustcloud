@@ -29,7 +29,7 @@ function print_usage()
 {
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
 --public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-xiaomi|--dummycloud-path=PATH
---adbd|--patch-rrlogd|--disable-logs|--ruby|--unprovisioned|--help]"
+--adbd|--patch-rrlogd|--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
 }
 
 function print_help()
@@ -49,6 +49,7 @@ Options:
   --patch-rrlogd             Patch rrlogd to disable log encryption
   --disable-logs             Disables most log files creations and log uploads on the vacuum
   --ruby                     Restores user ruby (can do sudo) and assigns a random password
+  --ntpserver=IP             Set your local NTP server
   --unprovisioned            Access your network in unprovisioned mode (currently only wpa2psk is supported)
                              --unprovisioned wpa2psk
                              --ssid YOUR_SSID
@@ -142,6 +143,10 @@ while test -n "$1"; do
                 echo "Please download it from https://github.com/dgiese/dustcloud"
                 cleanup_and_exit 1
             fi
+            shift
+            ;;
+        *-ntpserver)
+            NTPSERVER="$ARG"
             shift
             ;;
         *-unprovisioned)
@@ -460,9 +465,14 @@ if [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/topstop.sh
 fi
 
-echo "#you can add your server line by line" > $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+if [ -n "$NTPSERVER" ]; then
+    echo "$NTPSERVER" > $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+else
+    echo "# you can add your server line by line" > $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+fi
 echo "0.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
 echo "1.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+
 echo "$TIMEZONE" > $IMG_DIR/etc/timezone
 # Replace chinese soundfiles with english soundfiles
 cp -f $SND_DIR/*.wav $IMG_DIR/opt/rockrobo/resources/sounds/prc/
