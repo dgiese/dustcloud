@@ -160,9 +160,21 @@ case $key in
 esac
 done
 
-BASEDIR=$(dirname "$0")
-echo "Scriptpath: $BASEDIR"
-
+SCRIPT="$0"
+SCRIPTDIR=$(dirname "${0}")
+COUNT=0
+while [ -L "${SCRIPT}" ]
+do
+    SCRIPT=$(readlink ${SCRIPT})
+    COUNT=$(expr ${COUNT} + 1)
+    if [ ${COUNT} -gt 100 ]
+    then
+        echo "Too many symbolic links"
+        exit 1
+    fi
+done
+BASEDIR=$(dirname "${SCRIPT}")
+echo "Script path: $BASEDIR"
 
 if [ $EUID -ne 0 ]; then
     echo "You need root privileges to execute this script"
