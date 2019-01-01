@@ -18,22 +18,25 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile_webserver
+      args:
+        cloudserverip: 192.168.1.37
     ports:
-      - "2080:80"
+      - "2080:8080"
+      - "80:80"
     links:
       - db
 
-  appserver:
-    container_name: dustcloud-appserver
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile_appserver
-    command: python3 /opt/dustcloud/server.py --enable-live-map --http-proxy webserver:80 -sport 1080
-    ports:
-      - "80:1080"
-    links:
-      - db
-      - webserver
+  # appserver:
+  #   container_name: dustcloud-appserver
+  #   build:
+  #     context: ..
+  #     dockerfile: ./docker/Dockerfile_appserver
+  #   command: python3 /opt/dustcloud/server.py --enable-live-map --http-proxy webserver:80 -sport 1080
+  #   ports:
+  #     - "80:1080"
+  #   links:
+  #     - db
+  #     - webserver
 
 volumes:
     db_data: {}
