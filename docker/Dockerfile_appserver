@@ -1,6 +1,6 @@
 FROM python:3.5
 
-RUN pip3 install pymysql python-miio cryptography Pillow
+RUN pip3 install pymysql python-miio cryptography Pillow bottle
 
 COPY dustcloud /opt/dustcloud
 

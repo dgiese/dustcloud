@@ -9,7 +9,7 @@ COPY dustcloud /opt/dustcloud
 RUN sed -i 's/^\(\[supervisord\]\)$/\1\nnodaemon=true/' /etc/supervisor/supervisord.conf
 RUN mkdir -p /var/log/supervisor
 
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/programs.conf /etc/supervisor/conf.d/programs.conf
 COPY docker/dustcloud.conf /etc/apache2/conf-enabled/
 
 RUN cp /opt/dustcloud/config.sample.ini /opt/dustcloud/config.ini && \
@@ -18,5 +18,6 @@ RUN cp /opt/dustcloud/config.sample.ini /opt/dustcloud/config.ini && \
 
 RUN cd /opt/dustcloud/www && composer install
 RUN pip3 install python-miio
+
 
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
