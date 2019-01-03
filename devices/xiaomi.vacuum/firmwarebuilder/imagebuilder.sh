@@ -505,7 +505,7 @@ done
 echo "Pack new firmware"
 pushd $FW_DIR
 PATCHED="${FIRMWARE_FILENAME}_patched.pkg"
-tar -czf "$PATCHED" $FW_DIR/disk.img
+tar -czf "$PATCHED" disk.img
 if [ ! -r "$PATCHED" ]; then
     echo "File $PATCHED not found! Packing the firmware was unsuccessful."
     exit 1
