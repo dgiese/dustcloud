@@ -248,7 +248,7 @@ fi
 SOUNDFILE_PATH=$(readlink -f "$SOUNDFILE_PATH")
 
 if [ $PATCH_ADBD -eq 1 ]; then
-    if [ ! -f ./adbd ]; then
+    if [ ! -f $SCRIPTDIR/adbd ]; then
         echo "File adbd not found, cannot replace adbd in image!"
         exit 1
     fi
