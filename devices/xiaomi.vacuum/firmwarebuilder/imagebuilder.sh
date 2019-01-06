@@ -127,7 +127,7 @@ while test -n "$1"; do
             DISABLE_LOGS=1
             ;;
         *-replace-adbd)
-            REPLACE_ADBD=1
+            PATCH_ADBD=1
             ;;
         *-enable-ruby)
             RESTORE_RUBY=1
