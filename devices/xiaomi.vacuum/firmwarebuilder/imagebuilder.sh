@@ -46,7 +46,7 @@ Options:
   --disable-firmware-updates Disable xiaomi servers using hosts file for firmware updates
   --dummycloud-path=PATH     Provide the path to dummycloud
   --replace-adbd             Replace xiaomis custom adbd with generic adbd version
-  --patch-rrlogd             Patch rrlogd to disable log encryption
+  --patch-rrlogd             Patch rrlogd to disable log encryption (only use with dummycloud or dustcloud)
   --disable-logs             Disables most log files creations and log uploads on the vacuum
   --ruby                     Restores user ruby (can do sudo) and assigns a random password
   --ntpserver=IP             Set your local NTP server
@@ -408,24 +408,27 @@ if [ $DISABLE_LOGS -eq 1 ]; then
 fi
 
 if [ $PATCH_RRLOGD -eq 1 ]; then
-    bspatch=$(type -p bspatch)
+    echo "Creating backup of rrlogd"
+    cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi
 
-    if [ -n "$bspatch" ]; then
-        echo "checking if we can patch rrlogd"
+    # This is a extremly simple binary patch by John Rev
+    # In the long run we should use his rrlogd-patcher however we would need to integrate
+    # it into the imagebuilder package or git repo.
+    #
+    # See https://github.com/JohnRev/rrlogd-patcher
+    echo "Trying to patch rrlogd"
+    cp -f $IMG_DIR/opt/rockrobo/rrlog/rrlogd $FW_TMPDIR/rrlogd
 
-        rrlog_md5sum=$(md5sum $IMG_DIR/opt/rockrobo/rrlog/rrlogd | cut -d ' ' -f 1)
-        rrlog_patch="$BASEDIR/../rrlog/$rrlog_md5sum/rrlogd.binarypatch"
-
-        if [ -r "$rrlog_patch" ]; then
-            echo "creating backup of rrlogd"
-            cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi
-
-            echo "patching rrlogd ($rrlog_md5sum)"
-            $bspatch \
-                $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi \
-                $IMG_DIR/opt/rockrobo/rrlog/rrlogd \
-                $rrlog_patch || echo "ERROR: patching rrlogd failed!"
-        fi
+    sed -i 's/\xF2\x04\x03\xFF\xF7\x45\xFF/\xF2\x04\x03\xE3\x20\x45\xFF/g' \
+          $IMG_DIR/opt/rockrobo/rrlog/rrlogd &&
+          sed -i 's/\xFE\x33\x46\x4B\xA8\x10\x22/\xFE\x33\x46\x47\xA8\x10\x22/g' \
+          $IMG_DIR/opt/rockrobo/rrlog/rrlogd
+    ret=$?
+    if [ $ret -eq 0 ]; then
+        cp -f $FW_TMPDIR/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd
+        echo "Successfully patched rrlogd"
+    else
+        echo "Failed to patch rrlogd (please report a bug here: https://github.com/JohnRev/rrlogd-patcher/issues)"
     fi
 fi
 
