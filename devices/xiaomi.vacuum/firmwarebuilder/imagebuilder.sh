@@ -29,7 +29,7 @@ function print_usage()
 {
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
 --public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-xiaomi|--dummycloud-path=PATH
---adbd|--patch-rrlogd|--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
+--adbd|--rrlogd-patcher=PATCHER|--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
 }
 
 function print_help()
@@ -46,7 +46,7 @@ Options:
   --disable-firmware-updates Disable xiaomi servers using hosts file for firmware updates
   --dummycloud-path=PATH     Provide the path to dummycloud
   --replace-adbd             Replace xiaomis custom adbd with generic adbd version
-  --patch-rrlogd             Patch rrlogd to disable log encryption (only use with dummycloud or dustcloud)
+  --rrlogd-patcher=PATCHER   Patch rrlogd to disable log encryption (only use with dummycloud or dustcloud)
   --disable-logs             Disables most log files creations and log uploads on the vacuum
   --ruby                     Restores user ruby (can do sudo) and assigns a random password
   --ntpserver=IP             Set your local NTP server
@@ -132,8 +132,10 @@ while test -n "$1"; do
         *-enable-ruby)
             RESTORE_RUBY=1
             ;;
-        *--patch-rrlogd)
+        *--rrlogd-patcher)
             PATCH_RRLOGD=1
+            RRLOGD_PATCHER="$ARG"
+            shift
             ;;
         *-dummycloud-path)
             DUMMYCLOUD_PATH="$ARG"
@@ -408,6 +410,7 @@ if [ $DISABLE_LOGS -eq 1 ]; then
 fi
 
 if [ $PATCH_RRLOGD -eq 1 ]; then
+    PYTHON=${PYTHON:-"python"}
     echo "Creating backup of rrlogd"
     cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi
 
@@ -419,13 +422,12 @@ if [ $PATCH_RRLOGD -eq 1 ]; then
     echo "Trying to patch rrlogd"
     cp -f $IMG_DIR/opt/rockrobo/rrlog/rrlogd $FW_TMPDIR/rrlogd
 
-    sed -i 's/\xF2\x04\x03\xFF\xF7\x45\xFF/\xF2\x04\x03\xE3\x20\x45\xFF/g' \
-          $IMG_DIR/opt/rockrobo/rrlog/rrlogd &&
-          sed -i 's/\xFE\x33\x46\x4B\xA8\x10\x22/\xFE\x33\x46\x47\xA8\x10\x22/g' \
-          $IMG_DIR/opt/rockrobo/rrlog/rrlogd
+    pushd $FW_TMPDIR
+    $PYTHON $RRLOGD_PATCHER
     ret=$?
+    popd
     if [ $ret -eq 0 ]; then
-        cp -f $FW_TMPDIR/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd
+        cp -f $FW_TMPDIR/rrlogd_patch $IMG_DIR/opt/rockrobo/rrlog/rrlogd
         echo "Successfully patched rrlogd"
     else
         echo "Failed to patch rrlogd (please report a bug here: https://github.com/JohnRev/rrlogd-patcher/issues)"
