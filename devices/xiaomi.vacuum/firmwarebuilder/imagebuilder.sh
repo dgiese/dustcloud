@@ -481,6 +481,11 @@ fi
 if [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     echo "Installing dummycloud"
 
+    # Fix line endings as the released zip packages have Windows line endings
+    dos2unix $DUMMYCLOUD_PATH/doc/dummycloud.conf
+    dos2unix $DUMMYCLOUD_PATH/doc/etc_hosts-snippet.txt
+    dos2unix $DUMMYCLOUD_PATH/doc/etc_rc.local-snippet.txt
+
     install -m 0755 $DUMMYCLOUD_PATH/dummycloud $IMG_DIR/usr/local/bin/dummycloud
     install -m 0644 $DUMMYCLOUD_PATH/doc/dummycloud.conf $IMG_DIR/etc/init/dummycloud.conf
 
