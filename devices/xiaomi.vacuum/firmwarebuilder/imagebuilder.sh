@@ -62,15 +62,35 @@ Report bugs to: https://github.com/dgiese/dustcloud/issues
 EOF
 }
 
-# Check if we have GNU readlink
-# see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
-readlink -f imagebuilder.sh 2> /dev/null
-if [ $? -eq 0 ]; then
-    echo "Compatible readlink found!"
-else
-    echo "readlink from coreutils package not found! Please install it first (e.g. by brew install coreutils)"
+
+fixed_cmd_subst() {
+    eval '
+    '"$1"'=$('"$2"'; ret=$?; echo .; exit "$ret")
+    set -- "$1" "$?"
+    '"$1"'=${'"$1"'%??}
+    '
+    return "$2"
+}
+
+readlink_f() (
+    link=$1 max_iterations=40
+    while [ "$max_iterations" -gt 0 ]; do
+        max_iterations=$(($max_iterations - 1))
+        fixed_cmd_subst dir 'dirname -- "$link"' || exit
+        fixed_cmd_subst base 'basename -- "$link"' || exit
+        cd -P -- "$dir" || exit
+        link=${PWD%/}/$base
+        if [ ! -L "$link" ]; then
+            printf '%s\n' "$link"
+            exit
+        fi
+        fixed_cmd_subst link 'ls -ld -- "$link"' || exit
+        link=${link#* -> }
+    done
+    printf >&2 'Loop detected\n'
     exit 1
-fi
+)
+
 
 PUBLIC_KEYS=()
 RESTORE_RUBY=0
@@ -109,7 +129,7 @@ while test -n "$1"; do
         *-public-key|-k)
             # check if the key file exists
             if [ -r "$ARG" ]; then
-                PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink -f "$ARG")
+                PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink_f "$ARG")
             else
                 echo "Public key $ARG doesn't exist or is not readable"
                 cleanup_and_exit 1
@@ -196,7 +216,7 @@ SCRIPTDIR=$(dirname "${0}")
 COUNT=0
 while [ -L "${SCRIPT}" ]
 do
-    SCRIPT=$(readlink ${SCRIPT})
+    SCRIPT=$(readlink_f ${SCRIPT})
     COUNT=$(expr ${COUNT} + 1)
     if [ ${COUNT} -gt 100 ]
     then
@@ -239,7 +259,7 @@ if [ ! -r "$FIRMWARE_PATH" ]; then
     echo "You need to specify an existing firmware file, e.g. v11_003194.pkg"
     exit 1
 fi
-FIRMWARE_PATH=$(readlink -f "$FIRMWARE_PATH")
+FIRMWARE_PATH=$(readlink_f "$FIRMWARE_PATH")
 FIRMWARE_BASENAME=$(basename $FIRMWARE_PATH)
 FIRMWARE_FILENAME="${FIRMWARE_BASENAME%.*}"
 
@@ -247,7 +267,7 @@ if [ ! -r "$SOUNDFILE_PATH" ]; then
     echo "Sound file $SOUNDFILE_PATH not found!"
     exit 1
 fi
-SOUNDFILE_PATH=$(readlink -f "$SOUNDFILE_PATH")
+SOUNDFILE_PATH=$(readlink_f "$SOUNDFILE_PATH")
 
 if [ $PATCH_ADBD -eq 1 ]; then
     if [ ! -f $SCRIPTDIR/adbd ]; then
@@ -409,27 +429,33 @@ if [ $DISABLE_LOGS -eq 1 ]; then
 fi
 
 if [ $PATCH_RRLOGD -eq 1 ]; then
-    PYTHON=${PYTHON:-"python"}
-    echo "Creating backup of rrlogd"
-    cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi
+    PYTHON=${PYTHON:-"python3"}
+    RRLOGD_PATCHER_ABS="$(readlink_f $RRLOGD_PATCHER 2> /dev/null)"
 
-    # This is a extremly simple binary patch by John Rev
-    # In the long run we should use his rrlogd-patcher however we would need to integrate
-    # it into the imagebuilder package or git repo.
-    #
-    # See https://github.com/JohnRev/rrlogd-patcher
-    echo "Trying to patch rrlogd"
-    cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $FW_TMPDIR/rrlogd
+    if [ -r "$RRLOGD_PATCHER_ABS" ]; then
+        echo "Creating backup of rrlogd"
+        cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $IMG_DIR/opt/rockrobo/rrlog/rrlogd.xiaomi
 
-    pushd $FW_TMPDIR
-    $PYTHON $RRLOGD_PATCHER
-    ret=$?
-    popd
-    if [ $ret -eq 0 ]; then
-        install -m 0755 $FW_TMPDIR/rrlogd_patch $IMG_DIR/opt/rockrobo/rrlog/rrlogd
-        echo "Successfully patched rrlogd"
+        # This is a extremly simple binary patch by John Rev
+        # In the long run we should use his rrlogd-patcher however we would need to integrate
+        # it into the imagebuilder package or git repo.
+        #
+        # See https://github.com/JohnRev/rrlogd-patcher
+        echo "Trying to patch rrlogd"
+        cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $FW_TMPDIR/rrlogd
+
+        pushd $FW_TMPDIR
+        $PYTHON "$RRLOGD_PATCHER_ABS"
+        ret=$?
+        popd
+        if [ $ret -eq 0 ]; then
+            install -m 0755 $FW_TMPDIR/rrlogd_patch $IMG_DIR/opt/rockrobo/rrlog/rrlogd
+            echo "Successfully patched rrlogd"
+        else
+            echo "Failed to patch rrlogd (please report a bug here: https://github.com/JohnRev/rrlogd-patcher/issues)"
+        fi
     else
-        echo "Failed to patch rrlogd (please report a bug here: https://github.com/JohnRev/rrlogd-patcher/issues)"
+        echo "Invalid path to rrlogd ($RRLOGD_PATCHER_ABS)"
     fi
 fi
 
@@ -454,6 +480,11 @@ fi
 
 if [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     echo "Installing dummycloud"
+
+    # Fix line endings as the released zip packages have Windows line endings
+    dos2unix $DUMMYCLOUD_PATH/doc/dummycloud.conf
+    dos2unix $DUMMYCLOUD_PATH/doc/etc_hosts-snippet.txt
+    dos2unix $DUMMYCLOUD_PATH/doc/etc_rc.local-snippet.txt
 
     install -m 0755 $DUMMYCLOUD_PATH/dummycloud $IMG_DIR/usr/local/bin/dummycloud
     install -m 0644 $DUMMYCLOUD_PATH/doc/dummycloud.conf $IMG_DIR/etc/init/dummycloud.conf
