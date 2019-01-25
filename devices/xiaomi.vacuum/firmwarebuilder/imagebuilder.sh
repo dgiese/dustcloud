@@ -64,6 +64,24 @@ EOF
 
 # Check if we have GNU readlink
 # see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+
+IS_MAC=false
+if [[ $OSTYPE == darwin* ]]; then
+    # Mac OSX
+    IS_MAC=true
+    echo "Running on a Mac, adjusting commands accordingly"
+
+    shopt -s expand_aliases                                 # enable alias for non-interactive shell
+    alias readlink=greadlink                                # brew install BSD version as 'readlink', and GNU version as 'greadlink'
+
+    hash fuse-ext2
+    if [ $? -ne 0 ]; then                                   # fuse-ext2 checking
+        echo "fuse-ext2 not found. You need install it, and their dependecies. More info: https://github.com/alperakcan/fuse-ext2"
+        exit 1
+    fi
+    echo "Compatible fuse-ext2 found!"
+fi
+
 readlink -f imagebuilder.sh 2> /dev/null
 if [ $? -eq 0 ]; then
     echo "Compatible readlink found!"
@@ -210,13 +228,6 @@ echo "Script path: $BASEDIR"
 if [ $EUID -ne 0 ]; then
     echo "You need root privileges to execute this script"
     exit 1
-fi
-
-IS_MAC=false
-if [[ $OSTYPE == darwin* ]]; then
-    # Mac OSX
-    IS_MAC=true
-    echo "Running on a Mac, adjusting commands accordingly"
 fi
 
 CCRYPT="$(type -p ccrypt)"
