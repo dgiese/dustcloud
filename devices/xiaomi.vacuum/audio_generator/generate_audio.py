@@ -67,6 +67,11 @@ if engine == 'aws':
     genders = ['female','male']
     gender = select_item('Available Voices:', genders)
 
+if engine == 'macos':
+    if os.system('ffmpeg -version > /dev/null 2>&1') != 0:
+        print('macos engine requires ffmpeg for converting aiff to wav.')
+        exit(0)
+        
 # read input file
 try:
     filereader = csv.reader(open(input_file), delimiter=",")
@@ -126,8 +131,10 @@ for filename, text in filereader:
         os.system("espeak-ng -v " + language + " \"" + text + "\" -w " + path)
     elif engine == "macos":
         # remove "-v Anna" if you want to use your system language, leave this as german default
-        # format is recommendation from https://stackoverflow.com/a/9732070
-        os.system("say -v Anna -o " + path + " --data-format=LEF32@22050 " + text)
+        # direct output as wav isn't readable by the robot
+        os.system("say -v Anna -o " + path + ".aiff " + text)
+        os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".aiff " + path)
+        os.remove(path + ".aiff")
 
 if os.system('cd %s && tar zc *.wav | ccrypt -e -K "%s" > %s.pkg' % (output_directory, sound_password, language)) == 0:
     print("\nGenerated encrypted sound package at %s/%s.pkg" % (output_directory, language))
