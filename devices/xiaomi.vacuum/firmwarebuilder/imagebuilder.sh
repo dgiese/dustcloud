@@ -554,14 +554,15 @@ $CCRYPT -e -K "$PASSWORD_FW" "$PATCHED"
 popd
 
 echo "Copy firmware to output/${FIRMWARE_BASENAME} and creating checksums"
-mkdir -p output
-mv "$FW_DIR/${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
+install -d -m 0755 output
+install -m 0644 "$FW_DIR/${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
 
 if [ "$IS_MAC" = true ]; then
     md5 "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 else
     md5sum "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 fi
+chmod 0644 "output/${FIRMWARE_FILENAME}.md5"
 
 echo "Cleaning up"
 rm -rf $FW_TMPDIR
