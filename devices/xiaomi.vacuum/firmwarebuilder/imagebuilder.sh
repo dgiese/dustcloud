@@ -28,8 +28,9 @@ function cleanup_and_exit ()
 function print_usage()
 {
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
---public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|--dummycloud-path=PATH
---adbd|--rrlogd-patcher=PATCHER|--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
+--public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|
+--dummycloud-path=PATH|--valetudo-path=PATH|--replace-adbd|--rrlogd-patcher=PATCHER|
+--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
 }
 
 function print_help()
@@ -45,6 +46,7 @@ Options:
   -t, --timezone             Timezone to be used in vacuum
   --disable-firmware-updates Disable xiaomi servers using hosts file for firmware updates
   --dummycloud-path=PATH     Provide the path to dummycloud
+  --valetudo-path=PATH       The path to valetudo to include it into the image
   --replace-adbd             Replace xiaomis custom adbd with generic adbd version
   --rrlogd-patcher=PATCHER   Patch rrlogd to disable log encryption (only use with dummycloud or dustcloud)
   --disable-logs             Disables most log files creations and log uploads on the vacuum
