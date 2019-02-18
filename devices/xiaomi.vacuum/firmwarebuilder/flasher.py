@@ -69,7 +69,8 @@ def findIP():
 
 def discover_devices():
     timeout = 5
-    seen_addrs = []  # type: List[str]
+    # type: List[str]
+    seen_addrs = []
     addr = '<broadcast>'
     # magic, length 32
     helobytes = bytes.fromhex('21310020ffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
