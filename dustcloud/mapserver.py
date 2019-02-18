@@ -20,7 +20,7 @@ import json
 import configparser
 
 configParser = configparser.RawConfigParser()
-configFilePath = os.path.dirname(os.path.realpath(__file__)) + '/config.ini'
+configFilePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '/config.ini')
 configParser.read(configFilePath)
 listenaddr = configParser.get('cloudserver', 'mapaddr')
 listenport = int(configParser.get('cloudserver', 'mapport'))
@@ -61,7 +61,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             print(data[0:httplength].decode())
             matches = re.search(b'GET /([^ /]+)(/all)? HTTP/1\\.[0-9]', data[0:httplength])
             did = matches.group(1)
-            print("HTTP Request for " + did.decode())
+            print("HTTP Request for {}".format(did.decode()))
             printall = matches.group(2)
             if did.decode() in slamdata:
                 print("OK")
