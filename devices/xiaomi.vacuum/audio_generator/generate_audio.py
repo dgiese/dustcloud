@@ -13,19 +13,19 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import os
 import csv
 import glob
+import os
 import sys
 
 
 def select_item(welcome_text, items):
     print(welcome_text)
     for i, item in enumerate(items):
-        print('{}. {}'.format(i+1, item))
+        print('{}. {}'.format(i + 1, item))
     try:
         selected = input('Please select option by typing number (1-{}): '.format(len(items)))
-        result = items[int(selected)-1]
+        result = items[int(selected) - 1]
         return result
     except KeyboardInterrupt:
         print('User requested to exit')
@@ -41,7 +41,7 @@ output_directory = "generated"
 available_audio = glob.glob('language/audio_*.csv')
 input_file = select_item('Available localized audio instructions:', available_audio)
 language = input_file.split('_')[-1].split('.')[0]
-output_directory = "generated_" + language
+output_directory = "generated_{}".format(language)
 sound_password = "r0ckrobo#23456"
 
 tts_engines = ['gtts']
@@ -64,14 +64,14 @@ if engine == 'gtts':
         from gtts import gTTS
 
 if engine == 'aws':
-    genders = ['female','male']
+    genders = ['female', 'male']
     gender = select_item('Available Voices:', genders)
 
 if engine == 'macos':
     if os.system('ffmpeg -version > /dev/null 2>&1') != 0:
         print('macos engine requires ffmpeg for converting aiff to wav.')
         exit(0)
-        
+
 # read input file
 try:
     filereader = csv.reader(open(input_file), delimiter=",")
@@ -86,13 +86,13 @@ if not os.path.exists(output_directory):
 # generate audio
 for filename, text in filereader:
     print(filename)
-    path = output_directory + "/" + filename
+    path = os.path.join(output_directory, filename)
     if engine == "gtts":
         tts = gTTS(text=text, lang=language, slow=False)
         # save mp3 and convert to mp3
-        tts.save(path + ".mp3")
-        os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
-        os.remove(path + ".mp3")
+        tts.save("{}.mp3".format(path))
+        os.system("ffmpeg -hide_banner -loglevel panic -i {0}.mp3 {0}".format(path))
+        os.remove("{}.mp3".format(path))
     elif engine == "aws":
         # https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
         if language == "de":
@@ -106,7 +106,7 @@ for filename, text in filereader:
             if gender == "male":
                 voice = "Mathieu"
         elif language == "ca":
-            voice = "Chantal" # No male voice
+            voice = "Chantal"  # No male voice
         elif language == "es":
             if gender == "female":
                 voice = "Conchita"
@@ -117,24 +117,24 @@ for filename, text in filereader:
                 voice = "Ewa"
             if gender == "male":
                 voice = "Jacek"
-        else: # if language not available, use en
+        else:  # if language not available, use en
             if gender == "female":
                 voice = "Amy"
             if gender == "male":
                 voice = "Brian"
-        os.system("aws polly synthesize-speech --output-format mp3 --voice-id " + voice + " --text \"" + text + "\" " + path + ".mp3")
-        os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".mp3 " + path)
-        os.remove(path + ".mp3")
+        os.system("aws polly synthesize-speech --output-format mp3 --voice-id {} --text \"{}\" {}.mp3".format(voice, text, path))
+        os.system("ffmpeg -hide_banner -loglevel panic -i {0}.mp3 {0}".format(path))
+        os.remove("{}.mp3".format(path))
     elif engine == "espeak":
-        os.system("espeak -v " + language + " \"" + text + "\" -w " + path)
+        os.system("espeak -v {} \"{}\" -w {}".format(language, text, path))
     elif engine == "espeak-ng":
-        os.system("espeak-ng -v " + language + " \"" + text + "\" -w " + path)
+        os.system("espeak-ng -v {} \"{}\" -w {}".format(language, text, path))
     elif engine == "macos":
         # remove "-v Anna" if you want to use your system language, leave this as german default
         # direct output as wav isn't readable by the robot
-        os.system("say -v Anna -o " + path + ".aiff " + text)
-        os.system("ffmpeg -hide_banner -loglevel panic -i " + path + ".aiff " + path)
-        os.remove(path + ".aiff")
+        os.system("say -v Anna -o {}.aiff {}".format(path, text))
+        os.system("ffmpeg -hide_banner -loglevel panic -i {0}.aiff {0}".format(path))
+        os.remove("{}.aiff".format(path))
 
-if os.system('cd %s && tar zc *.wav | ccrypt -e -K "%s" > %s.pkg' % (output_directory, sound_password, language)) == 0:
-    print("\nGenerated encrypted sound package at %s/%s.pkg" % (output_directory, language))
+if os.system('cd {} && tar zc *.wav | ccrypt -e -K "{}" > {}.pkg'.format(output_directory, sound_password, language)) == 0:
+    print("\nGenerated encrypted sound package at {}/{}.pkg".format(output_directory, language))
