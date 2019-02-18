@@ -33,7 +33,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request.recv(31).strip()
         httplength = data.find(b'\n')
-        print(data[0:httplength]);
+        print(data[0:httplength])
         if data[0:14] == b"ROCKROBO_MAP__":
             print("===== {} =====".format(self.client_address[0]))
             payload = self.request.recv(int(data[15:31]) + 1)
@@ -42,7 +42,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             print(did)
             print(slam)
             if slam[1] == "estimate":
-                if not did in slamdata:
+                if did not in slamdata:
                     slamdata[did] = []
 
                 if did not in lastreset:
