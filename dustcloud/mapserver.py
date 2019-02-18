@@ -18,7 +18,6 @@ import re
 import socketserver
 import json
 import configparser
-from bottle import route, run
 
 configParser = configparser.RawConfigParser()
 configFilePath = os.path.dirname(os.path.realpath(__file__)) + '/config.ini'
