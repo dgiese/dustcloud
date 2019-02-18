@@ -37,7 +37,7 @@ def select_item(welcome_text, items):
         print('Error! Please enter one number between 1-{}'.format(len(items)))
         exit()
 
-output_directory = "generated"
+
 available_audio = glob.glob('language/audio_*.csv')
 input_file = select_item('Available localized audio instructions:', available_audio)
 language = input_file.split('_')[-1].split('.')[0]
