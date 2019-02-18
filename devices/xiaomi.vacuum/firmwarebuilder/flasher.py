@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 # This file is part of the "Dustcloud" xiaomi vacuum hacking project
 # Copyright 2017 by Dennis Giese and contributors
 
