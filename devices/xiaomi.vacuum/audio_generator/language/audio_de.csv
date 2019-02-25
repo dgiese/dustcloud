@@ -3,7 +3,7 @@ back_dock_nearby.wav,"Konnte Dockingstation nicht erreichen. Bitte Hindernisse e
 bin_in.wav,"Staubbehälter eingesetzt."
 bin_out.wav,"Staubbehälter entfernt."
 binout_error10.wav,"Staubbehälter ist entfernt. Bitte Filter säubern!"
-bl_recovery_bootfailed.wav,"Boot fehlgeschlagen. Es wird etwa 5 Miunten dauern um die initiale Version wiederherzustellen. Bitte haben Sie Geduld."
+bl_recovery_bootfailed.wav,"Boot fehlgeschlagen. Es wird etwa 5 Minuten dauern um die initiale Version wiederherzustellen. Bitte haben Sie Geduld."
 bl_recovery_failed.wav,"Wiederherstellen der Recovery fehlgeschlagen. Bitte versuchen Sie es erneut."
 bl_recovery_retry.wav,"Starte Recovery neu. Es wird etwa 5 Minuten dauern. Bitte haben Sie Geduld."
 bl_recovery_start.wav,"Stelle Recovery wieder her. Es wird etwa 5 Minuten dauern. Bitte haben Sie Geduld."
