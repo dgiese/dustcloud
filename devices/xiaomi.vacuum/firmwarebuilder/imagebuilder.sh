@@ -28,7 +28,7 @@ function cleanup_and_exit ()
 function print_usage()
 {
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
---public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-xiaomi|--dummycloud-path=PATH
+--public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|--dummycloud-path=PATH
 --adbd|--rrlogd-patcher=PATCHER|--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
 }
 
