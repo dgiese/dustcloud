@@ -28,8 +28,9 @@ function cleanup_and_exit ()
 function print_usage()
 {
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
---public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|--dummycloud-path=PATH
---adbd|--rrlogd-patcher=PATCHER|--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
+--public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|
+--dummycloud-path=PATH|--valetudo-path=PATH|--replace-adbd|--rrlogd-patcher=PATCHER|
+--disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
 }
 
 function print_help()
@@ -45,6 +46,7 @@ Options:
   -t, --timezone             Timezone to be used in vacuum
   --disable-firmware-updates Disable xiaomi servers using hosts file for firmware updates
   --dummycloud-path=PATH     Provide the path to dummycloud
+  --valetudo-path=PATH       The path to valetudo to include it into the image
   --replace-adbd             Replace xiaomis custom adbd with generic adbd version
   --rrlogd-patcher=PATCHER   Patch rrlogd to disable log encryption (only use with dummycloud or dustcloud)
   --disable-logs             Disables most log files creations and log uploads on the vacuum
@@ -250,7 +252,7 @@ if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
     exit 1
 fi
 
-SOUNDFILE_PATH=${SOUNDFILE_PATH:-"english.pkg"}
+SOUNDLANG=${SOUNDLANG:-"en"}
 TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 PASSWORD_FW="rockrobo"
 PASSWORD_SND="r0ckrobo#23456"
@@ -263,11 +265,9 @@ FIRMWARE_PATH=$(readlink_f "$FIRMWARE_PATH")
 FIRMWARE_BASENAME=$(basename $FIRMWARE_PATH)
 FIRMWARE_FILENAME="${FIRMWARE_BASENAME%.*}"
 
-if [ ! -r "$SOUNDFILE_PATH" ]; then
-    echo "Sound file $SOUNDFILE_PATH not found!"
-    exit 1
+if [ -n "$SOUNDFILE_PATH" ]; then
+    SOUNDFILE_PATH=$(readlink_f "$SOUNDFILE_PATH")
 fi
-SOUNDFILE_PATH=$(readlink_f "$SOUNDFILE_PATH")
 
 if [ $PATCH_ADBD -eq 1 ]; then
     if [ ! -f $SCRIPTDIR/adbd ]; then
@@ -294,17 +294,19 @@ fi
 
 FW_TMPDIR="$(pwd)/$(mktemp -d fw.XXXXXX)"
 
-echo "Decrypt soundfile .."
-SND_DIR="$FW_TMPDIR/sounds"
-SND_FILE=$(basename $SOUNDFILE_PATH)
-mkdir -p $SND_DIR
-cp "$SOUNDFILE_PATH" "$SND_DIR/$SND_FILE"
-$CCRYPT -d -K "$PASSWORD_SND" "$SND_DIR/$SND_FILE"
+if [ -n "$SOUNDFILE_PATH" ]; then
+    echo "Decrypt soundfile .."
+    SND_DIR="$FW_TMPDIR/sounds"
+    SND_FILE=$(basename $SOUNDFILE_PATH)
+    mkdir -p $SND_DIR
+    cp "$SOUNDFILE_PATH" "$SND_DIR/$SND_FILE"
+    $CCRYPT -d -K "$PASSWORD_SND" "$SND_DIR/$SND_FILE"
 
-echo "Unpack soundfile .."
-pushd "$SND_DIR"
-tar -xzf "$SND_FILE"
-popd
+    echo "Unpack soundfile .."
+    pushd "$SND_DIR"
+    tar -xzf "$SND_FILE"
+    popd
+fi
 
 echo "Decrypt firmware"
 FW_DIR="$FW_TMPDIR/fw"
@@ -528,10 +530,15 @@ echo "1.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
 
 echo "$TIMEZONE" > $IMG_DIR/etc/timezone
 
-# Replace chinese soundfiles with english soundfiles
-for f in $SND_DIR/*.wav; do
-    install -m 0644 $f $IMG_DIR/opt/rockrobo/resources/sounds/prc/$(basename $f)
-done
+if [ -n "$SND_DIR" ]; then
+    SND_DST_DIR="$IMG_DIR/opt/rockrobo/resources/sounds/${SOUNDLANG}"
+    install -d -m 0755 $SND_DST_DIR
+
+    # Add sounds for a specific language
+    for f in ${SND_DIR}/*.wav; do
+        install -m 0644 $f ${SND_DST_DIR}/$(basename ${f})
+    done
+fi
 
 while [ $(umount $IMG_DIR; echo $?) -ne 0 ]; do
     echo "waiting for unmount..."
@@ -552,14 +559,15 @@ $CCRYPT -e -K "$PASSWORD_FW" "$PATCHED"
 popd
 
 echo "Copy firmware to output/${FIRMWARE_BASENAME} and creating checksums"
-mkdir -p output
-mv "$FW_DIR/${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
+install -d -m 0755 output
+install -m 0644 "$FW_DIR/${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
 
 if [ "$IS_MAC" = true ]; then
     md5 "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 else
     md5sum "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 fi
+chmod 0644 "output/${FIRMWARE_FILENAME}.md5"
 
 echo "Cleaning up"
 rm -rf $FW_TMPDIR
