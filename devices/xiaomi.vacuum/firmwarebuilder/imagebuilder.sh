@@ -241,6 +241,11 @@ if [[ $OSTYPE == darwin* ]]; then
     echo "Running on a Mac, adjusting commands accordingly"
 fi
 
+if [ $ENABLE_VALETUDO -eq 1  ] && [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
+    echo "You can't install Valetudo and Dummycloud at the same time, "
+    echo "because Valetudo has implemented Dummycloud fuctionality and map upload support now."
+fi
+
 CCRYPT="$(type -p ccrypt)"
 if [ ! -x "$CCRYPT" ]; then
     echo "ccrypt not found! Please install it (e.g. by (apt|brew|dnf|zypper) install ccrypt)"
@@ -518,6 +523,34 @@ if [ $ENABLE_VALETUDO -eq 1 ]; then
 
     install -m 0755 $VALETUDO_PATH/valetudo $IMG_DIR/usr/local/bin/valetudo
     install -m 0644 $VALETUDO_PATH/deployment/valetudo.conf $IMG_DIR/etc/init/valetudo.conf
+
+    cat $VALETUDO_PATH/deployment/etc/hosts >> $IMG_DIR/etc/hosts
+
+    sed -i 's/exit 0//' $IMG_DIR/etc/rc.local
+    cat $VALETUDO_PATH/deployment/etc/rc.local >> $IMG_DIR/etc/rc.local
+    echo >> $IMG_DIR/etc/rc.local
+    echo "exit 0" >> $IMG_DIR/etc/rc.local
+
+    # UPLOAD_METHOD=2
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\12/' $IMG_DIR/opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(UPLOAD_METHOD=)([0-9]+)/\12/' $IMG_DIR/opt/rockrobo/rrlog/rrlogmt.conf
+
+    # Set LOG_LEVEL=3
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' $IMG_DIR/opt/rockrobo/rrlog/rrlog.conf
+    sed -i -E 's/(LOG_LEVEL=)([0-9]+)/\13/' $IMG_DIR/opt/rockrobo/rrlog/rrlogmt.conf
+
+    # Reduce logging of miio_client
+    sed -i 's/-l 2/-l 0/' $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf
+
+    # Let the script cleanup logs
+    sed -i 's/nice.*//' $IMG_DIR/opt/rockrobo/rrlog/tar_extra_file.sh
+
+    # Disable collecting device info to /dev/shm/misc.log
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/misc.sh
+
+    # Disable logging of 'top'
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/toprotation.sh
+    sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/topstop.sh
 fi
 
 if [ -n "$NTPSERVER" ]; then
