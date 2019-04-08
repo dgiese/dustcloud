@@ -1,5 +1,5 @@
 #!/bin/bash
-# Author: Dennis Giese [dustcloud@1338-1.org]
+# Author: Dennis Giese [dgiese@dontvacuum.me]
 # Copyright 2017 by Dennis Giese
 
 #This program is free software: you can redistribute it and/or modify
