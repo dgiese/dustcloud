@@ -1,5 +1,5 @@
 Firmwareversions are hosted here:
 
-For Generation1: https://dustcloud.seemoo.de/public/xiaomi.vacuum.gen1
+For Generation1: http://dustbuilder.xvm.mit.edu/pkg/v1
 
-For Generation2: https://dustcloud.seemoo.de/public/xiaomi.vacuum.gen2
+For Generation2: http://dustbuilder.xvm.mit.edu/pkg/s5
