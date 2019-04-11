@@ -127,7 +127,7 @@ def main():
 
 
 
-    if not args.firmware:
+    if not args.firmware and not os.path.isfile(firmware):
         print('You should specify firmware file name to install')
         exit()
 
