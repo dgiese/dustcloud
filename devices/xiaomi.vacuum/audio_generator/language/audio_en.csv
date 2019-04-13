@@ -1,4 +1,4 @@
-back_dock_failed.wav,"Could not reach the dock, plase remove obstacles and make sure the charging surfaces are clean!"
+back_dock_failed.wav,"Could not reach the dock, please remove obstacles and make sure the charging surfaces are clean!"
 back_dock_nearby.wav,"Cannot reach the dock, please remove any obstacles!"
 bin_in.wav,"Dustbin installed."
 bin_out.wav,"Dustbin removed."
