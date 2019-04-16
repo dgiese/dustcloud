@@ -211,7 +211,6 @@ while [ -n "$1" ]; do
     esac
 done
 
-
 SCRIPT="$0"
 SCRIPTDIR=$(dirname "${0}")
 COUNT=0
@@ -248,6 +247,12 @@ fi
 CCRYPT="$(type -p ccrypt)"
 if [ ! -x "$CCRYPT" ]; then
     echo "ccrypt not found! Please install it (e.g. by (apt|brew|dnf|zypper) install ccrypt)"
+    cleanup_and_exit 1
+fi
+
+DOS2UNIX="$(type -p dos2unix)"
+if [ ! -x "$DOS2UNIX" ]; then
+    echo "dos2unix not found! Please install it (e.g. by (apt|brew|dnf|zypper) install dos2unix)"
     cleanup_and_exit 1
 fi
 
