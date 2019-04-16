@@ -16,9 +16,9 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-function cleanup_and_exit ()
+function cleanup_and_exit()
 {
-    if test "$1" = 0 -o -z "$1" ; then
+    if [ "$1" = 0 -o -z "$1" ]; then
         exit 0
     else
         exit $1
@@ -30,7 +30,7 @@ function print_usage()
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
 --public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|
 --dummycloud-path=PATH|--valetudo-path=PATH|--replace-adbd|--rrlogd-patcher=PATCHER|
---disable-logs|--ruby|--ntpserver=IP|--unprovisioned|--help]"
+--disable-logs|--enable-ruby|--ntpserver=ADDRESS|--unprovisioned|--help]"
 }
 
 function print_help()
@@ -50,8 +50,8 @@ Options:
   --replace-adbd             Replace xiaomis custom adbd with generic adbd version
   --rrlogd-patcher=PATCHER   Patch rrlogd to disable log encryption (only use with dummycloud or dustcloud)
   --disable-logs             Disables most log files creations and log uploads on the vacuum
-  --ruby                     Restores user ruby (can do sudo) and assigns a random password
-  --ntpserver=IP             Set your local NTP server
+  --enable-ruby              Restores user ruby (can do sudo) and assigns a random password
+  --ntpserver=ADDRESS        Set your local NTP server
   --unprovisioned            Access your network in unprovisioned mode (currently only wpa2psk is supported)
                              --unprovisioned wpa2psk
                              --ssid YOUR_SSID
@@ -63,7 +63,6 @@ Each parameter that takes a file as an argument accepts path in any form
 Report bugs to: https://github.com/dgiese/dustcloud/issues
 EOF
 }
-
 
 fixed_cmd_subst() {
     eval '
@@ -93,7 +92,6 @@ readlink_f() (
     exit 1
 )
 
-
 PUBLIC_KEYS=()
 RESTORE_RUBY=0
 PATCH_ADBD=0
@@ -104,7 +102,7 @@ ENABLE_DUMMYCLOUD=0
 ENABLE_VALETUDO=0
 PATCH_RRLOGD=0
 
-while test -n "$1"; do
+while [ -n "$1" ]; do
     PARAM="$1"
     ARG="$2"
     shift
@@ -154,7 +152,7 @@ while test -n "$1"; do
         *-enable-ruby)
             RESTORE_RUBY=1
             ;;
-        *--rrlogd-patcher)
+        *-rrlogd-patcher)
             PATCH_RRLOGD=1
             RRLOGD_PATCHER="$ARG"
             shift
@@ -208,6 +206,7 @@ while test -n "$1"; do
             ;;
         *)
             print_usage
+            cleanup_and_exit 1
             ;;
     esac
 done
@@ -350,7 +349,7 @@ cat ssh_host_ed25519_key > $IMG_DIR/etc/ssh/ssh_host_ed25519_key
 cat ssh_host_ed25519_key.pub > $IMG_DIR/etc/ssh/ssh_host_ed25519_key.pub
 
 echo "Disable SSH firewall rule"
-sed -i -e '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' $IMG_DIR/opt/rockrobo/watchdog/rrwatchdoge.conf
+sed -i -E '/    iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' $IMG_DIR/opt/rockrobo/watchdog/rrwatchdoge.conf
 
 echo "Add SSH authorized_keys"
 mkdir $IMG_DIR/root/.ssh
