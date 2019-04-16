@@ -24,6 +24,7 @@ import sys
 import argparse
 import http.server
 import socketserver
+import os
 import threading
 from time import sleep
 import miio
@@ -122,11 +123,11 @@ def main():
 
     ip_address = args.address
     known_token = args.token
-    firmware = args.firmware
-    
+    firmware = os.path.abspath(args.firmware)
 
-        
-    if not args.firmware:
+
+
+    if not args.firmware and not os.path.isfile(firmware):
         print('You should specify firmware file name to install')
         exit()
 
@@ -164,6 +165,7 @@ def main():
         exit()
 
     local_ip = findIP()
+    os.chdir(os.path.dirname(firmware))
 
     request_handler = http.server.SimpleHTTPRequestHandler
     httpd = ThreadedHTTPServer(('', 0), request_handler)
@@ -177,7 +179,7 @@ def main():
     ota_params = {
         'mode': 'normal',
         'install': '1',
-        'app_url': 'http://{ip}:{port}/{fw}'.format(ip=local_ip, port=http_port, fw=firmware),
+        'app_url': 'http://{ip}:{port}/{fw}'.format(ip=local_ip, port=http_port, fw=os.path.basename(firmware)),
         'file_md5': md5(firmware),
         'proc': 'dnld install'
     }
