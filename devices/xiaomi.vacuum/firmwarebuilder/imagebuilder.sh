@@ -258,7 +258,6 @@ fi
 
 if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
     echo "No public keys selected!"
-    exit 1
 fi
 
 SOUNDLANG=${SOUNDLANG:-"en"}
@@ -365,10 +364,12 @@ if [ -r $IMG_DIR/root/.ssh/authorized_keys ]; then
     rm $IMG_DIR/root/.ssh/authorized_keys
 fi
 
-for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
-    cat "${PUBLIC_KEYS[$i]}" >> $IMG_DIR/root/.ssh/authorized_keys
-done
-chmod 600 $IMG_DIR/root/.ssh/authorized_keys
+if [ ${#PUBLIC_KEYS[*]} -ne 0 ]; then
+    for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
+        cat "${PUBLIC_KEYS[$i]}" >> $IMG_DIR/root/.ssh/authorized_keys
+    done
+    chmod 600 $IMG_DIR/root/.ssh/authorized_keys
+fi
 
 if [ $DISABLE_XIAOMI -eq 1 ]; then
     echo "reconfiguring network traffic to xiaomi"
