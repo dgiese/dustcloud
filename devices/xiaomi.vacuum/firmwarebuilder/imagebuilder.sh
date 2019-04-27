@@ -561,9 +561,9 @@ if [ -n "$NTPSERVER" ]; then
     echo "$NTPSERVER" > $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
 else
     echo "# you can add your server line by line" > $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+    echo "0.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
+    echo "1.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
 fi
-echo "0.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
-echo "1.de.pool.ntp.org" >> $IMG_DIR/opt/rockrobo/watchdog/ntpserver.conf
 
 echo "$TIMEZONE" > $IMG_DIR/etc/timezone
 
