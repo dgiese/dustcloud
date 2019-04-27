@@ -27,6 +27,7 @@ import socketserver
 import os
 import threading
 from time import sleep
+from typing import List
 import miio
 
 
