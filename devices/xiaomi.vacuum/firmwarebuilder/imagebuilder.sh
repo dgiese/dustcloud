@@ -56,6 +56,7 @@ Options:
                              --unprovisioned wpa2psk
                              --ssid YOUR_SSID
                              --psk YOUR_WIRELESS_PASSWORD
+  --fuse-ext2                Use fuse-ext2 instead of mount. This allows building the firmware without root. It is further usefull for e.g. btrfs based systems.
   -h, --help                 Prints this message
 
 Each parameter that takes a file as an argument accepts path in any form
@@ -101,6 +102,7 @@ DISABLE_LOGS=0
 ENABLE_DUMMYCLOUD=0
 ENABLE_VALETUDO=0
 PATCH_RRLOGD=0
+USE_FUSE_EXT2=0
 
 while [ -n "$1" ]; do
     PARAM="$1"
@@ -156,6 +158,9 @@ while [ -n "$1" ]; do
             PATCH_RRLOGD=1
             RRLOGD_PATCHER="$ARG"
             shift
+            ;;
+        *-fuse-ext2)
+            USE_FUSE_EXT2=1
             ;;
         *-dummycloud-path)
             DUMMYCLOUD_PATH="$ARG"
@@ -227,7 +232,7 @@ done
 BASEDIR=$(dirname "${SCRIPT}")
 echo "Script path: $BASEDIR"
 
-if [ $EUID -ne 0 ]; then
+if [ $EUID -ne 0 ] && [ $USE_FUSE_EXT2 -eq 0 ]; then
     echo "You need root privileges to execute this script"
     exit 1
 fi
@@ -339,6 +344,8 @@ if [ "$IS_MAC" = true ]; then
     #ext4fuse doesn't support write properly
     #ext4fuse disk.img image -o force
     fuse-ext2 "$FW_DIR/disk.img" "$IMG_DIR" -o rw+
+elif [ "$USE_FUSE_EXT2" -eq 1 ]; then
+    fuse-ext2 "$FW_DIR/disk.img" "$IMG_DIR" -o rw+ -o uid=$UID
 else
     mount -o loop "$FW_DIR/disk.img" "$IMG_DIR"
 fi
@@ -579,10 +586,16 @@ if [ -n "$SND_DIR" ]; then
     done
 fi
 
-while [ $(umount $IMG_DIR; echo $?) -ne 0 ]; do
-    echo "waiting for unmount..."
-    sleep 2
-done
+
+# writes cache to image
+sync
+
+echo "Unmount firmware image"
+if [ -n "$USE_FUSE_EXT2" ]; then
+    fusermount -u $IMG_DIR
+else
+    umount $IMG_DIR
+fi
 
 echo "Pack new firmware"
 pushd $FW_DIR
