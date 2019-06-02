@@ -30,7 +30,8 @@ function print_usage()
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
 --public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|
 --dummycloud-path=PATH|--valetudo-path=PATH|--replace-adbd|--rrlogd-patcher=PATCHER|
---disable-logs|--enable-ruby|--ntpserver=ADDRESS|--unprovisioned|--help]"
+--disable-logs|--hostname=HOSTNAME|--enable-ruby|--ntpserver=ADDRESS|
+--unprovisioned|--help]"
 }
 
 function print_help()
@@ -50,6 +51,7 @@ Options:
   --replace-adbd             Replace xiaomis custom adbd with generic adbd version
   --rrlogd-patcher=PATCHER   Patch rrlogd to disable log encryption (only use with dummycloud or dustcloud)
   --disable-logs             Disables most log files creations and log uploads on the vacuum
+  --hostname=HOSTNAME        Sets a custom hostname. If not set the default 'roborock' is used.
   --enable-ruby              Restores user ruby (can do sudo) and assigns a random password
   --ntpserver=ADDRESS        Set your local NTP server
   --unprovisioned            Access your network in unprovisioned mode (currently only wpa2psk is supported)
@@ -145,6 +147,10 @@ while [ -n "$1" ]; do
             ;;
         *-disable-logs)
             DISABLE_LOGS=1
+            ;;
+        *-hostname)
+            CUSTOM_HOSTNAME="$ARG"
+            shift
             ;;
         *-replace-adbd)
             PATCH_ADBD=1
@@ -437,6 +443,15 @@ if [ $DISABLE_LOGS -eq 1 ]; then
 
     # Comment $IncludeConfig
     sed -Ei 's/^(\$IncludeConfig)/#&/' $IMG_DIR/etc/rsyslog.conf
+fi
+
+if [ -n "$CUSTOM_HOSTNAME" ]; then
+    echo "Set '$CUSTOM_HOSTNAME' as hostname"
+    
+    sed -i 's/exit 0//' $IMG_DIR/etc/rc.local
+    echo "hostname $CUSTOM_HOSTNAME && echo $CUSTOM_HOSTNAME > /etc/hostname" >> $IMG_DIR/etc/rc.local
+    echo >> $IMG_DIR/etc/rc.local
+    echo "exit 0" >> $IMG_DIR/etc/rc.local
 fi
 
 if [ $PATCH_RRLOGD -eq 1 ]; then
