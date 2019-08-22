@@ -16,7 +16,7 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set -e
+set -eu
 
 function cleanup_and_exit()
 {
@@ -105,10 +105,12 @@ DISABLE_LOGS=0
 ENABLE_DUMMYCLOUD=0
 ENABLE_VALETUDO=0
 PATCH_RRLOGD=0
+SOUNDFILE_PATH=
+CUSTOM_HOSTNAME=
 
-while [ -n "$1" ]; do
+while [ -n "${1+x}" ]; do
     PARAM="$1"
-    ARG="$2"
+    ARG="${2+}"
     shift
     case ${PARAM} in
         *-*=*)
@@ -586,7 +588,7 @@ fi
 
 echo "$TIMEZONE" > $IMG_DIR/etc/timezone
 
-if [ -n "$SND_DIR" ]; then
+if [ -n "$SOUNDFILE_PATH" ]; then
     SND_DST_DIR="$IMG_DIR/opt/rockrobo/resources/sounds/${SOUNDLANG}"
     install -d -m 0755 $SND_DST_DIR
 
