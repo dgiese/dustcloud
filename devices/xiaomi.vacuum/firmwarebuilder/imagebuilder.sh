@@ -328,9 +328,7 @@ if [ -n "$SOUNDFILE_PATH" ]; then
     $CCRYPT -d -K "$PASSWORD_SND" "$SND_DIR/$SND_FILE"
 
     echo "Unpack soundfile .."
-    pushd "$SND_DIR"
-    tar -xzf "$SND_FILE"
-    popd
+    tar -C "$SND_DIR" -xzf "$SND_FILE"
 fi
 
 echo "Decrypt firmware"
@@ -340,13 +338,11 @@ cp "$FIRMWARE_PATH" "$FW_DIR/$FIRMWARE_FILENAME"
 $CCRYPT -d -K "$PASSWORD_FW" "$FW_DIR/$FIRMWARE_FILENAME"
 
 echo "Unpack firmware"
-pushd "$FW_DIR"
-tar -xzf "$FIRMWARE_FILENAME"
-if [ ! -r disk.img ]; then
-    echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
+tar -C "$FW_DIR" -xzf "$FW_DIR/$FIRMWARE_FILENAME"
+if [ ! -r "$FW_DIR/disk.img" ]; then
+    echo "File $FW_DIR/disk.img not found! Decryption and unpacking was apparently unsuccessful."
     exit 1
 fi
-popd
 
 IMG_DIR="$FW_TMPDIR/image"
 mkdir -p "$IMG_DIR"
@@ -482,10 +478,8 @@ if [ $PATCH_RRLOGD -eq 1 ]; then
         echo "Trying to patch rrlogd"
         cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $FW_TMPDIR/rrlogd
 
-        pushd $FW_TMPDIR
-        $PYTHON "$RRLOGD_PATCHER_ABS"
+        env --chdir="$FW_TMPDIR" $PYTHON "$RRLOGD_PATCHER_ABS"
         ret=$?
-        popd
         if [ $ret -eq 0 ]; then
             install -m 0755 $FW_TMPDIR/rrlogd_patch $IMG_DIR/opt/rockrobo/rrlog/rrlogd
             echo "Successfully patched rrlogd"
@@ -628,9 +622,8 @@ if [ $i -eq 10 ]; then
 fi
 
 echo "Pack new firmware"
-pushd $FW_DIR
-PATCHED="${FIRMWARE_FILENAME}_patched.pkg"
-tar -czf "$PATCHED" disk.img
+PATCHED="$FW_DIR/${FIRMWARE_FILENAME}_patched.pkg"
+tar -C "$FW_DIR" -czf "$PATCHED" disk.img
 if [ ! -r "$PATCHED" ]; then
     echo "File $PATCHED not found! Packing the firmware was unsuccessful."
     exit 1
@@ -638,11 +631,10 @@ fi
 
 echo "Encrypt firmware"
 $CCRYPT -e -K "$PASSWORD_FW" "$PATCHED"
-popd
 
 echo "Copy firmware to output/${FIRMWARE_BASENAME} and creating checksums"
 install -d -m 0755 output
-install -m 0644 "$FW_DIR/${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
+install -m 0644 "${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
 
 if [ "$IS_MAC" = true ]; then
     md5 "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
