@@ -16,6 +16,8 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+set -e
+
 function cleanup_and_exit()
 {
     if [ "$1" = 0 -o -z "$1" ]; then
