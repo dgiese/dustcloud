@@ -603,10 +603,26 @@ if [ -n "$SOUNDFILE_PATH" ]; then
     done
 fi
 
-while [ $(umount $IMG_DIR; echo $?) -ne 0 ]; do
+i=0
+while true; do
+    ret=0
+    umount $IMG_DIR || ret=$?
+    # needed when mounted via fuse or guestmount
     echo "waiting for unmount..."
     sleep 2
+    if [ "$ret" -eq 0 ]; then
+        break
+    fi
+    i=$((i+1))
+    if [ $i -ge 10 ]; then
+        break
+    fi
 done
+
+if [ $i -eq 10 ]; then
+    echo "tried to umount 10 times and failed"
+    exit 1
+fi
 
 echo "Pack new firmware"
 pushd $FW_DIR
