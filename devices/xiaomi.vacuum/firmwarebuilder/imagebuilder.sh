@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Author: Dennis Giese [dgiese@dontvacuum.me]
 # Copyright 2017 by Dennis Giese
 
@@ -18,7 +18,7 @@
 
 set -eu
 
-function cleanup()
+cleanup()
 {
     [ -n "${FW_TMPDIR+x}" ] && echo "Cleaning up"
     [ -n "${FW_DIR+x}" ]    && [ -f "$FW_DIR/disk.img" ] && rm "$FW_DIR/disk.img"
@@ -30,7 +30,7 @@ function cleanup()
 }
 trap cleanup EXIT
 
-function print_usage()
+print_usage()
 {
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
 --public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|
@@ -39,7 +39,7 @@ echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.
 --unprovisioned|--help]"
 }
 
-function print_help()
+print_help()
 {
     cat << EOF
 
@@ -99,7 +99,24 @@ readlink_f() (
     exit 1
 )
 
-PUBLIC_KEYS=()
+# https://www.etalabs.net/sh_tricks.html
+arrsave()
+(
+    for i; do
+        printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/"
+    done
+    echo " "
+)
+
+arrappend()
+(
+    item=$1
+    shift
+    eval "set -- $@"
+    arrsave "$@" "$item"
+)
+
+PUBLIC_KEYS=
 RESTORE_RUBY=0
 PATCH_ADBD=0
 DISABLE_XIAOMI=0
@@ -138,7 +155,7 @@ while [ -n "${1+x}" ]; do
         *-public-key|-k)
             # check if the key file exists
             if [ -r "$ARG" ]; then
-                PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink_f "$ARG")
+                PUBLIC_KEYS=$(arrappend "$(readlink_f "$ARG")" "$PUBLIC_KEYS")
             else
                 echo "Public key $ARG doesn't exist or is not readable"
                 exit 1
@@ -240,8 +257,8 @@ done
 BASEDIR=$(dirname "${SCRIPT}")
 echo "Script path: $BASEDIR"
 
-if [ $EUID -ne 0 ]; then
-    GUESTMOUNT="$(type -p guestmount)"
+if [ "$(id -u)" -ne 0 ]; then
+    GUESTMOUNT="$(command -v guestmount)"
     if [ ! -x "$GUESTMOUNT" ]; then
         echo "guestmount not found! Please install it (e.g. by (apt|brew|dnf|zypper) install libguestfs-tools)"
         exit 1
@@ -249,30 +266,34 @@ if [ $EUID -ne 0 ]; then
 fi
 
 IS_MAC=false
-if [[ $OSTYPE == darwin* ]]; then
+case $(uname | tr '[:upper:]' '[:lower:]') in
+  darwin*)
     # Mac OSX
     IS_MAC=true
     echo "Running on a Mac, adjusting commands accordingly"
-fi
+    ;;
+  *)
+    ;;
+esac
 
 if [ $ENABLE_VALETUDO -eq 1  ] && [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     echo "You can't install Valetudo and Dummycloud at the same time, "
     echo "because Valetudo has implemented Dummycloud fuctionality and map upload support now."
 fi
 
-CCRYPT="$(type -p ccrypt)"
+CCRYPT="$(command -v ccrypt)"
 if [ ! -x "$CCRYPT" ]; then
     echo "ccrypt not found! Please install it (e.g. by (apt|brew|dnf|zypper) install ccrypt)"
     exit 1
 fi
 
-DOS2UNIX="$(type -p dos2unix)"
+DOS2UNIX="$(command -v dos2unix)"
 if [ ! -x "$DOS2UNIX" ]; then
     echo "dos2unix not found! Please install it (e.g. by (apt|brew|dnf|zypper) install dos2unix)"
     exit 1
 fi
 
-if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
+if [ -z "$PUBLIC_KEYS" ]; then
     echo "No public keys selected!"
     exit 1
 fi
@@ -351,7 +372,7 @@ if [ "$IS_MAC" = true ]; then
     #ext4fuse doesn't support write properly
     #ext4fuse disk.img image -o force
     fuse-ext2 "$FW_DIR/disk.img" "$IMG_DIR" -o rw+
-elif [ $EUID -ne 0 ]; then
+elif [ "$(id -u)" -ne 0 ]; then
     $GUESTMOUNT -a "$FW_DIR/disk.img" -m /dev/sda "$IMG_DIR"
 else
     mount -o loop "$FW_DIR/disk.img" "$IMG_DIR"
@@ -379,8 +400,10 @@ if [ -r $IMG_DIR/root/.ssh/authorized_keys ]; then
     rm $IMG_DIR/root/.ssh/authorized_keys
 fi
 
-for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
-    cat "${PUBLIC_KEYS[$i]}" >> $IMG_DIR/root/.ssh/authorized_keys
+eval "set -- $PUBLIC_KEYS"
+while [ -n "${1+x}" ]; do
+    cat "$1" >> $IMG_DIR/root/.ssh/authorized_keys
+    shift
 done
 chmod 600 $IMG_DIR/root/.ssh/authorized_keys
 
