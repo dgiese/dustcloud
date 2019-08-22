@@ -18,14 +18,17 @@
 
 set -eu
 
-function cleanup_and_exit()
+function cleanup()
 {
-    if [ "$1" = 0 -o -z "$1" ]; then
-        exit 0
-    else
-        exit $1
-    fi
+    [ -n "${FW_TMPDIR+x}" ] && echo "Cleaning up"
+    [ -n "${FW_DIR+x}" ]    && [ -f "$FW_DIR/disk.img" ] && rm "$FW_DIR/disk.img"
+    [ -n "${PATCHED+x}" ]   && [ -f "${PATCHED}.cpt" ]   && rm "${PATCHED}.cpt"
+    [ -n "${FIRMWARE_FILENAME+x}" ] && [ -f "$FW_DIR/$FIRMWARE_FILENAME" ] && rm "$FW_DIR/$FIRMWARE_FILENAME"
+    [ -n "${FW_DIR+x}" ]    && [ -d "$FW_DIR" ]          && rmdir "$FW_DIR"
+    [ -n "${FW_TMPDIR+x}" ] && [ -d "$FW_TMPDIR/image" ] && rmdir "$FW_TMPDIR/image"
+    [ -n "${FW_TMPDIR+x}" ] && [ -d "$FW_TMPDIR" ]       && rmdir "$FW_TMPDIR"
 }
+trap cleanup EXIT
 
 function print_usage()
 {
@@ -138,7 +141,7 @@ while [ -n "${1+x}" ]; do
                 PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink_f "$ARG")
             else
                 echo "Public key $ARG doesn't exist or is not readable"
-                cleanup_and_exit 1
+                exit 1
             fi
             shift
             ;;
@@ -174,7 +177,7 @@ while [ -n "${1+x}" ]; do
             else
                 echo "The dummycloud binary hasn't been found in $DUMMYCLOUD_PATH"
                 echo "Please download it from https://github.com/dgiese/dustcloud"
-                cleanup_and_exit 1
+                exit 1
             fi
             shift
             ;;
@@ -185,7 +188,7 @@ while [ -n "${1+x}" ]; do
             else
                 echo "The valetudo binary hasn't been found in $VALETUDO_PATH"
                 echo "Please download it from https://github.com/Hypfer/Valetudo"
-                cleanup_and_exit 1
+                exit 1
             fi
             shift
             ;;
@@ -208,15 +211,15 @@ while [ -n "${1+x}" ]; do
             ;;
         ----noarg)
             echo "$ARG does not take an argument"
-            cleanup_and_exit
+            exit
             ;;
         -*)
             echo Unknown Option "$PARAM". Exit.
-            cleanup_and_exit 1
+            exit 1
             ;;
         *)
             print_usage
-            cleanup_and_exit 1
+            exit 1
             ;;
     esac
 done
@@ -260,13 +263,13 @@ fi
 CCRYPT="$(type -p ccrypt)"
 if [ ! -x "$CCRYPT" ]; then
     echo "ccrypt not found! Please install it (e.g. by (apt|brew|dnf|zypper) install ccrypt)"
-    cleanup_and_exit 1
+    exit 1
 fi
 
 DOS2UNIX="$(type -p dos2unix)"
 if [ ! -x "$DOS2UNIX" ]; then
     echo "dos2unix not found! Please install it (e.g. by (apt|brew|dnf|zypper) install dos2unix)"
-    cleanup_and_exit 1
+    exit 1
 fi
 
 if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
@@ -647,9 +650,6 @@ else
     md5sum "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 fi
 chmod 0644 "output/${FIRMWARE_FILENAME}.md5"
-
-echo "Cleaning up"
-rm -rf $FW_TMPDIR
 
 echo "FINISHED"
 cat "output/${FIRMWARE_FILENAME}.md5"
