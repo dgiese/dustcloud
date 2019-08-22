@@ -238,8 +238,11 @@ BASEDIR=$(dirname "${SCRIPT}")
 echo "Script path: $BASEDIR"
 
 if [ $EUID -ne 0 ]; then
-    echo "You need root privileges to execute this script"
-    exit 1
+    GUESTMOUNT="$(type -p guestmount)"
+    if [ ! -x "$GUESTMOUNT" ]; then
+        echo "guestmount not found! Please install it (e.g. by (apt|brew|dnf|zypper) install libguestfs-tools)"
+        exit 1
+    fi
 fi
 
 IS_MAC=false
@@ -349,6 +352,8 @@ if [ "$IS_MAC" = true ]; then
     #ext4fuse doesn't support write properly
     #ext4fuse disk.img image -o force
     fuse-ext2 "$FW_DIR/disk.img" "$IMG_DIR" -o rw+
+elif [ $EUID -ne 0 ]; then
+    $GUESTMOUNT -a "$FW_DIR/disk.img" -m /dev/sda "$IMG_DIR"
 else
     mount -o loop "$FW_DIR/disk.img" "$IMG_DIR"
 fi
