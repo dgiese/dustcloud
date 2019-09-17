@@ -443,6 +443,11 @@ if [ $DISABLE_LOGS -eq 1 ]; then
 
     # Comment $IncludeConfig
     sed -Ei 's/^(\$IncludeConfig)/#&/' $IMG_DIR/etc/rsyslog.conf
+    
+    # Disable cores
+    echo "* hard core 0" >> $IMG_DIR/etc/security/limits.conf
+    echo "* soft core 0" >> $IMG_DIR/etc/security/limits.conf
+    sed -i -E 's/ulimit -c unlimited/ulimit -c 0/' $IMG_DIR/opt/rockrobo/watchdog/rrwatchdoge.conf
 fi
 
 if [ -n "$CUSTOM_HOSTNAME" ]; then
@@ -535,6 +540,11 @@ if [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     # Disable logging of 'top'
     sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/toprotation.sh
     sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/topstop.sh
+    
+    # Disable cores
+    echo "* hard core 0" >> $IMG_DIR/etc/security/limits.conf
+    echo "* soft core 0" >> $IMG_DIR/etc/security/limits.conf
+    sed -i -E 's/ulimit -c unlimited/ulimit -c 0/' $IMG_DIR/opt/rockrobo/watchdog/rrwatchdoge.conf
 fi
 
 if [ $ENABLE_VALETUDO -eq 1 ]; then
@@ -570,6 +580,11 @@ if [ $ENABLE_VALETUDO -eq 1 ]; then
     # Disable logging of 'top'
     sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/toprotation.sh
     sed -i '/^\#!\/bin\/bash$/a exit 0' $IMG_DIR/opt/rockrobo/rrlog/topstop.sh
+    
+    # Disable cores
+    echo "* hard core 0" >> $IMG_DIR/etc/security/limits.conf
+    echo "* soft core 0" >> $IMG_DIR/etc/security/limits.conf
+    sed -i -E 's/ulimit -c unlimited/ulimit -c 0/' $IMG_DIR/opt/rockrobo/watchdog/rrwatchdoge.conf
 fi
 
 if [ -n "$NTPSERVER" ]; then
