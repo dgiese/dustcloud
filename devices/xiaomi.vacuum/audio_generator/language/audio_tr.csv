@@ -1,96 +1,96 @@
 back_dock_failed.wav,"Şarj istasyonuna ulaşılamadı, lütfen engelleri kaldırın ve şarj yüzeylerinin temiz olduğundan emin olun!"
 back_dock_nearby.wav,"Şarj istasyonuna ulaşılamıyor, lütfen engelleri kaldırın!"
-bin_in.wav,Çöp kutusu takıldı.
-bin_out.wav,Çöp kutusu çıkarıldı.
-binout_error10.wav,"Çöp kutusu çıkarıldı, lütfen filtreyi temizleyin!"
-bl_recovery_bootfailed.wav,"Önyükleme hatası, ilk sürümü geri yüklemek için yaklaşık 5 dakika sürer. Lütfen sabırlı olun."
-bl_recovery_failed.wav,Kurtarmayı geri yükleme başarısız oldu. Lütfen tekrar deneyin.
-bl_recovery_retry.wav,Kurtarma işlemi yeniden başlatılıyor. Yaklaşık 5 dakika sürer. Lütfen sabırlı olun.
-bl_recovery_start.wav,Kurtarmayı geri yükleme. Yaklaşık 5 dakika sürer. Lütfen sabırlı olun.
-bl_recovery_updatefailed.wav,Yükseltme başarısız oldu. İlk sürümü geri yüklemek yaklaşık 5 dakika sürecektir. Lütfen sabırlı olun.
-charging.wav,Şarj oluyor.
-clean_bin.wav,Lütfen çöp kutusunu temizleyin.
-clean_finish.wav,Temizlik tamamlandı. Şarj istasyonuna geri dönülüyor.
-di.wav,Ding dong!
-ding.wav,Ding!
-error_internal.wav,İç hata oluştu. Lütfen sistemi yeniden başlatın.
-error1.wav,"Hata kod 1, Engellenmediğinden emin olmak için lazer ünitesinin turuncu kafasını çevirmeyi deneyin."
-error2.wav,"Hata kod 2, Tamponu hafifçe temizleyin ve hafifçe tıklatın."
-error3.wav,"Hata kod 3, Cihazı farklı bir yere taşımayı deneyin."
-error4.wav,"Hata kod 4, Uç algılayıcıları temizleyin ve cihazı farklı bir yere taşıyın."
-error5.wav,"Hata kod 5, Ana fırçayı çıkarın ve temizleyin."
-error6.wav,"Hata kod 6, Ana fırçayı çıkarın ve temizleyin."
-error7.wav,"Hata kod 7, Tekerleklerin engellenmediğinden emin olun, cihazı farklı bir yere taşıyın ve tekrar deneyin.."
-error8.wav,"Hata kod 8, Cihazın etrafında engel olmadığından emin olun."
-error9.wav,"Hata kod 9, Çöp kutusunu ve filtreyi takın."
-error10.wav,"Hata kod 10, Filtrenin kuruduğundan emin olun veya filtreyi temizleyin."
+bin_in.wav,"Çöp kutusu takıldı."
+bin_out.wav,"Çöp kutusu çıkarıldı."
+binout_error10.wav,"Çöp kutusu çıkarıldı, lütfen filtreyi temizleyiniz!"
+bl_recovery_bootfailed.wav,"Önyükleme hatası, ilk sürüme geri dönmek yaklaşık 5 dakika sürer. Lütfen sabırlı olunuz."
+bl_recovery_failed.wav,"Fabrika ayarlarına geri dönme işlemi başarısız oldu. Lütfen tekrar deneyiniz."
+bl_recovery_retry.wav,"Fabrika ayarlarına dönme işlemi yeniden başlatılıyor. Bu işlem yaklaşık 5 dakika sürer. Lütfen sabırlı olunuz."
+bl_recovery_start.wav,"Fabrika ayarlarına geri dönülüyor. Bu işlem yaklaşık 5 dakika sürer. Lütfen sabırlı olunuz."
+bl_recovery_updatefailed.wav,"Yükseltme işlemi başarısız oldu. İlk sürümü geri yüklemek yaklaşık 5 dakika sürecektir. Lütfen sabırlı olunuz."
+charging.wav,"Şarj oluyor."
+clean_bin.wav,"Lütfen çöp kutusunu temizleyiniz."
+clean_finish.wav,"Temizlik tamamlandı. Şarj istasyonuna geri dönülüyor."
+di.wav,"Ding dong!"
+ding.wav,"Ding!"
+error_internal.wav,"İç hata oluştu. Lütfen sistemi yeniden başlatın."
+error1.wav,"Hata kod 1, Lazer ünitesinin sıkışmadığına emin olmak için turuncu kafasını çevirmeyi deneyiniz."
+error2.wav,"Hata kod 2, Tamponu temizleyiniz ve hafifçe bastırınız."
+error3.wav,"Hata kod 3, Cihazı farklı bir yere taşımayı deneyiniz."
+error4.wav,"Hata kod 4, Uçdaki sensörleri temizleyiniz ve cihazı farklı bir yere taşıyın."
+error5.wav,"Hata kod 5, Ana fırçayı çıkarınız ve temizleyiniz."
+error6.wav,"Hata kod 6, Ana fırçayı çıkarınız ve temizleyiniz."
+error7.wav,"Hata kod 7, Tekerleklerin engellenmediğinden emin olun, cihazı farklı bir yere taşıyın ve tekrar deneyin."
+error8.wav,"Hata kod 8, Cihazın etrafında engel olmadığından emin olunuz."
+error9.wav,"Hata kod 9, Çöp kutusunu ve filtreyi takınız."
+error10.wav,"Hata kod 10, Filtrenin kuruduğundan emin olunuz veya filtreyi temizleyiniz."
 error11.wav,"Hata kod 11, Güçlü manyetik alan algılandı. Cihazı sanal duvardan uzaklaştırın ve tekrar deneyin."
 error12.wav,"Hata kod 12, Pil zayıf, cihazınızı şarj edin."
-error13.wav,"Hata kod 13, Düzgün şarj edilemedi. Şarj yüzeylerinin temiz olduğundan emin olun."
+error13.wav,"Hata kod 13, Düzgün şarj edilemedi. Şarj yüzeylerinin temiz olduğundan emin olunuz."
 error14.wav,"Hata kod 14, Batarya arızası."
 error15.wav,"Hata kod 15, Duvar sensörünü temizleyin."
 error16.wav,"Hata kod 16, Cihazı düz yatay bir yüzeye yerleştirin."
-error17.wav,"Hata kod 17, Yan fırça arızası. Lütfen sistemi yeniden başlatın."
-error18.wav,"Hata kod 18, Vakumlu fan arızası. Lütfen sistemi yeniden başlatın."
-error19.wav,"Hata kod 19, Şarj tabanında akım yok. Güç kaynağına bağlantıyı kontrol edin."
-error21.wav,"Hata kod 21, Lütfen lazer mesafe sensörünün üst kapağının sabitlenmemiş olduğundan emin olun.."
-error22.wav,"Hata kod 22, Lütfen şarj aleti sensörünü silip kurulayın."
-error23.wav,"Hata kod 23, Şarj istasyonunun sinyal yayma alanının temiz olduğundan emin olun."
-error24.wav,"Hata kod 24, Yasaklı bölge veya sanal duvar algılandı. Lütfen cihazı bu alandan uzaklaştırın."
-findme.wav,Hey. Burdayım!.
-finish.wav,Temizliği bitirdim.
-goto.wav,Hedef noktaya gitmek için başlıyorum.
-goto_complete.wav,Hedef noktaya ulaştım.
-goto_failed.wav,Hedef noktaya ulaşamadım.
-home.wav,Şarj istasyonuna geri dönüyorum
+error17.wav,"Hata kod 17, Yan fırça arızası. Lütfen sistemi yeniden başlatınız."
+error18.wav,"Hata kod 18, Fan arızası. Lütfen sistemi yeniden başlatınız."
+error19.wav,"Hata kod 19, Şarj istasyonununda elektrik yok. Güç kaynağının bağlantısını kontrol ediniz."
+error21.wav,"Hata kod 21, Lütfen lazer mesafe sensörünün üst kapağının sabitlenmemiş olduğundan emin olunuz."
+error22.wav,"Hata kod 22, Lütfen şarj aleti sensörünü silip kurulayınız."
+error23.wav,"Hata kod 23, Şarj istasyonunun sinyal yayma alanının temiz olduğundan emin olunuz."
+error24.wav,"Hata kod 24, Yasaklı bölge veya sanal duvar algılandı. Lütfen cihazı bu alandan uzaklaştırınız."
+findme.wav,"Hey. Burdayım!."
+finish.wav,"Temizliği bitirdim."
+goto.wav,"Hedef noktaya gitmek için başlıyorum."
+goto_complete.wav,"Hedef noktaya ulaştım."
+goto_failed.wav,"Hedef noktaya bir türlü ulaşamadım."
+home.wav,"Şarj istasyonuna geri dönüyorum."
 map_restore.wav,"Harita geri yüklendi, şarj edilmeye başlanıyor."
 no_power.wav,"Pil zayıf, Şarj istasyonuna geri dönüyorum."
 no_power_charging.wav,"Pil zayıf, Şarj için biraz daha zamana ihtiyacım var."
-no_spot_on_dock.wav,Nokta temizleme işlemine başlamadan önce cihazı hedef noktaya yerleştirin.
-pause.wav,Durdum.
+no_spot_on_dock.wav,"Bölgesel temizleme işlemine başlamadan önce cihazı hedef noktaya yerleştiriniz."
+pause.wav,"Durdum."
 positioning.wav,"Konumlandırılıyor, Lütfen bekleyiniz!"
-power_off.wav,Kapanıyorum.
-power_off_rejected.wav,Kapatmak için cihazı yuvadan uzaklaştırın.
-power_resume_clean.wav,Batarya şarj edildi ve temizlemeye devam ediyorum.
-relocate_failed.wav,Nerede olduğumu anlayamıyorum.
-remote.wav,Uzaktan kumandayı kullanımda.
-remote_complete.wav,Uzaktan kumanda kullanımı bitti.
-restart_backtodock_ignore_forbidden_zone.wav,Konumlandırma başarısız oldu. Yasaklı bölge'nin sanal duvarı geçersiz. şarj etmeye devam ediyorum.
+power_off.wav,"Kapanıyorum."
+power_off_rejected.wav,"Kapatmak için cihazı yuvadan uzaklaştırın."
+power_resume_clean.wav,"Batarya şarj edildi ve temizlemeye devam ediyorum."
+relocate_failed.wav,"Rota planı başarısız oldu. Nerede olduğumu anlayamıyorum."
+remote.wav,"Şimdi uzaktan kumanda ile kullanıyorsunuz."
+remote_complete.wav,"Uzaktan kumanda kullanımı bitti."
+restart_backtodock_ignore_forbidden_zone.wav,"Konumlandırma başarısız oldu. Yasaklı bölge'nin sanal duvarı geçersiz. şarj etmeye devam ediyorum."
 restart_clean.wav,"Konumlandırma başarısız oldu, yeni bir temizleme oturumu başlatıldı."
-restart_clean_fromdock.wav,"Konumlandırma hatası, haritayı tekrar oluşturmak için bir temizlik başlatın."
-restart_clean_ignore_forbidden_zone.wav,Konumlandırma başarısız oldu. Yasaklı bölge'nin sanal duvarı geçersiz. Yeni bir temizlik oturumu başlatılıyor.
+restart_clean_fromdock.wav,"Konumlandırma hatası, haritayı tekrar oluşturmak için bir temizlik başlatınız."
+restart_clean_ignore_forbidden_zone.wav,"Konumlandırma başarısız oldu. Yasaklı bölge'nin sanal duvarı geçersiz. Yeni bir temizlik oturumu başlatılıyor."
 restart_clean_nodock.wav,"Konumlandırma hatası, geçersiz harita. Yeni bir temizlik başlatılıyor."
-restart_spot_ignore_forbidden_zone.wav,Konumlandırma başarısız oldu. Yasaklı bölge'nin sanal duvarı geçersiz. Temizlemeye devam ediyorum.
+restart_spot_ignore_forbidden_zone.wav,"Konumlandırma başarısız oldu. Yasaklı bölge'nin sanal duvarı geçersiz. Temizlemeye devam ediyorum."
 resume_backtodock.wav,"Konumlandırma hatası, geçersiz harita. Şarj istasyonuna geri dönmeyi sürdürüyorum."
-resume_clean.wav,Temizliğe devam ediyorum.
-resume_home.wav,Şarj aletime geri dönmeyi sürdürüyorum.
-resume_room.wav,Oda temizliğine devam ediyorum.
+resume_clean.wav,"Temizliğe devam ediyorum."
+resume_home.wav,"Şarj istasyonuna geri dönmeyi sürdürüyorum."
+resume_room.wav,"Oda temizliğine devam ediyorum."
 resume_spot.wav,"Konumlandırma hatası, geçersiz harita. Bölgesel temizliğe devam ediyorum."
-resume_zone.wav,Bölgesel temizliğe devam ediyorum.
-return_no.wav,Başlangıç noktasına geri dönemedim.
-return_yes.wav,Şarj istasyonu bulunamadı. Cihazı yuvaya yaklaştırın ve tekrar deneyin.
-room.wav,Oda temizliği başlıyor.
+resume_zone.wav,"Bölgesel temizliğe devam ediyorum."
+return_no.wav,"Başlangıç noktasına geri dönemedim."
+return_yes.wav,"Şarj istasyonu bulunamadı. Cihazı yuvaya yaklaştırın ve tekrar deneyin."
+room.wav,"Oda temizliği başlıyor."
 room_complete.wav,"Oda temizliği tamamlandı, şarj istasyonuna geri dönülüyor."
-room_failed.wav,"Belirlenen odaya erişilemediği için oda temizliği tamamlanamadı, , şarj istasyonuna geri dönülüyor."
+room_failed.wav,"Belirlenen odaya erişilemediği için oda temizliği tamamlanamadı, şarj istasyonuna geri dönülüyor."
 room_partialdone.wav,"Oda temizliği tamamlandı, şarj istasyonuna geri dönülüyor. Bazı bölgelere erişilemedi."
 saving_map.wav,"Harita kaydediliyor, lütfen bekleyin."
-spot.wav,Nokta temizliği başlıyor.
-start.wav,Temizlik başlıyor.
-stop.wav,Temizlik bitirdim
-stop_clean.wav,Temizliği durdu.
-stop_goto.wav,Hedefe gitmeyi durdurdum.
-stop_room.wav,Hedeflenen oda temizliği durduruldu.
-stop_scheduled_clean.wav,Konumlandırma başarısız oldu. Geçerli zaman temizliği iptal edildi.
-stop_spot.wav,Nokta temizliği durduruldu.
-stop_zone.wav,Bu nokta için bölge temizliği yapıldı. 
-sysupd_complete.wav,Başarıyla güncellendi.
-sysupd_failed.wav,Cihaz sürümü güncellenemedi. Önceki sürüme geçmeyi deniyorum.
-sysupd_notready.wav,Lütfen vakumunuzu şarj edin. Vakum en az %20 şarj olduktan sonra güncellemeyi deneyin.
-sysupd_start.wav,Cihaz sürümü güncelleniyor. 5 ila 10 dakika sürebilir.
-sysupd_wip.wav,Lütfen güncelleme bitene kadar bekleyin.
-timed_clean.wav,Zamanlanmış temizleme işlemine başlıyorum.
-wifi_reset.wav,Wi-Fi ayarlarını sıfırlıyorum
-zone.wav,Bölgesel temizliğe başlıyorum.
-zone_complete.wav,Bölgesel temizlik tamamlandı. Şarj aletine geri dönüyorum.
-zone_failed.wav,Bölgesel temizlik tamamlandı. İskeleye geri dönüyorum. Bazı ulaşılmayan alanları temizleyemedim.
-zone_partialdone.wav,Bölgesel temizlik tamamlandı. Şarj istasyonuna geri dönülüyor. Bazı bölgelere erişilemedi.
+spot.wav,"Bölgesel temizliğe başlıyorum."
+start.wav,"Temizlik başlıyor."
+stop.wav,"Temizlik bitirdim."
+stop_clean.wav,"Temizliği durdu."
+stop_goto.wav,"Hedefe gitmeyi durdurdum."
+stop_room.wav,"Hedeflenen oda temizliği durduruldu."
+stop_scheduled_clean.wav, "Konumlandırma başarısız oldu. Geçerli zaman temizliği iptal edildi."
+stop_spot.wav,"Bölge temizliği durduruldu."
+stop_zone.wav,"Buranın bölge temizliği yapıldı."
+sysupd_complete.wav,"Başarıyla güncellendi."
+sysupd_failed.wav,"Cihaz sürümü güncellenemedi. Önceki sürüme geçmeyi deniyorum."
+sysupd_notready.wav,"Lütfen robotunuzu şarj edin. Robot en az %20 şarj olduktan sonra güncellemeyi deneyiniz."
+sysupd_start.wav,"Cihaz sürümü güncelleniyor. 5 ila 10 dakika sürebilir."
+sysupd_wip.wav,"Lütfen güncelleme bitene kadar bekleyin."
+timed_clean.wav,"Zamanlanmış temizleme işlemine başlıyorum."
+wifi_reset.wav,"Kablosuz ağ ayarlarını sıfırlıyorum."
+zone.wav,"Bölgesel temizliğe başlıyorum."
+zone_complete.wav,"Bölgesel temizlik tamamlandı. Şarj istasyonuna geri dönüyorum."
+zone_failed.wav,"Bölgesel temizlik tamamlandı. Şarj istasyonuna geri dönüyorum. Bazı ulaşamadığım alanları temizleyemedim."
+zone_partialdone.wav,"Bölgesel temizliği tamamladım. Şarj istasyonuna geri dönüyorum. Bazı bölgelere erişemedim."
