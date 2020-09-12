@@ -117,6 +117,11 @@ for filename, text in filereader:
                 voice = "Ewa"
             if gender == "male":
                 voice = "Jacek"
+        elif language == "ru":
+            if gender == "female":
+                voice = "Tatyana"
+            if gender == "male":
+                voice = "Maxim"
         else:  # if language not available, use en
             if gender == "female":
                 voice = "Amy"
