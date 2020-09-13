@@ -65,8 +65,13 @@ def md5(fname):
     return hash_md5.hexdigest()
 
 
-def findIP():
-    return ((([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith('127.')] or [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ['no IP found'])[0])
+def findIP(robot_ip: str) -> str:
+    '''Retrieve local address used to reach robot IP'''
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect((robot_ip, 1234))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
 
 
 def discover_devices():
@@ -117,6 +122,7 @@ def main():
     parser.add_argument('-a', '--address', dest='address', type=str, help='IP address of vacuum cleaner')
     parser.add_argument('-t', '--token', dest='token', type=str, help='Known token of vacuum')
     parser.add_argument('-f', '--firmware', dest='firmware', type=str, help='Path to firmware file')
+    parser.add_argument('-i', '--local-ip', dest='local_ip', type=str, help='Override local server IP')
 
     args, external = parser.parse_known_args()
 
@@ -165,7 +171,7 @@ def main():
         print('error while checking device:', ex)
         exit()
 
-    local_ip = findIP()
+    local_ip = args.local_ip if args.local_ip else findIP(ip_address)
     os.chdir(os.path.dirname(firmware))
 
     request_handler = http.server.SimpleHTTPRequestHandler
