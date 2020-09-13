@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Author: Dennis Giese [dgiese@dontvacuum.me]
 # Copyright 2017 by Dennis Giese
 
@@ -16,16 +16,21 @@
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-function cleanup_and_exit()
-{
-    if [ "$1" = 0 -o -z "$1" ]; then
-        exit 0
-    else
-        exit $1
-    fi
-}
+set -eu
 
-function print_usage()
+cleanup()
+{
+    [ -n "${FW_TMPDIR+x}" ] && echo "Cleaning up"
+    [ -n "${FW_DIR+x}" ]    && [ -f "$FW_DIR/disk.img" ] && rm "$FW_DIR/disk.img"
+    [ -n "${PATCHED+x}" ]   && [ -f "${PATCHED}.cpt" ]   && rm "${PATCHED}.cpt"
+    [ -n "${FIRMWARE_FILENAME+x}" ] && [ -f "$FW_DIR/$FIRMWARE_FILENAME" ] && rm "$FW_DIR/$FIRMWARE_FILENAME"
+    [ -n "${FW_DIR+x}" ]    && [ -d "$FW_DIR" ]          && rmdir "$FW_DIR"
+    [ -n "${FW_TMPDIR+x}" ] && [ -d "$FW_TMPDIR/image" ] && rmdir "$FW_TMPDIR/image"
+    [ -n "${FW_TMPDIR+x}" ] && [ -d "$FW_TMPDIR" ]       && rmdir "$FW_TMPDIR"
+}
+trap cleanup EXIT
+
+print_usage()
 {
 echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.pkg|
 --public-key=id_rsa.pub|--timezone=Europe/Berlin|--disable-firmware-updates|
@@ -34,7 +39,7 @@ echo "Usage: sudo $(basename $0) --firmware=v11_003194.pkg [--soundfile=english.
 --unprovisioned|--help]"
 }
 
-function print_help()
+print_help()
 {
     cat << EOF
 
@@ -94,7 +99,24 @@ readlink_f() (
     exit 1
 )
 
-PUBLIC_KEYS=()
+# https://www.etalabs.net/sh_tricks.html
+arrsave()
+(
+    for i; do
+        printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/"
+    done
+    echo " "
+)
+
+arrappend()
+(
+    item=$1
+    shift
+    eval "set -- $@"
+    arrsave "$@" "$item"
+)
+
+PUBLIC_KEYS=
 RESTORE_RUBY=0
 PATCH_ADBD=0
 DISABLE_XIAOMI=0
@@ -103,10 +125,12 @@ DISABLE_LOGS=0
 ENABLE_DUMMYCLOUD=0
 ENABLE_VALETUDO=0
 PATCH_RRLOGD=0
+SOUNDFILE_PATH=
+CUSTOM_HOSTNAME=
 
-while [ -n "$1" ]; do
+while [ -n "${1+x}" ]; do
     PARAM="$1"
-    ARG="$2"
+    ARG="${2+}"
     shift
     case ${PARAM} in
         *-*=*)
@@ -131,10 +155,10 @@ while [ -n "$1" ]; do
         *-public-key|-k)
             # check if the key file exists
             if [ -r "$ARG" ]; then
-                PUBLIC_KEYS[${#PUBLIC_KEYS[*]} + 1]=$(readlink_f "$ARG")
+                PUBLIC_KEYS=$(arrappend "$(readlink_f "$ARG")" "$PUBLIC_KEYS")
             else
                 echo "Public key $ARG doesn't exist or is not readable"
-                cleanup_and_exit 1
+                exit 1
             fi
             shift
             ;;
@@ -170,7 +194,7 @@ while [ -n "$1" ]; do
             else
                 echo "The dummycloud binary hasn't been found in $DUMMYCLOUD_PATH"
                 echo "Please download it from https://github.com/dgiese/dustcloud"
-                cleanup_and_exit 1
+                exit 1
             fi
             shift
             ;;
@@ -181,7 +205,7 @@ while [ -n "$1" ]; do
             else
                 echo "The valetudo binary hasn't been found in $VALETUDO_PATH"
                 echo "Please download it from https://github.com/Hypfer/Valetudo"
-                cleanup_and_exit 1
+                exit 1
             fi
             shift
             ;;
@@ -204,15 +228,15 @@ while [ -n "$1" ]; do
             ;;
         ----noarg)
             echo "$ARG does not take an argument"
-            cleanup_and_exit
+            exit
             ;;
         -*)
             echo Unknown Option "$PARAM". Exit.
-            cleanup_and_exit 1
+            exit 1
             ;;
         *)
             print_usage
-            cleanup_and_exit 1
+            exit 1
             ;;
     esac
 done
@@ -233,36 +257,43 @@ done
 BASEDIR=$(dirname "${SCRIPT}")
 echo "Script path: $BASEDIR"
 
-if [ $EUID -ne 0 ]; then
-    echo "You need root privileges to execute this script"
-    exit 1
+if [ "$(id -u)" -ne 0 ]; then
+    GUESTMOUNT="$(command -v guestmount)"
+    if [ ! -x "$GUESTMOUNT" ]; then
+        echo "guestmount not found! Please install it (e.g. by (apt|brew|dnf|zypper) install libguestfs-tools)"
+        exit 1
+    fi
 fi
 
 IS_MAC=false
-if [[ $OSTYPE == darwin* ]]; then
+case $(uname | tr '[:upper:]' '[:lower:]') in
+  darwin*)
     # Mac OSX
     IS_MAC=true
     echo "Running on a Mac, adjusting commands accordingly"
-fi
+    ;;
+  *)
+    ;;
+esac
 
 if [ $ENABLE_VALETUDO -eq 1  ] && [ $ENABLE_DUMMYCLOUD -eq 1 ]; then
     echo "You can't install Valetudo and Dummycloud at the same time, "
     echo "because Valetudo has implemented Dummycloud fuctionality and map upload support now."
 fi
 
-CCRYPT="$(type -p ccrypt)"
+CCRYPT="$(command -v ccrypt)"
 if [ ! -x "$CCRYPT" ]; then
     echo "ccrypt not found! Please install it (e.g. by (apt|brew|dnf|zypper) install ccrypt)"
-    cleanup_and_exit 1
+    exit 1
 fi
 
-DOS2UNIX="$(type -p dos2unix)"
+DOS2UNIX="$(command -v dos2unix)"
 if [ ! -x "$DOS2UNIX" ]; then
     echo "dos2unix not found! Please install it (e.g. by (apt|brew|dnf|zypper) install dos2unix)"
-    cleanup_and_exit 1
+    exit 1
 fi
 
-if [ ${#PUBLIC_KEYS[*]} -eq 0 ]; then
+if [ -z "$PUBLIC_KEYS" ]; then
     echo "No public keys selected!"
     exit 1
 fi
@@ -318,9 +349,7 @@ if [ -n "$SOUNDFILE_PATH" ]; then
     $CCRYPT -d -K "$PASSWORD_SND" "$SND_DIR/$SND_FILE"
 
     echo "Unpack soundfile .."
-    pushd "$SND_DIR"
-    tar -xzf "$SND_FILE"
-    popd
+    tar -C "$SND_DIR" -xzf "$SND_FILE"
 fi
 
 echo "Decrypt firmware"
@@ -330,13 +359,11 @@ cp "$FIRMWARE_PATH" "$FW_DIR/$FIRMWARE_FILENAME"
 $CCRYPT -d -K "$PASSWORD_FW" "$FW_DIR/$FIRMWARE_FILENAME"
 
 echo "Unpack firmware"
-pushd "$FW_DIR"
-tar -xzf "$FIRMWARE_FILENAME"
-if [ ! -r disk.img ]; then
-    echo "File disk.img not found! Decryption and unpacking was apparently unsuccessful."
+tar -C "$FW_DIR" -xzf "$FW_DIR/$FIRMWARE_FILENAME"
+if [ ! -r "$FW_DIR/disk.img" ]; then
+    echo "File $FW_DIR/disk.img not found! Decryption and unpacking was apparently unsuccessful."
     exit 1
 fi
-popd
 
 IMG_DIR="$FW_TMPDIR/image"
 mkdir -p "$IMG_DIR"
@@ -345,6 +372,8 @@ if [ "$IS_MAC" = true ]; then
     #ext4fuse doesn't support write properly
     #ext4fuse disk.img image -o force
     fuse-ext2 "$FW_DIR/disk.img" "$IMG_DIR" -o rw+
+elif [ "$(id -u)" -ne 0 ]; then
+    $GUESTMOUNT -a "$FW_DIR/disk.img" -m /dev/sda "$IMG_DIR"
 else
     mount -o loop "$FW_DIR/disk.img" "$IMG_DIR"
 fi
@@ -371,8 +400,10 @@ if [ -r $IMG_DIR/root/.ssh/authorized_keys ]; then
     rm $IMG_DIR/root/.ssh/authorized_keys
 fi
 
-for i in $(eval echo {1..${#PUBLIC_KEYS[*]}}); do
-    cat "${PUBLIC_KEYS[$i]}" >> $IMG_DIR/root/.ssh/authorized_keys
+eval "set -- $PUBLIC_KEYS"
+while [ -n "${1+x}" ]; do
+    cat "$1" >> $IMG_DIR/root/.ssh/authorized_keys
+    shift
 done
 chmod 600 $IMG_DIR/root/.ssh/authorized_keys
 
@@ -470,10 +501,8 @@ if [ $PATCH_RRLOGD -eq 1 ]; then
         echo "Trying to patch rrlogd"
         cp $IMG_DIR/opt/rockrobo/rrlog/rrlogd $FW_TMPDIR/rrlogd
 
-        pushd $FW_TMPDIR
-        $PYTHON "$RRLOGD_PATCHER_ABS"
+        env --chdir="$FW_TMPDIR" $PYTHON "$RRLOGD_PATCHER_ABS"
         ret=$?
-        popd
         if [ $ret -eq 0 ]; then
             install -m 0755 $FW_TMPDIR/rrlogd_patch $IMG_DIR/opt/rockrobo/rrlog/rrlogd
             echo "Successfully patched rrlogd"
@@ -584,7 +613,7 @@ fi
 
 echo "$TIMEZONE" > $IMG_DIR/etc/timezone
 
-if [ -n "$SND_DIR" ]; then
+if [ -n "$SOUNDFILE_PATH" ]; then
     SND_DST_DIR="$IMG_DIR/opt/rockrobo/resources/sounds/${SOUNDLANG}"
     install -d -m 0755 $SND_DST_DIR
 
@@ -594,15 +623,30 @@ if [ -n "$SND_DIR" ]; then
     done
 fi
 
-while [ $(umount $IMG_DIR; echo $?) -ne 0 ]; do
+i=0
+while true; do
+    ret=0
+    umount $IMG_DIR || ret=$?
+    # needed when mounted via fuse or guestmount
     echo "waiting for unmount..."
     sleep 2
+    if [ "$ret" -eq 0 ]; then
+        break
+    fi
+    i=$((i+1))
+    if [ $i -ge 10 ]; then
+        break
+    fi
 done
 
+if [ $i -eq 10 ]; then
+    echo "tried to umount 10 times and failed"
+    exit 1
+fi
+
 echo "Pack new firmware"
-pushd $FW_DIR
-PATCHED="${FIRMWARE_FILENAME}_patched.pkg"
-tar -czf "$PATCHED" disk.img
+PATCHED="$FW_DIR/${FIRMWARE_FILENAME}_patched.pkg"
+tar -C "$FW_DIR" -czf "$PATCHED" disk.img
 if [ ! -r "$PATCHED" ]; then
     echo "File $PATCHED not found! Packing the firmware was unsuccessful."
     exit 1
@@ -610,11 +654,10 @@ fi
 
 echo "Encrypt firmware"
 $CCRYPT -e -K "$PASSWORD_FW" "$PATCHED"
-popd
 
 echo "Copy firmware to output/${FIRMWARE_BASENAME} and creating checksums"
 install -d -m 0755 output
-install -m 0644 "$FW_DIR/${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
+install -m 0644 "${PATCHED}.cpt" "output/${FIRMWARE_BASENAME}"
 
 if [ "$IS_MAC" = true ]; then
     md5 "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
@@ -622,9 +665,6 @@ else
     md5sum "output/${FIRMWARE_BASENAME}" > "output/${FIRMWARE_FILENAME}.md5"
 fi
 chmod 0644 "output/${FIRMWARE_FILENAME}.md5"
-
-echo "Cleaning up"
-rm -rf $FW_TMPDIR
 
 echo "FINISHED"
 cat "output/${FIRMWARE_FILENAME}.md5"
