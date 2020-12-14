@@ -1,5 +1,5 @@
-back_dock_failed.wav,"Couldn't reach the charging dock, remove any obstacles, and clean the dock's transmission area."
-back_dock_nearby.wav,"Cannot reach the dock, please remove any obstacles!"
+back_dock_failed.wav,"Kan het oplaadstation niet bereiken, verwijder obstakel en maak de laadpunten op het dock schoon.
+back_dock_nearby.wav,"Kan het dock niet bereiken, verwijder de obstakels!"
 bin_in.wav,"Stofbak geïnstalleerd."
 bin_out.wav,"Stofbak verwijderd"
 binout_error10.wav,"Filter is verstopt. Verwijder de stofbak and maak het filter schoon!"
@@ -8,9 +8,9 @@ bl_recovery_failed.wav,"Mislukt om terug te gaan naar fabrieksinstellingen. Prob
 bl_recovery_retry.wav,"Bezig om fabrieksinstellingen te herstellen. Dit duurt ongeveer 5 minuten."
 bl_recovery_start.wav,"Bezig om fabrieksinstellingen te herstellen. Dit duurt ongeveer 5 minuten."
 bl_recovery_updatefailed.wav,"Mislukt om up te daten. Teruzetten van fabrieksinstellingen. Dit duurt ongeveer 5 minuten.
-charging.wav,"Aan het opladen"
+charging.wav,"Aan het opladen."
 clean_bin.wav,"Empty the dustbin."
-clean_finish.wav,"Ik ben klaar met schoonmaken, ik ga terug naar het dock"
+clean_finish.wav,"Ik ben klaar met schoonmaken, ik ga terug naar het dock."
 di.wav,"Ding dong!"
 ding.wav,"Ding!"
 error_internal.wav,"Er heeft een interne fout plaatsgevonden. Herstart het systeem."
