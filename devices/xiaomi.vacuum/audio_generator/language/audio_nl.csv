@@ -7,7 +7,7 @@ bl_recovery_bootfailed.wav,"Het is mislukt om te starten. Terugzetten van fabrie
 bl_recovery_failed.wav,"Mislukt om terug te gaan naar fabrieksinstellingen. Probeer het opnieuw."
 bl_recovery_retry.wav,"Bezig om fabrieksinstellingen te herstellen. Dit duurt ongeveer 5 minuten."
 bl_recovery_start.wav,"Bezig om fabrieksinstellingen te herstellen. Dit duurt ongeveer 5 minuten."
-bl_recovery_updatefailed.wav,"Mislukt om up te daten. Teruzetten van fabrieksinstellingen. Dit duurt ongeveer 5 minuten.
+bl_recovery_updatefailed.wav,"Mislukt om up te daten. Teruzetten van fabrieksinstellingen. Dit duurt ongeveer 5 minuten."
 charging.wav,"Aan het opladen."
 clean_bin.wav,"Empty the dustbin."
 clean_finish.wav,"Ik ben klaar met schoonmaken, ik ga terug naar het dock."
