@@ -349,7 +349,7 @@ if [ -n "$SOUNDFILE_PATH" ]; then
     $CCRYPT -d -K "$PASSWORD_SND" "$SND_DIR/$SND_FILE"
 
     echo "Unpack soundfile .."
-    tar -C "$SND_DIR" -xzf "$SND_FILE"
+    tar -xzf "$SND_DIR/$SND_FILE" -C "$SND_DIR"
 fi
 
 echo "Decrypt firmware"
