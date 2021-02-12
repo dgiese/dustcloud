@@ -29,10 +29,10 @@ You'll notice that each engine has its problems with mixed langauges (e.g. germa
 You can either install the python3 requirements manually or you install and use them with pipenv:
 
 * install ffmpeg
-* change to this folder
+* change to root folder of repository (where is placed Pipfile) and run:
 * `pipenv install`
 * `pipenv shell`
-* `cd xiaomi.vacuum.gen1/audio_generator`
+* `cd devices/xiaomi.vacuum/audio_generator`
 * start script with `./generate_audio.py` program ask for your language selection
 
 # Supported engines
