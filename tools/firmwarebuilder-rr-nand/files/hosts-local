@@ -1,0 +1,88 @@
+127.0.0.1       localhost
+127.0.1.1       rockrobo
+
+::1             localhost ip6-localhost ip6-loopback
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+
+
+###########################################################
+### VALETUDO HOSTS
+###########################################################
+#
+# Add to /etc/hosts
+#
+
+127.000.0.1  ot.io.mi.com
+::1  ot.io.mi.com
+127.000.0.1  ott.io.mi.com
+::1  ott.io.mi.com
+127.000.0.1  us.ot.io.mi.com
+::1  us.ot.io.mi.com
+127.000.0.1  us.ott.io.mi.com
+::1  us.ott.io.mi.com
+127.000.0.1  sg.ot.io.mi.com
+::1  sg.ot.io.mi.com
+127.000.0.1  sg.ott.io.mi.com
+::1  sg.ott.io.mi.com
+127.000.0.1  st.ot.io.mi.com
+::1  st.ot.io.mi.com
+127.000.0.1  st.ott.io.mi.com
+::1  st.ott.io.mi.com
+127.000.0.1  de.ot.io.mi.com
+::1  de.ot.io.mi.com
+127.000.0.1  de.ott.io.mi.com
+::1  de.ott.io.mi.com
+127.000.0.1  ru.ot.io.mi.com
+::1  ru.ot.io.mi.com
+127.000.0.1  ru.ott.io.mi.com
+::1  ru.ott.io.mi.com
+127.000.0.1  in.ot.io.mi.com
+::1  in.ot.io.mi.com
+127.000.0.1  in.ott.io.mi.com
+::1  in.ott.io.mi.com
+127.000.0.1  tw.ot.io.mi.com
+::1  tw.ot.io.mi.com
+127.000.0.1  tw.ott.io.mi.com
+::1  tw.ott.io.mi.com
+127.000.0.1  ea.ot.io.mi.com
+::1  ea.ot.io.mi.com
+127.000.0.1  ea.ott.io.mi.com
+::1  ea.ott.io.mi.com
+127.000.0.1  pv.ot.io.mi.com
+::1  pv.ot.io.mi.com
+127.000.0.1  pv.ott.io.mi.com
+::1  pv.ott.io.mi.com
+127.000.0.1  cdn.cnbj0.files.fds.api.xiaomi.com
+::1  cdn.cnbj0.files.fds.api.xiaomi.com
+127.000.0.1  cnbj0.fds.api.xiaomi.com
+::1  cnbj0.fds.api.xiaomi.com
+127.000.0.1  cnbj2.fds.api.xiaomi.com
+::1  cnbj2.fds.api.xiaomi.com
+127.000.0.1  awsbj0.fds.api.xiaomi.com
+::1  awsbj0.fds.api.xiaomi.com
+127.000.0.1  awsbj0-files.fds.api.xiaomi.com
+::1  awsbj0-files.fds.api.xiaomi.com
+127.000.0.1  awsusor0.fds.api.xiaomi.com
+::1  awsusor0.fds.api.xiaomi.com
+127.000.0.1  awsusor0-files.fds.api.xiaomi.com
+::1  awsusor0-files.fds.api.xiaomi.com
+127.000.0.1  awssgp0.fds.api.xiaomi.com
+::1  awssgp0.fds.api.xiaomi.com
+127.000.0.1  awssgp0-files.fds.api.xiaomi.com
+::1  awssgp0-files.fds.api.xiaomi.com
+127.000.0.1  awsde0.fds.api.xiaomi.com
+::1  awsde0.fds.api.xiaomi.com
+127.000.0.1  awsde0-files.fds.api.xiaomi.com
+::1  awsde0-files.fds.api.xiaomi.com
+127.000.0.1  ksyru0-eco.fds.api.xiaomi.com
+::1  ksyru0-eco.fds.api.xiaomi.com
+127.000.0.1  ksyru0-eco-files.fds.api.xiaomi.com
+::1  ksyru0-eco-files.fds.api.xiaomi.com
+127.000.0.1  awsind0-eco.fds.api.xiaomi.com
+::1  awsind0-eco.fds.api.xiaomi.com
+127.000.0.1  awsind0-eco-files.fds.api.xiaomi.com
+::1  awsind0-eco-files.fds.api.xiaomi.com
+127.000.0.1  iot.roborock.com
+::1  iot.roborock.com
+

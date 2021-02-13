@@ -1,0 +1,5 @@
+This firmware has two hooks, which are checked when the robot is booted:
+
+/mnt/reserve/_root_early.sh  -> If this file exists, it will be executed before the watchdog is started (watchdoge, also before cloud stuff)
+/mnt/reserve/_root.sh -> If this file exists, it will be executed after the system booted (via rc.local)
+
