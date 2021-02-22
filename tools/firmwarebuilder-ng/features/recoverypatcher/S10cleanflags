@@ -1,0 +1,13 @@
+#! /bin/sh
+
+case "$1" in
+  start|"")
+        /bin/bash /sbin/patch_recovery.sh
+        ;;
+  stop)
+        ;;
+  *)
+        echo "Usage: cleanflags start|stop" >&2
+        exit 3
+        ;;
+esac

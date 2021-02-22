@@ -1,0 +1,30 @@
+#!/bin/sh
+
+export VALETUDO_CONFIG_PATH=/mnt/data/valetudo_config.json
+
+load() {
+    echo "starting valetudo"
+    start-stop-daemon -S -b -q -m -p /var/run/valetudo.pid -x /usr/local/bin/valetudo
+}
+
+unload() {
+    echo "stopping valetudo"
+    start-stop-daemon -K -q -p /var/run/valetudo.pid
+}
+
+case "$1" in
+    start)
+        load
+        ;;
+    stop)
+        unload
+        ;;
+    restart)
+        unload
+        load
+        ;;
+    *)
+        echo "$0 <start/stop/restart>"
+        ;;
+esac
+

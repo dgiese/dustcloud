@@ -1,0 +1,41 @@
+#!/bin/sh
+
+load() {
+    curtime=`cat /proc/uptime | awk -F ' ' '{print $1}'`
+    echo "[$curtime] start valetudo-daemon"
+    start-stop-daemon -S -b -q -m -p /var/run/valetudo-daemon.pid -x /usr/local/bin/valetudo-daemon.sh
+}
+
+unload() {
+    echo "stopping valetudo" >/dev/kmsg
+    start-stop-daemon -K -q -p /var/run/valetudo-daemon.pid
+    while killall valetudo; do sleep 1; done
+}
+
+status() {
+    if [ ! -f /var/run/valetudo-daemon.pid -o -z "$(ps | grep `cat /var/run/valetudo-daemon.pid` | grep -v grep)" ]; then
+        echo "valetudo seems stopped"
+    else
+        echo "valetudo seems started"
+    fi
+}
+
+case "$1" in
+    start)
+        load
+        ;;
+    stop)
+        unload
+        ;;
+    restart)
+        unload
+        load
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "$0 <start/stop/restart/status>"
+        ;;
+esac
+

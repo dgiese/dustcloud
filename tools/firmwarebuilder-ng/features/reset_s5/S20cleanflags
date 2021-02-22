@@ -1,0 +1,33 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          cleanflags
+# Required-Start:    $local_fs $time
+# Required-Stop:     $local_fs
+# Default-Start:     S
+# Default-Stop:      0 6
+# Short-Description: prevents partition marked as bad.
+# Description:       prevents partition marked as bad
+### END INIT INFO
+
+
+PATH=/sbin:/bin
+
+. /lib/init/vars.sh
+
+. /lib/lsb/init-functions
+
+
+case "$1" in
+  start|"")
+        /bin/bash /sbin/cleanflags.sh
+		touch /tmp/flagscleaned
+        ;;
+  stop)
+        /bin/bash /sbin/cleanflags.sh
+		touch /tmp/flagscleanedagain
+        ;;
+  *)
+        echo "Usage: cleanflags start|stop" >&2
+        exit 3
+        ;;
+esac

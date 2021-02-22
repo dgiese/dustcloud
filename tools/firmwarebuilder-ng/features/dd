@@ -1,0 +1,39 @@
+#!/bin/bash
+patchmystuff(){
+	echo $@ > /tmp/updatetemp/otaflag
+	cp -R /root/.ssh /tmp/updatetemp/root/
+	sed -i -e '/ iptables -I INPUT -j DROP -p tcp --dport 22/s/^/#/g' /tmp/updatetemp/opt/rockrobo/watchdog/rrwatchdoge.conf
+	mv /tmp/updatetemp/bin/dd /tmp/updatetemp/bin/ddd
+	cp /bin/dd /tmp/updatetemp/bin/dd
+	chmod +x /tmp/updatetemp/bin/dd
+	cp /etc/ssh/ssh_host_* /tmp/updatetemp/etc/ssh/
+	while [ `umount /tmp/updatetemp; echo $?` -ne 0 ]; do
+			sleep 2
+	done
+}
+
+/bin/ddd $@
+myexit=$? 
+
+if [[ $@ == *"if=/dev/mmcblk0p10"* ]]; then
+        mkdir /tmp/updatetemp &>/dev/null
+        mount /dev/mmcblk0p10 /tmp/updatetemp &>/dev/null
+	if [ -f /tmp/updatetemp/otaflag ]; then
+		while [ `umount /tmp/updatetemp; echo $?` -ne 0 ]; do
+			sleep 2
+		done
+		exit $myexit
+	fi
+	patchmystuff
+
+	if [[ $@ == *"of=/dev/mmcblk0p9"* ]]; then
+		mount /dev/mmcblk0p9 /tmp/updatetemp &>/dev/null
+		patchmystuff
+	fi
+
+	if [[ $@ == *"of=/dev/mmcblk0p8"* ]]; then
+		mount /dev/mmcblk0p8 /tmp/updatetemp &>/dev/null
+		patchmystuff
+	fi
+fi
+exit $myexit

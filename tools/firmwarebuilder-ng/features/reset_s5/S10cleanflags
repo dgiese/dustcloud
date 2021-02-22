@@ -1,0 +1,16 @@
+#! /bin/sh
+
+case "$1" in
+  start|"")
+        /bin/bash /sbin/cleanflags.sh
+		touch /tmp/flagscleaned
+        ;;
+  stop)
+        /bin/bash /sbin/cleanflags.sh
+		touch /tmp/flagscleanedagain
+        ;;
+  *)
+        echo "Usage: cleanflags start|stop" >&2
+        exit 3
+        ;;
+esac
