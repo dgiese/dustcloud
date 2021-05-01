@@ -17,6 +17,18 @@ if [ ! -f $BASE_DIR/authorized_keys ]; then
     exit 1
 fi
 
+if [ ! -f $FLAG_DIR/devicetype ]; then
+    echo "devicetype definition not found, aborting"
+    exit 1
+fi
+
+DEVICETYPE=$(cat "$FLAG_DIR/devicetype")
+FRIENDLYDEVICETYPE=$(sed "s/\[s|t\]/x/g" $FLAG_DIR/devicetype)
+version=$(cat "$FLAG_DIR/version")
+
+mkdir -p $BASE_DIR/output
+
+
 unzip $BASE_DIR/firmware.zip
 mv $BASE_DIR/rootfs.img $BASE_DIR/rootfs.img.template
 unsquashfs -d $IMG_DIR $BASE_DIR/rootfs.img.template
@@ -140,11 +152,44 @@ echo "" >> $IMG_DIR/build.txt
 
 echo "finished patching, repacking"
 
+if [ -f $FLAG_DIR/fel ]; then
+    echo "create smaller package for fel"
+	rm -rf $IMG_DIR/opt/rockrobo/cleaner
+	rm -rf $IMG_DIR/opt/rockrobo/rriot
+	rm -rf $IMG_DIR/usr/share/zoneinfo
+	echo "#name,cmd,keyprocess,killtimeout,startdelay" > $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf
+    echo "wlanmgr,setsid wlanmgr&,0,3,0" >> $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf
+    echo "miio_client,setsid miio_client -d /mnt/data/miio -l 2 >> /mnt/data/rockrobo/rrlog/miio.log 2>&1&,0,1,0" >> $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf
+	cat $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf > $IMG_DIR/opt/rockrobo/watchdog/ProcessListMT.conf
+	cat $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf > $IMG_DIR/opt/rockrobo/watchdog/ProcessListFR.conf
+fi
+
 mksquashfs $IMG_DIR/ rootfs_tmp.img -noappend -root-owned -comp gzip -b 128k
 rm -rf $IMG_DIR
 dd if=$BASE_DIR/rootfs_tmp.img of=$BASE_DIR/rootfs.img bs=128k conv=sync
 rm $BASE_DIR/rootfs_tmp.img
 md5sum ./*.img > $BASE_DIR/firmware.md5sum
+
+echo "check image file size"
+maximumsize=26000000
+minimumsize=10000000
+actualsize=$(wc -c < $BASE_DIR/rootfs.img)
+if [ "$actualsize" -ge "$maximumsize" ]; then
+	echo "(!!!) rootfs.img looks to big. The size might exceed the available space on the flash."
+	exit 1
+fi
+
+if [ "$actualsize" -le "$minimumsize" ]; then
+	echo "(!!!) rootfs.img looks to small. Maybe something went wrong with the image generation."
+	exit 1
+fi
+
+sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_nand/install.sh > install.sh
+chmod +x install.sh
+tar -czf $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz $BASE_DIR/rootfs.img $BASE_DIR/boot.img $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh
+md5sum $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz > $BASE_DIR/output/md5.txt
+echo "${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz" > $BASE_DIR/filename.txt
+touch $BASE_DIR/server.txt
 
 if [ -f $FLAG_DIR/diff ]; then
 	echo "unpack original"
@@ -152,24 +197,12 @@ if [ -f $FLAG_DIR/diff ]; then
 	echo "unpack modified"
 	unsquashfs -d $BASE_DIR/modified $BASE_DIR/rootfs.img
 
-	/usr/bin/git diff --no-index $BASE_DIR/original/ $BASE_DIR/modified/ > diff.txt
+	/usr/bin/git diff --no-index $BASE_DIR/original/ $BASE_DIR/modified/ > $BASE_DIR/output/diff.txt
 	rm -rf $BASE_DIR/original
 	rm -rf $BASE_DIR/modified
 
 fi
 
-echo "check image file size"
-maximumsize=26000000
-minimumsize=20000000
-actualsize=$(wc -c < $BASE_DIR/rootfs.img)
-if [ "$actualsize" -ge "$maximumsize" ]; then
-	echo "(!!!) rootfs.img looks to big. The size might exceed the available space on the flash."
-	rm "$BASE_DIR/rootfs.img"
-fi
-
-if [ "$actualsize" -le "$minimumsize" ]; then
-	echo "(!!!) rootfs.img looks to small. Maybe something went wrong with the image generation."
-	rm "$BASE_DIR/rootfs.img"
-fi
+touch $BASE_DIR/output/done
 
 

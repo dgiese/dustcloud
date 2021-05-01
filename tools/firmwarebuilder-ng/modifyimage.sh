@@ -17,6 +17,19 @@ if [ ! -f $BASE_DIR/authorized_keys ]; then
     exit 1
 fi
 
+if [ ! -f $FLAG_DIR/devicetype ]; then
+    echo "devicetype definition not found, aborting"
+    exit 1
+fi
+
+DEVICETYPE=$(cat "$FLAG_DIR/devicetype")
+FRIENDLYDEVICETYPE=$(sed "s/\[s|t\]/x/g" $FLAG_DIR/devicetype)
+version=$(cat "$FLAG_DIR/version")
+
+
+mkdir -p $BASE_DIR/output
+
+
 mkdir $BASE_DIR/image
 mount -o loop disk.img $BASE_DIR/image
 if [ ! -f $IMG_DIR/etc/fstab ]; then
@@ -97,7 +110,6 @@ if [ -f $FLAG_DIR/tools ]; then
 		  mount -t proc /proc $IMG_DIR/proc
 		  mount -o bind $FEATURES_DIR/rr_tools $IMG_DIR/home
 
-		  chroot $IMG_DIR/ qemu-arm-static /usr/bin/dpkg -i /home/bsdmainutils_9.0.5ubuntu1_armhf.deb
 		  chroot $IMG_DIR/ qemu-arm-static /usr/bin/dpkg -i /home/nano_2.2.6-1ubuntu1_armhf.deb
 		  chroot $IMG_DIR/ qemu-arm-static /usr/bin/dpkg -i /home/htop_1.0.2-3_armhf.deb
 		  chroot $IMG_DIR/ qemu-arm-static /usr/bin/dpkg -i /home/wget_1.15-1ubuntu1.14.04.5_armhf.deb
@@ -310,17 +322,16 @@ echo "patching Timezone"
 	cat $FLAG_DIR/timezone > $IMG_DIR/etc/timezone
 fi
 
+touch $IMG_DIR/build.txt
+echo "build with dustcloud builder (https://github.com/dgiese/dustcloud)" > $IMG_DIR/build.txt
+date -u  >> $IMG_DIR/build.txt
+echo "" >> $IMG_DIR/build.txt
+
 echo "fixing executable permissions"
 chmod +x $IMG_DIR/usr/bin/*
 chmod +x $IMG_DIR/usr/sbin/*
 chmod +x $IMG_DIR/bin/*
 chmod +x $IMG_DIR/sbin/*
-
-
-touch $IMG_DIR/build.txt
-echo "build with dustcloud builder (https://github.com/dgiese/dustcloud)" > $IMG_DIR/build.txt
-date -u  >> $IMG_DIR/build.txt
-echo "" >> $IMG_DIR/build.txt
 
 echo "finished patching"
 
@@ -329,6 +340,21 @@ while [ $(umount "$IMG_DIR"; echo $?) -ne 0 ]; do
     echo "waiting for unmount..."
     sleep 2
 done
+
+echo "check image file size"
+maximumsize=534773761
+minimumsize=50000000
+echo $(wc -c < $BASE_DIR/disk.img)
+actualsize=$(wc -c < $BASE_DIR/disk.img)
+if [ "$actualsize" -ge "$maximumsize" ]; then
+	echo "(!!!) rootfs.img looks to big. The size might exceed the available space on the flash."
+	exit 1
+fi
+
+if [ "$actualsize" -le "$minimumsize" ]; then
+	echo "(!!!) rootfs.img looks to small. Maybe something went wrong with the image generation."
+	exit 1
+fi
 
 if [ -f $FLAG_DIR/diff ]; then
 	echo "create diff"
@@ -339,7 +365,7 @@ if [ -f $FLAG_DIR/diff ]; then
 	mount -o loop,ro $BASE_DIR/disk.img $BASE_DIR/modified
 	mount -o bind foo $BASE_DIR/original/dev
 	mount -o bind foo $BASE_DIR/modified/dev
-	/usr/bin/git diff --no-index $BASE_DIR/original/ $BASE_DIR/modified/ > $BASE_DIR/diff.txt
+	/usr/bin/git diff --no-index $BASE_DIR/original/ $BASE_DIR/modified/ > $BASE_DIR/output/diff.txt
 
 	umount $BASE_DIR/original/dev
 	umount $BASE_DIR/modified/dev
@@ -369,3 +395,18 @@ fi
 
 md5sum $BASE_DIR/disk.img > $BASE_DIR/firmware.md5sum
 
+if [ -f $FLAG_DIR/installer ]; then
+	sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller/install_b.sh >install_b.sh
+	sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller/install_a.sh >install_a.sh
+    chmod +x install_*.sh
+    tar -czf $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz $BASE_DIR/disk.img $BASE_DIR/firmware.md5sum $BASE_DIR/install_b.sh $BASE_DIR/install_a.sh
+	md5sum $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz > $BASE_DIR/output/md5.txt
+	echo "${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz" > $BASE_DIR/filename.txt
+	touch $BASE_DIR/server.txt
+else
+	tar -czf $BASE_DIR/output/v11_00${version}.img $BASE_DIR/disk.img
+	md5sum $BASE_DIR/output/v11_00${version}.img > $BASE_DIR/output/md5.txt
+	echo "v11_00${version}.img" > $BASE_DIR/filename.txt
+fi
+
+touch $BASE_DIR/output/done
