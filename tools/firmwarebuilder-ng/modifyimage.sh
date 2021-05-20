@@ -267,12 +267,12 @@ fi
 
 if [ -f $FLAG_DIR/fixresets ]; then
 	if [ -f $IMG_DIR/etc/inittab ]; then
-		echo "OpenWRT mode"
+		echo "Stripped Ubuntu install mode"
 	    cp $FEATURES_DIR/reset_s5/cleanflags.sh $IMG_DIR/sbin/
 	    chmod a+x $IMG_DIR/sbin/cleanflags.sh
 		install -m 0755 $FEATURES_DIR/reset_s5/S10cleanflags $IMG_DIR/etc/init/S10cleanflags
     else
-		echo "Ubuntu mode"
+		echo "Full Ubuntu install mode"
 		install -m 0755 $FEATURES_DIR/reset_s5/cleanflags.sh $IMG_DIR/sbin/
 		install -m 0755 $FEATURES_DIR/reset_s5/S20cleanflags $IMG_DIR/etc/init.d/cleanflags
 		ln -s /etc/init.d/cleanflags $IMG_DIR/etc/rc0.d/K20cleanflags
@@ -288,12 +288,12 @@ fi
 
 if [ -f $FLAG_DIR/patch_recovery ]; then
 	if [ -f $IMG_DIR/etc/inittab ]; then
-		echo "OpenWRT mode"
+		echo "Stripped Ubuntu install mode"
 	    cp $FEATURES_DIR/recoverypatcher/patch_recovery.sh $IMG_DIR/sbin/
 	    chmod a+x $IMG_DIR/sbin/patch_recovery.sh
 		install -m 0755 $FEATURES_DIR/reset_s5/S10cleanflags $IMG_DIR/etc/init/S10cleanflags
 	else
-		echo "Ubuntu mode"
+		echo "Full Ubuntu install mode"
 		install -m 0755 $FEATURES_DIR/recoverypatcher/patch_recovery.sh $IMG_DIR/sbin/
 		install -m 0755 $FEATURES_DIR/reset_s5/S10cleanflags $IMG_DIR/etc/init.d/patch_recovery
 		ln -s /etc/init.d/patch_recovery $IMG_DIR/etc/rc1.d/S10patch_recovery
@@ -323,7 +323,7 @@ echo "patching Timezone"
 fi
 
 touch $IMG_DIR/build.txt
-echo "build with dustcloud builder (https://github.com/dgiese/dustcloud)" > $IMG_DIR/build.txt
+echo "build with firmwarebuilder (https://builder.dontvacuum.me)" > $IMG_DIR/build.txt
 date -u  >> $IMG_DIR/build.txt
 echo "" >> $IMG_DIR/build.txt
 
@@ -404,9 +404,12 @@ if [ -f $FLAG_DIR/installer ]; then
 	echo "${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz" > $BASE_DIR/filename.txt
 	touch $BASE_DIR/server.txt
 else
-	tar -czf $BASE_DIR/output/v11_00${version}.img $BASE_DIR/disk.img
-	md5sum $BASE_DIR/output/v11_00${version}.img > $BASE_DIR/output/md5.txt
-	echo "v11_00${version}.img" > $BASE_DIR/filename.txt
+	chmod 777 $BASE_DIR/disk.img
+	tar -C $BASE_DIR/ -cvzf $BASE_DIR/output/v11_00${version}.img disk.img
+	ccrypt -e -K rockrobo $BASE_DIR/output/v11_00${version}.img
+	mv -v $BASE_DIR/output/v11_00${version}.img.cpt $BASE_DIR/output/v11_00${version}.pkg
+	md5sum $BASE_DIR/output/v11_00${version}.pkg > $BASE_DIR/output/md5.txt
+	echo "v11_00${version}.pkg" > $BASE_DIR/filename.txt
 fi
 
 touch $BASE_DIR/output/done

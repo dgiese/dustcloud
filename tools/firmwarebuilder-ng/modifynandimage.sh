@@ -146,23 +146,11 @@ install -m 0755 $FEATURES_DIR/fwinstaller_nand/_root.sh.tpl $IMG_DIR/root/_root.
 install -m 0755 $FEATURES_DIR/fwinstaller_nand/how_to_modify.txt $IMG_DIR/root/how_to_modify.txt
 
 touch $IMG_DIR/build.txt
-echo "build with dustcloud builder (https://github.com/dgiese/dustcloud)" > $IMG_DIR/build.txt
+echo "build with firmwarebuilder (https://builder.dontvacuum.me)" > $IMG_DIR/build.txt
 date -u  >> $IMG_DIR/build.txt
 echo "" >> $IMG_DIR/build.txt
 
 echo "finished patching, repacking"
-
-if [ -f $FLAG_DIR/fel ]; then
-    echo "create smaller package for fel"
-	rm -rf $IMG_DIR/opt/rockrobo/cleaner
-	rm -rf $IMG_DIR/opt/rockrobo/rriot
-	rm -rf $IMG_DIR/usr/share/zoneinfo
-	echo "#name,cmd,keyprocess,killtimeout,startdelay" > $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf
-    echo "wlanmgr,setsid wlanmgr&,0,3,0" >> $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf
-    echo "miio_client,setsid miio_client -d /mnt/data/miio -l 2 >> /mnt/data/rockrobo/rrlog/miio.log 2>&1&,0,1,0" >> $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf
-	cat $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf > $IMG_DIR/opt/rockrobo/watchdog/ProcessListMT.conf
-	cat $IMG_DIR/opt/rockrobo/watchdog/ProcessList.conf > $IMG_DIR/opt/rockrobo/watchdog/ProcessListFR.conf
-fi
 
 mksquashfs $IMG_DIR/ rootfs_tmp.img -noappend -root-owned -comp gzip -b 128k
 rm -rf $IMG_DIR
