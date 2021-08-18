@@ -1,0 +1,8 @@
+#!/bin/sh
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs none /dev
+/bin/ash /patch.sh
+
+#/sbin/getty -L ttyS0 115200 vt100 -n -l /bin/ash
