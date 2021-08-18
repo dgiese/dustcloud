@@ -1,0 +1,5 @@
+This firmware has two hooks, which are checked when the robot is booted:
+
+/data/_root_sysconfig.sh  -> If this file exists, it will be executed before cloud stuff
+/data/_root_postboot.sh -> If this file exists, it will be executed after the system booted (via rc.local)
+

@@ -85,4 +85,6 @@ ff02::2         ip6-allrouters
 ::1  awsind0-eco-files.fds.api.xiaomi.com
 127.000.0.1  iot.roborock.com
 ::1  iot.roborock.com
+127.000.0.1  device.dreame.tech
+::1  device.dreame.tech
 

@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>Howto Rooting of NAND based Roborock robots</title>
+</head>
+<body>
+<h1>Howto</h1>
+Required tools: MicroUSB->USB cable, Paperclip or Jumperwire
+<h2>General idea</h2>
+- Build FEL image for S7 and other NAND models at builder.dontvacuum.me<br>
+- Download package (make sure that it contains run.bat/run.sh)<br>
+- Disassemble your robot (Similar to my S6 Teardown video)<br>
++ You need to have access to the back side of the Mainboard<br>
++ Do not disassemble the black part in the S7 (the vibrating mop thing)<br>
+- Make sure that the small board is attached<br>
+- Connect Battery<br>
+- Connect MicroUSB cable and attach it to your computer<br>
+- Short TPA17 to GND and hold it (see here: <a href="https://dontvacuum.me/teardowns/roborock.vacuum.s5e/gallery-images/IMG_20200731_193759_a.jpg" target=_blank>TPA17 position</a>)<br>
+- Press the power button for 3 seconds, and keep the TPA17 grounded for 5 more seconds. <br>
+- A new device should be detected by your computer (check lsusb or device manager)<br>
+
+<h2>For Windows: </h2>
+- Download and install this: <a href="http://zadig.akeo.ie/" target=_blank>Zadig</a><br>
+- Start Zadig and install WinUSB drivers for the unknown device (see here: <a href="https://linux-sunxi.org/FEL/USBBoot#Zadig_to_the_rescue" target=_blank>USBBoot</a>)<br>
+- Run "run.bat" from the firmware folder<br>
++ You should see an upload<br>
++ Press a key when it asks you to do it<br>
+- After it has been uploaded, wait 5 minutes. Your robot should restart when its done (look for turned off leds)<br>
+
+<h2>For Linux: </h2>
+- Install sunxi-tools (e.g. apt-get install sunxi-tools)<br>
+- Check device presence with lsusb<br>
+- Run "run.sh" from the firmware folder<br>
+
+<h2>Firmware installation: </h2>
+- The first part of the rooting should be now complete. Your robot should be reachable via SSH and your SSH key.<br>
++ No Valetudo or patches are installed yet, you need to do a manual firmware update<br>
+- Generate on the Website above a new firmware package (for manual installation)<br>
+- Transfer firmware package to device and install it<br>
++ do not use dd, just run install.sh from the package<br>
+- Continue the steps to install Valetudo (check the steps at the bottom of this document: <a href="https://builder.dontvacuum.me/s5e-cheatsheet.txt" target=_blank>S5E Cheatsheet</a>)
+
+<hr>
+<br><br>
+Suggestions? -> dennis[at]dontvacuum.me<br>
+<a href="https://dontvacuum.me">My homepage</a>
+</body>
+</html>

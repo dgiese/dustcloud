@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>Howto</title>
+</head>
+<body>
+<h1>Howto</h1>
+<h2>Installation of firmware</h2>
+You need to have your robot already rooted to use this firmware!<br>
+The robot needs to be in its docking station and fully charged!<br>
+<b>0) Connect to robot via SSH using your SSH key</b><br><br>
+<b>1) Download firmware update to /tmp</b><br>
+<i>cd /tmp</i><br>
+<i>wget {url-of-firmware.tar.gz}</i><br><br>
+<b>2) Unpack firmware package</b><br>
+<i>tar -xzvf {name-of-firmware.tar.gz}</i><br><br>
+<b>3) Run installer</b><br>
+<i>./install.sh</i><br><br>
+The robot should install the firmware and reboot. This steps will update the Kernel, Rootfs and MCU firmware<br>
+
+<h2>First-time installation of Valetudo</h2>
+This steps are only relevant if you want to use Valetudo. In order to make Valetudo work, you need to build the firmware with the "patch-dns" option selected.<br>
+<b>1) Download Valetudo to /data</b><br>
+<i>wget https://github.com/Hypfer/Valetudo/releases/latest/download/valetudo-aarch64 -O /data/valetudo</i><br>
+<i>chmod +x /data/valetudo</i><br><br>
+<b>2) Activate custom script</b><br>
+<i>cp /misc/_root_postboot.sh.tpl /data/_root_postboot.sh</i><br><br>
+<i>reboot</i><br><br>
+
+<h2>Update Valetudo</h2>
+There is no need to build a new firmware in order to update Valetudo. You can simply replace the binary.<br>
+
+<b>0) Read <a href="https://github.com/Hypfer/Valetudo/releases/latest">the latest release notes</a> to be informed of new features and breaking changes</b><br>
+<b>1) Kill running Valetudo</b><br>
+<i>killall valetudo</i><br><br>
+<b>2) Download Valetudo to /data</b><br>
+<i>wget https://github.com/Hypfer/Valetudo/releases/latest/download/valetudo-aarch64 -O /data/valetudo</i><br>
+<i>chmod +x /data/valetudo</i><br>
+<i>reboot</i><br><br>
+<hr>
+<br><br>
+Suggestions? -> dennis[at]dontvacuum.me<br>
+<a href="https://dontvacuum.me">My homepage</a>
+</body>
+</html>

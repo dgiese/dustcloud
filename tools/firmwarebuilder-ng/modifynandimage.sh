@@ -56,6 +56,11 @@ chmod 600 $IMG_DIR/root/.ssh/authorized_keys
 chmod 600 $IMG_DIR/etc/dropbear/authorized_keys
 chown root:root $IMG_DIR/root -R
 
+if [ -f "$BASE_DIR/librrlocale.so" ]; then
+    echo "patch region signature checking"
+    install -m 0755 "$BASE_DIR/librrlocale.so" $IMG_DIR/opt/rockrobo/cleaner/lib/librrlocale.so
+fi
+
 echo "replacing dropbear"
 md5sum $IMG_DIR/usr/sbin/dropbear
 install -m 0755 $FEATURES_DIR/dropbear_rr22/dropbear $IMG_DIR/usr/sbin/dropbear
@@ -77,10 +82,10 @@ if [ -f $FLAG_DIR/adbd ]; then
     install -m 0755 $FEATURES_DIR/adbd $IMG_DIR/usr/bin/adbd
 fi
 
-echo "install iptables modules"
-    mkdir -p $IMG_DIR/lib/xtables/
-    cp $FEATURES_DIR/iptables/xtables/*.* $IMG_DIR/lib/xtables/
-    cp $FEATURES_DIR/iptables/ip6tables $IMG_DIR/sbin/
+#echo "install iptables modules"
+#    mkdir -p $IMG_DIR/lib/xtables/
+#    cp $FEATURES_DIR/iptables/xtables/*.* $IMG_DIR/lib/xtables/
+#    cp $FEATURES_DIR/iptables/ip6tables $IMG_DIR/sbin/
 
 
 if [ -f $FLAG_DIR/tools ]; then
@@ -159,10 +164,26 @@ rm $BASE_DIR/rootfs_tmp.img
 md5sum ./*.img > $BASE_DIR/firmware.md5sum
 
 echo "check image file size"
-maximumsize=26000000
-minimumsize=10000000
+if [ ${FRIENDLYDEVICETYPE} = "roborock.vacuum.s5e" ]; then
+	echo "s5e"
+	maximumsize=26214400
+	minimumsize=20000000
+elif [ ${FRIENDLYDEVICETYPE} = "roborock.vacuum.a08" ]; then
+    echo "a08"
+	maximumsize=24117248
+	minimumsize=20000000
+elif [ ${FRIENDLYDEVICETYPE} = "roborock.vacuum.a19" ]; then
+    echo "a19"
+	maximumsize=24117248
+	minimumsize=20000000
+else
+	echo "all others"
+	maximumsize=24117248
+	minimumsize=20000000
+fi
+
 actualsize=$(wc -c < $BASE_DIR/rootfs.img)
-if [ "$actualsize" -ge "$maximumsize" ]; then
+if [ "$actualsize" -gt "$maximumsize" ]; then
 	echo "(!!!) rootfs.img looks to big. The size might exceed the available space on the flash."
 	exit 1
 fi

@@ -1,0 +1,35 @@
+<head>
+<title>DustBuilder</title>
+<link rel="stylesheet" href="/style.css"></link>
+</head>
+<body>
+<h1>Howto</h1>
+<p>The firmware builder has generated an installer package for manual installation on your rooted robot.</p>
+<p>If you did not root your robot yet, follow this <a href="https://builder.dontvacuum.me/s5e-cheatsheet.txt" target="_blank">-&gt;instruction</a></p>
+<h3>Background</h3>
+<p>Your Robot contains 2 copies of the operation system and kernel. These are called A and B. One of the copies is active (you are currently booted into it) and the other is passive.<br />During the update, we will update the passive copy, mark it as the new active copy and reboot. To fully update a Robot, we need therefore to repeat the install.</p>
+<h3>Step 0: Connect to the Robot via SSH</h3>
+<p>Use SSH to connect to the Robot's IP address. If you dont know the address, you might see it in your router webinterface.<br />You need to use the SSH Key that you used for the initial root.</p>
+<h3>Step 1: Download the package onto the Robot</h3>
+<p>In this step, we download the <em>tar.gz</em> file into the /mnt/data partition on the robot. Before that, we want to erase old updates.<br />Execute these commands on the robot:<br /><br /><em>cd /mnt/data<br />rm rootfs.img<br />rm boot.img<br />rm *_fw.tar.gz<br />wget &lt;url to the tar.gz file&gt;<br />tar -xzvf </em></p>
+<p><em>(Alternatively, you can use SCP/WinSCP to copy over the </em></p>
+<h3>Step 2: Install the firmware to the passive copy</h3>
+<p>Run the installer to update the firmware. The installer will automatically detect the partitions correcty.</p>
+<p><em>cd /mnt/data</em></p>
+<p><em>./install.sh</em><br /><br />If everything was ok, the Robot should reboot and boot into the new firmware.</p>
+<h3>Step 3: Re-connect to the Robot via SSH</h3>
+<h3>Step 4: Install the firmware to second copy</h3>
+<p><em>cd /mnt/data<br />./install.sh</em></p>
+<h3>Step 5: Cleanup</h3>
+<p><em>cd /mnt/data<br />rm rootfs.img<br />rm boot.img<br />rm *_fw.tar.gz</em></p>
+<h3>Optional step: Installation/Update of Valetudo</h3>
+<p>(Check this website to see if a newer version is available: <a href="https://github.com/Hypfer/Valetudo/releases">https://github.com/Hypfer/Valetudo/releases</a>)</p>
+If Valetudo is already installed:<br>
+<p><em>killall valetudo</em></p>
+To install/update Valetudo:<br>
+<p>First, please read <a href="https://github.com/Hypfer/Valetudo/releases/latest">the latest release notes</a> to be informed of new features and breaking changes</p><br>
+<p><em>cd /mnt/data/<br />wget https://github.com/Hypfer/Valetudo/releases/latest/download/valetudo-armv7-lowmem -O valetudo<br />chmod +x valetudo<br />cp /root/_root.sh.tpl /mnt/reserve/_root.sh<br />chmod +x /mnt/reserve/_root.sh</em></p>
+<hr />
+<p><br /><br />Terms of Service:<br />This service and the images are provided "AS IS", and you, its user, assume the entire risk as to its quality and accuracy. I take no responsibility for bricked devices. <br /><br />Privacy Policy:<br />I do not care about privacy and will try to sell, rent, lease or give away all your information (name, address, email, your pets name, etc.) to any third party (but only if they pay enough). Also I will send you unsolicited email with cute puppy dog pictures. <br /><br />Suggestions? -&gt; dgiese[at]mit.edu<br /><a href="https://dontvacuum.me">My homepage</a></p>
+</body>
+</html>

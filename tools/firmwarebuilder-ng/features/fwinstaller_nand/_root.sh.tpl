@@ -1,8 +1,11 @@
 #!/bin/bash
 if [[ -f /mnt/data/valetudo ]]; then
+	mkdir -p /mnt/data/miio/
+	
 	if grep -q "cfg_by=tuya" /mnt/data/miio/wifi.conf; then
 		sed -i "s/cfg_by=tuya/cfg_by=miot/g" /mnt/data/miio/wifi.conf
-		echo region=us >> /mnt/data/miio/wifi.conf
+		sed -i "s/cfg_by=rriot/cfg_by=miot/g" /mnt/data/miio/wifi.conf
+		echo region=de >> /mnt/data/miio/wifi.conf
 		echo 0 > /mnt/data/miio/device.uid
 		echo "de" > /mnt/data/miio/device.country
 	fi

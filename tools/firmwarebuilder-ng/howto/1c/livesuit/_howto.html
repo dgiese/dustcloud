@@ -1,0 +1,45 @@
+<html>
+<head>
+<title>Howto</title>
+</head>
+<body>
+<h1>Howto</h1>
+<h2>Installation of firmware</h2>
+You need to have your robot already rooted to use this firmware!<br>
+
+<b>0) Check this page for a How-to to initally root your device: <a href="https://builder.dontvacuum.me/dreameadapter/" target=_blank>How-To-Root</a></b><br><br>
+By installing the Livesuit image, the MCU firmware. You need to manually update it after the installation.<br>
+
+<h2>MCU update</h2>
+Livesuit images require to a manual MCU firmware update. MCU firmwares are packaged into the filesystem. Log into your robot via SSH.<br>
+<i>mkdir -p /tmp/update</i><br>
+<i>cp /mcu.bin /tmp/update</i><br>
+<i>echo 1 > /tmp/update/only_update_mcu_mark</i><br>
+<i>avacmd ota  '{"type": "ota", "cmd": "report_upgrade_status", "status": "AVA_UNPACK_OK", "result": "ok"}'</i><br>
+Wait for up to 1 minute until your robot reboots
+
+<h2>First-time installation of Valetudo</h2>
+This steps are only relevant if you want to use Valetudo. In order to make Valetudo work, you need to build the firmware with the "patch-dns" option selected.<br>
+<b>1) Download Valetudo to /data</b><br>
+<i>wget https://github.com/Hypfer/Valetudo/releases/latest/download/valetudo-armv7-lowmem -O /data/valetudo</i><br>
+<i>chmod +x /data/valetudo</i><br><br>
+<b>2) Activate custom script</b><br>
+<i>cp /misc/_root_postboot.sh.tpl /data/_root_postboot.sh</i><br><br>
+<i>reboot</i><br><br>
+
+<h2>Update Valetudo</h2>
+There is no need to build a new firmware in order to update Valetudo. You can simply replace the binary.<br>
+
+<b>0) Read <a href="https://github.com/Hypfer/Valetudo/releases/latest" target=_blank>the latest release notes</a> to be informed of new features and breaking changes</b><br>
+<b>1) Kill running Valetudo</b><br>
+<i>killall valetudo</i><br><br>
+<b>2) Download Valetudo to /data</b><br>
+<i>wget https://github.com/Hypfer/Valetudo/releases/latest/download/valetudo-armv7-lowmem -O /data/valetudo</i><br>
+<i>chmod +x /data/valetudo</i><br>
+<i>reboot</i><br><br>
+<hr>
+<br><br>
+Suggestions? -> dennis[at]dontvacuum.me<br>
+<a href="https://dontvacuum.me">My homepage</a>
+</body>
+</html>

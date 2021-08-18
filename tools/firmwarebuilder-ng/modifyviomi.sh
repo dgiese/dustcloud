@@ -115,20 +115,25 @@ if [ "$actualsize" -le "$minimumsize" ]; then
 	exit 1
 fi
 
-if [ -f $FLAG_DIR/fel ]; then
-	echo "build FEL image"
+if [ -f $FLAG_DIR/livesuit ]; then
+	echo "build Livesuit image"
 	tar -xzvf $BASE_DIR/CRL200S-OTA/ramdisk_sys.tar.gz
-	cp $BASE_DIR/CRL200S-OTA/target_sys/rootfs.img $BASE_DIR/felimage/rootfs.fex
-	cp $BASE_DIR/CRL200S-OTA/target_sys/boot.img $BASE_DIR/felimage/boot.fex
-	cp $BASE_DIR/ramdisk_sys/boot_initramfs.img $BASE_DIR/felimage/recovery.fex
-	./tools/pack-bintools/FileAddSum $BASE_DIR/felimage/boot.fex $BASE_DIR/felimage/Vboot.fex
-	./tools/pack-bintools/FileAddSum $BASE_DIR/felimage/rootfs.fex $BASE_DIR/felimage/Vrootfs.fex
-	./tools/pack-bintools/FileAddSum $BASE_DIR/felimage/recovery.fex $BASE_DIR/felimage/Vrecovery.fex
-	./tools/pack-bintools/FileAddSum $BASE_DIR/felimage/boot-resource.fex $BASE_DIR/felimage/Vboot-resource.fex
-	./tools/pack-bintools/dragon $BASE_DIR/felimage/image.cfg
-	mv $BASE_DIR/felimage/FILELIST $BASE_DIR/output/${DEVICETYPE}_fel.img
-	md5sum $BASE_DIR/output/${DEVICETYPE}_fel.img > $BASE_DIR/output/md5.txt
-	echo "${DEVICETYPE}_fel.img" > $BASE_DIR/filename.txt
+	cp $BASE_DIR/CRL200S-OTA/target_sys/rootfs.img $BASE_DIR/livesuitimage/rootfs.fex
+	cp $BASE_DIR/CRL200S-OTA/target_sys/boot.img $BASE_DIR/livesuitimage/boot.fex
+	if [ -f $FLAG_DIR/resetsettings ]; then
+		echo "create empty partitions"
+		cp $BASE_DIR/livesuitimage/sys_partition_reset.fex $BASE_DIR/livesuitimage/sys_partition.fex
+	fi
+	cp $BASE_DIR/ramdisk_sys/boot_initramfs.img $BASE_DIR/livesuitimage/recovery.fex
+	./tools/pack-bintools/FileAddSum $BASE_DIR/livesuitimage/empty.fex $BASE_DIR/livesuitimage/Vempty.fex
+	./tools/pack-bintools/FileAddSum $BASE_DIR/livesuitimage/boot.fex $BASE_DIR/livesuitimage/Vboot.fex
+	./tools/pack-bintools/FileAddSum $BASE_DIR/livesuitimage/rootfs.fex $BASE_DIR/livesuitimage/Vrootfs.fex
+	./tools/pack-bintools/FileAddSum $BASE_DIR/livesuitimage/recovery.fex $BASE_DIR/livesuitimage/Vrecovery.fex
+	./tools/pack-bintools/FileAddSum $BASE_DIR/livesuitimage/boot-resource.fex $BASE_DIR/livesuitimage/Vboot-resource.fex
+	./tools/pack-bintools/dragon $BASE_DIR/livesuitimage/image.cfg
+	mv $BASE_DIR/livesuitimage/FILELIST $BASE_DIR/output/${DEVICETYPE}_livesuitimage.img
+	md5sum $BASE_DIR/output/${DEVICETYPE}_livesuitimage.img > $BASE_DIR/output/md5.txt
+	echo "${DEVICETYPE}_livesuitimage.img" > $BASE_DIR/filename.txt
 	rm -rf $BASE_DIR/ramdisk_sys/
 else
 	rm $BASE_DIR/CRL200S-OTA/target_sys.tar.gz
@@ -147,11 +152,11 @@ if [ -f $FLAG_DIR/diff ]; then
 	tar -xzvf $BASE_DIR/original/CRL200S-OTA/target_sys.tar.gz -C $BASE_DIR/original/CRL200S-OTA/
 	unsquashfs -d $BASE_DIR/original/CRL200S-OTA/target_sys/squashfs-root $BASE_DIR/original/CRL200S-OTA/target_sys/rootfs.img
 	rm -rf $BASE_DIR/original/CRL200S-OTA/target_sys/squashfs-root/dev
+	rm -rf $BASE_DIR/original/CRL200S-OTA/ramdisk_sys*	
 
 	mkdir $BASE_DIR/modified
-	tar -xzvf $BASE_DIR/upd_viomi.vacuum.v6.bin -C $BASE_DIR/modified/
-	tar -xzvf $BASE_DIR/modified/CRL200S-OTA/target_sys.tar.gz -C $BASE_DIR/modified/CRL200S-OTA/
-	unsquashfs -d $BASE_DIR/modified/CRL200S-OTA/target_sys/squashfs-root $BASE_DIR/modified/CRL200S-OTA/target_sys/rootfs.img
+        mkdir -p $BASE_DIR/modified/CRL200S-OTA/target_sys/
+	unsquashfs -d $BASE_DIR/modified/CRL200S-OTA/target_sys/squashfs-root $BASE_DIR/CRL200S-OTA/target_sys/rootfs.img
 	rm -rf $BASE_DIR/modified/CRL200S-OTA/target_sys/squashfs-root/dev
 
 	/usr/bin/git diff --no-index $BASE_DIR/original/ $BASE_DIR/modified/ > $BASE_DIR/output/diff.txt

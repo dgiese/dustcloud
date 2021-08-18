@@ -76,6 +76,11 @@ chown root:root $IMG_DIR/root
 chown root:root $IMG_DIR/root/.ssh
 chown root:root $IMG_DIR/root/.ssh/authorized_keys
 
+if [ -f "$BASE_DIR/librrlocale.so" ]; then
+    echo "patch region signature checking"
+    install -m 0755 "$BASE_DIR/librrlocale.so" $IMG_DIR/opt/rockrobo/cleaner/lib/librrlocale.so
+fi
+
 echo "replace dropbear if needed"
 if [ -f $IMG_DIR/usr/sbin/dropbear ]; then
 	echo "replacing"
@@ -216,7 +221,7 @@ if [ -f $FLAG_DIR/valetudo ]; then
 		cp $FEATURES_DIR/iptables/ip6tables $IMG_DIR/sbin/
 	fi
 
-    install -D -m 0755 $FEATURES_DIR/valetudo/valetudo $IMG_DIR/usr/local/bin/valetudo
+    install -D -m 0755 $FEATURES_DIR/valetudo/valetudo-armv7 $IMG_DIR/usr/local/bin/valetudo
     install -m 0644 $FEATURES_DIR/valetudo/deployment/valetudo.conf $IMG_DIR/etc/init/valetudo.conf
 
     cat $FEATURES_DIR/valetudo/deployment/etc/hosts >> $IMG_DIR/etc/hosts

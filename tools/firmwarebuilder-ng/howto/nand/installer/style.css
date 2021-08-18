@@ -1,0 +1,110 @@
+/* Adapted from https://github.com/hukl/fefe.css/blob/master/fefe.css */
+
+body {
+  background-color: #ebebeb;
+  width: 1100px;
+  margin: 0 auto;
+  padding-top: 20px;
+  padding-bottom: 60px;
+  font-family: "HelveticaNeueLight", "HelveticaNeue-Light", "Helvetica Neue Light", "HelveticaNeue", "Helvetica Neue", 'TeXGyreHerosRegular', "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif; font-weight:300; font-stretch:normal;
+  line-height: 1.4em;
+}
+
+a {
+  color: #2e9ec9;
+}
+
+h1 {
+   line-height: initial;
+}
+
+h2 {
+  font-family: Georgia;
+  font-weight: normal;
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+li b {
+  font-weight: bold;
+}
+
+h2 a {
+  text-decoration: none;
+  color: #444444;
+  text-shadow: 1px 1px 0px white;
+}
+
+h3 {
+  font-family: Georgia;
+  font-size: 24px;
+  color: #444444;
+  text-shadow: 1px 1px 0px white;
+}
+
+blockquote {
+  font-family: Georgia;
+  font-style: italic;
+  padding-left: 10px;
+  margin-left: 20px;
+}
+
+/* For Screens smaller than 800px width. Smaller margins on boxes and flexible widths */
+
+@media only screen and (max-width: 800px){
+  body {
+    padding: 5px;
+    width: 93%;
+    margin: 0 auto;
+  }
+  h2 {
+    font-size: 50px;
+    margin-bottom: 20px;
+  }
+    
+  blockquote {
+    padding-left: 0;
+    margin-left: 15px;
+  }
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 450px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: 150%;
+  left: 50%;
+  margin-left: -60px;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent black transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
