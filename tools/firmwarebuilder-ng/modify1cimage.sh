@@ -92,6 +92,7 @@ if [ -f $FLAG_DIR/patch_dns ]; then
 	install -m 0755 $FEATURES_DIR/miio_clients/dreame_3.5.8/* $IMG_DIR/usr/bin
 	if [ ! -f $IMG_DIR/usr/lib/libjson-c.so.2 ]; then
 		install -m 0755 $FEATURES_DIR/miio_clients/3.5.8.lib/* $IMG_DIR/usr/lib
+	fi
 	sed -i -E 's/110.43.0.83/127.000.0.1/g' $IMG_DIR/usr/bin/miio_client
 	sed -i -E 's/110.43.0.85/127.000.0.1/g' $IMG_DIR/usr/bin/miio_client
 	rm $IMG_DIR/etc/hosts
