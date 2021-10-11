@@ -57,6 +57,8 @@ req_wifi_conf_status() {
         WIFI_SSID=`cat $wificonf_file | grep ssid`
         WIFI_SSID=${WIFI_SSID#*ssid=\"}
         WIFI_SSID=${WIFI_SSID%\"*}
+        WIFI_SSID=${WIFI_SSID//\\/\\\\}
+        WIFI_SSID=${WIFI_SSID//\"/\\\"}
         log "WIFI_SSID: $WIFI_SSID"
     else
         REQ_WIFI_CONF_STATUS_RESPONSE="{\"method\":\"_internal.res_wifi_conf_status\",\"params\":0}"
@@ -114,7 +116,7 @@ request_dtoken() {
     else
         echo ${dtoken_token} > ${dtoken_file}
     fi
-
+    
     if [ -e ${dcountry_file} ]; then
         dcountry_country=`cat ${dcountry_file}`
     else
@@ -177,6 +179,7 @@ sanity_check() {
 }
 
 main() {
+    IOT_TYPE=miiot
     if [ ! -f $IOT_FLAG ]; then
         touch $IOT_FLAG
     fi
@@ -197,15 +200,17 @@ main() {
         log "ifname: $ifname"
 
         ssid=`wpa_cli status | grep -w 'ssid' | awk -F "ssid=" '{print $2}'`
-        ssid=`echo -e $ssid`
+        ssid=$(echo -e $ssid | sed -e 's/\\/\\\\/g' -e 's/\\\\\"/\\\"/g')
         if [[ -z "${ssid}" ]]; then
             if [ "x$WIFI_SSID" != "x" ]; then
-                ssid=${WIFI_SSID//\"/\\\"}
+                ssid=${WIFI_SSID}
             else
                 if [ -e $WIFI_CONF_PATH ]; then
-                    STRING_CONFIG=`cat $WIFI_CONF_PATH | grep -v ^#`
-                    ssid=${STRING_CONFIG##*ssid=\"}
+                    STRING_SSID=`cat $WIFI_CONF_PATH | grep ^ssid`
+                    ssid=${STRING_SSID##*ssid=\"}
                     ssid=${ssid%%\"*}
+                    ssid=${ssid//\\/\\\\}
+                    ssid=${ssid//\"/\\\"}
                 fi
             fi
         fi
@@ -257,10 +262,17 @@ main() {
         log "$REQ_WIFI_CONF_STATUS_RESPONSE"
         $MIIO_SEND_LINE "$REQ_WIFI_CONF_STATUS_RESPONSE"
     elif contains "$BUF" "_internal.wifi_start"; then
-
-        # newer dreame robots need this to function correctly on miio_client downgrade
-        printf "miiot" > $IOT_FLAG
-
+        # TODO: add lock to /data/config/ava/iot.flag
+        content=`cat $IOT_FLAG`
+        if [ "x$content" == "x" ]; then
+            echo -n $IOT_TYPE > $IOT_FLAG
+            log "set SDK($IOT_TYPE) to $IOT_FLAG"
+        elif [ "x$content" != "x$IOT_TYPE" ];then
+            log "other SDK($content) already set $IOT_FLAG"
+            continue
+        else
+            log "already set current SDK($content) to $IOT_FLAG"
+        fi
         wificonf_dir2=$(echo "$BUF" | $JSHON -e params -e datadir -u)
         miio_ssid=$(echo "$BUF" | $JSHON -e params -e ssid -u)
         miio_passwd=$(echo "$BUF" | $JSHON -e params -e passwd -u)

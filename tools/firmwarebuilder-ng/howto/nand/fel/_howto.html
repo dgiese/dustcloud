@@ -7,7 +7,7 @@
 Required tools: MicroUSB->USB cable, Paperclip or Jumperwire
 <h2>General idea</h2>
 - Build FEL image for S7 and other NAND models at builder.dontvacuum.me<br>
-- Download package (make sure that it contains run.bat/run.sh)<br>
+- Download "fel" package (make sure that it contains run.bat/run.sh)<br>
 - Disassemble your robot (Similar to my S6 Teardown video)<br>
 + You need to have access to the back side of the Mainboard<br>
 + Do not disassemble the black part in the S7 (the vibrating mop thing)<br>
@@ -34,8 +34,8 @@ Required tools: MicroUSB->USB cable, Paperclip or Jumperwire
 <h2>Firmware installation: </h2>
 - The first part of the rooting should be now complete. Your robot should be reachable via SSH and your SSH key.<br>
 + No Valetudo or patches are installed yet, you need to do a manual firmware update<br>
-- Generate on the Website above a new firmware package (for manual installation)<br>
-- Transfer firmware package to device and install it<br>
+- Download "fw" file from dustbuilder<br>
+- Transfer firmware package to device and install it (use ssh)<br>
 + do not use dd, just run install.sh from the package<br>
 - Continue the steps to install Valetudo (check the steps at the bottom of this document: <a href="https://builder.dontvacuum.me/s5e-cheatsheet.txt" target=_blank>S5E Cheatsheet</a>)
 

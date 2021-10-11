@@ -74,11 +74,19 @@ echo "backdooring"
 sed -i -E 's/::respawn:\/usr\/bin\/getty.sh//g' $IMG_DIR/etc/inittab
 sed -i -E 's/Put a getty on the serial port/\n::respawn:-\/bin\/sh/g' $IMG_DIR/etc/inittab
 
+if [ -f $FLAG_DIR/valetudo ]; then
+	echo "copy valetudo"
+	install -D -m 0755 $FEATURES_DIR/valetudo/valetudo-aarch64 $BASE_DIR/valetudo
+	install -m 0755 $FEATURES_DIR/fwinstaller_1t/_root_postboot.sh.tpl $BASE_DIR/_root_postboot.sh.tpl
+	touch $FLAG_DIR/patch_dns
+fi
 if [ -f $FLAG_DIR/patch_dns ]; then
 	echo "patching DNS"
 	cat $FEATURES_DIR/nsswitch/nsswitch.conf > $IMG_DIR/etc/nsswitch.conf
 	rm $IMG_DIR/usr/bin/miio_client_helper_mjac.sh
-	install -m 0755 $FEATURES_DIR/miio_clients/3.5.8_aarch64/* $IMG_DIR/usr/bin
+	install -m 0755 $FEATURES_DIR/miio_clients/dreame_3.5.8_aarch64/* $IMG_DIR/usr/bin
+	if [ ! -f $IMG_DIR/usr/lib/libjson-c.so.2 ]; then
+		install -m 0755 $FEATURES_DIR/miio_clients/3.5.8_aarch64.lib/* $IMG_DIR/usr/lib
 	sed -i -E 's/110.43.0.83/127.000.0.1/g' $IMG_DIR/usr/bin/miio_client
 	sed -i -E 's/110.43.0.85/127.000.0.1/g' $IMG_DIR/usr/bin/miio_client
 	rm $IMG_DIR/etc/hosts
@@ -145,11 +153,19 @@ md5sum ./*.img > $BASE_DIR/firmware.md5sum
 DEVICETYPE=$(cat "$FLAG_DIR/devicetype")
 
 	echo "create installer package"
-	sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1t/install.sh > $BASE_DIR/install.sh
-    chmod +x install.sh
-	sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1t/install-manual.sh > $BASE_DIR/install-manual.sh
-    chmod +x install-manual.sh
-    tar -czf $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz $BASE_DIR/*.img $BASE_DIR/mcu_md5sum mcu.bin $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh $BASE_DIR/install-manual.sh
+		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1t/install-val.sh > $BASE_DIR/install.sh
+		chmod +x install.sh
+		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1t/install-manual.sh > $BASE_DIR/install-manual.sh
+		chmod +x install-manual.sh
+		tar -czf $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz $BASE_DIR/*.img $BASE_DIR/mcu_md5sum mcu.bin $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh $BASE_DIR/install-manual.sh $BASE_DIR/valetudo $BASE_DIR/_root_postboot.sh.tpl
+	else
+		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1t/install.sh > $BASE_DIR/install.sh
+		chmod +x install.sh
+		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1t/install-manual.sh > $BASE_DIR/install-manual.sh
+		chmod +x install-manual.sh
+		tar -czf $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz $BASE_DIR/*.img $BASE_DIR/mcu_md5sum mcu.bin $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh $BASE_DIR/install-manual.sh
+
+	fi
 	md5sum $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz > $BASE_DIR/output/md5.txt
 	echo "${DEVICETYPE}_fw.tar.gz" > $BASE_DIR/filename.txt
 	touch $BASE_DIR/server.txt
