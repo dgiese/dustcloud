@@ -23,7 +23,9 @@ fi
 echo "check image file size"
 maximumsize=60000000
 minimumsize=20000000
-actualsize=$(wc -c < /tmp/rootfs.img)
+# maxsizeplaceholder
+# minsizeplaceholder
+actualsize=$(wc -c < ./rootfs.img)
 if [ "$actualsize" -ge "$maximumsize" ]; then
 	echo "(!!!) rootfs.img looks to big. The size might exceed the available space on the flash. Aborting the installation"
 	exit 1
@@ -33,9 +35,9 @@ if [ "$actualsize" -le "$minimumsize" ]; then
 	exit 1
 fi
 
-if [[ -f /tmp/boot.img ]]; then
-	if [[ -f /tmp/rootfs.img ]]; then
-		if [[ -f /tmp/mcu.bin ]]; then
+if [[ -f ./boot.img ]]; then
+	if [[ -f ./rootfs.img ]]; then
+		if [[ -f ./mcu.bin ]]; then
 			echo "Checking integrity"
 			md5sum -c firmware.md5sum
 			if [ $? -ne 0 ]; then
@@ -46,17 +48,17 @@ if [[ -f /tmp/boot.img ]]; then
 			echo "Start installation ... the robot will automatically reboot after the installation is complete"
 
 			mkdir -p /tmp/update
-			mv /tmp/boot.img /tmp/update/
-			mv /tmp/rootfs.img /tmp/update/
-			mv /tmp/mcu.bin /tmp/update/
+			mv ./boot.img /tmp/update/
+			mv ./rootfs.img /tmp/update/
+			mv ./mcu.bin /tmp/update/
 			
 			avacmd ota  '{"type": "ota", "cmd": "report_upgrade_status", "status": "AVA_UNPACK_OK", "result": "ok"}'
 		else
-			echo "(!!!) mcu.bin not found in /tmp"
+			echo "(!!!) mcu.bin not found"
 		fi
 	else
-		echo "(!!!) rootfs.img not found in /tmp"
+		echo "(!!!) rootfs.img not found"
 	fi
 else
-	echo "(!!!) boot.img not found in /tmp"
+	echo "(!!!) boot.img not found"
 fi

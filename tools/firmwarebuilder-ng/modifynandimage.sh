@@ -153,6 +153,9 @@ install -m 0755 $FEATURES_DIR/fwinstaller_nand/how_to_modify.txt $IMG_DIR/root/h
 touch $IMG_DIR/build.txt
 echo "build with firmwarebuilder (https://builder.dontvacuum.me)" > $IMG_DIR/build.txt
 date -u  >> $IMG_DIR/build.txt
+if [ -f $FLAG_DIR/version ]; then
+    cat $FLAG_DIR/version >> $IMG_DIR/build.txt
+fi
 echo "" >> $IMG_DIR/build.txt
 
 echo "finished patching, repacking"
@@ -193,7 +196,9 @@ if [ "$actualsize" -le "$minimumsize" ]; then
 	exit 1
 fi
 
-sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_nand/install.sh > install.sh
+sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_nand/install.sh > $BASE_DIR/install.sh
+sed -i "s/# maxsizeplaceholder/maximumsize=${maximumsize}/g" $BASE_DIR/install.sh
+sed -i "s/# minsizeplaceholder/minimumsize=${minimumsize}/g" $BASE_DIR/install.sh
 chmod +x install.sh
 tar -czf $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz $BASE_DIR/rootfs.img $BASE_DIR/boot.img $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh
 md5sum $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fw.tar.gz > $BASE_DIR/output/md5.txt

@@ -330,6 +330,9 @@ fi
 touch $IMG_DIR/build.txt
 echo "build with firmwarebuilder (https://builder.dontvacuum.me)" > $IMG_DIR/build.txt
 date -u  >> $IMG_DIR/build.txt
+if [ -f $FLAG_DIR/version ]; then
+    cat $FLAG_DIR/version >> $IMG_DIR/build.txt
+fi
 echo "" >> $IMG_DIR/build.txt
 
 echo "fixing executable permissions"

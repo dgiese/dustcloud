@@ -36,6 +36,8 @@ fi
 echo "check image file size"
 maximumsize=26000000
 minimumsize=20000000
+# maxsizeplaceholder
+# minsizeplaceholder
 actualsize=$(wc -c < /mnt/data/rootfs.img)
 if [ "$actualsize" -ge "$maximumsize" ]; then
 	echo "(!!!) rootfs.img looks to big. The size might exceed the available space on the flash. Aborting the installation"

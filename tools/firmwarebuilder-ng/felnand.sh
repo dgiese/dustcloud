@@ -61,7 +61,8 @@ echo "copy kernel"
 
 cp -r $FEATURES_DIR/felnand/linux-9ed/* $BASE_DIR/kernel/
 cp $FEATURES_DIR/felnand/linux-9ed/configs/felnand.config $BASE_DIR/kernel/.config
-
+sed -i "s/jobidstuff/${jobid}/" $BASE_DIR/kernel/.config 
+sed -i "s/veritykeystuff/${jobidmd5}/" $BASE_DIR/kernel/.config
 
 echo "compile kernel"
 cd $BASE_DIR/kernel/
@@ -73,8 +74,15 @@ if [ ! -f $BASE_DIR/kernel/arch/arm/boot/uImage ]; then
 	exit 1
 fi
 
-zip -j $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fel.zip $BASE_DIR/kernel/arch/arm/boot/uImage $FEATURES_DIR/felnand/package/*.*
-md5sum $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fel.zip > $BASE_DIR/output/md5.txt
+# troll-lo-lo
+echo "---BEGIN ENCRYPTED LICENSE---" > $BASE_DIR/activation.lic
+cat /dev/urandom | base64 | fold -w 62 | head -n 1 >> $BASE_DIR/activation.lic
+cat /dev/urandom | base64 | fold -w 62 | head -n 1 >> $BASE_DIR/activation.lic
+echo "---END ENCRYPTED LICENSE---" >> $BASE_DIR/activation.lic
+
+zip -j $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fel.zip $BASE_DIR/kernel/arch/arm/boot/uImage $FEATURES_DIR/felnand/package/*.* $BASE_DIR/activation.lic
+
+md5sum $BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fel.zip >> $BASE_DIR/output/md5.txt
 echo "$BASE_DIR/output/${FRIENDLYDEVICETYPE}_${version}_fel.zip" > $BASE_DIR/filename.txt
 
 touch $BASE_DIR/output/done

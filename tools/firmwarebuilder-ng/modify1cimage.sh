@@ -35,7 +35,7 @@ jobidmd5=$(cat "$FLAG_DIR/jobid" | md5sum | awk '{print $1}')
 mkdir -p $BASE_DIR/output
 
 echo "creating temp directory and unpacking squashfs"
-updatetool -unpack $BASE_DIR/update.img .
+unpackfw $BASE_DIR/update.img .
 rm $BASE_DIR/update.img
 unsquashfs -d $IMG_DIR $BASE_DIR/rootfs.img
 mv $BASE_DIR/rootfs.img $BASE_DIR/rootfs.img.template
@@ -85,6 +85,7 @@ if [ -f $FLAG_DIR/valetudo ]; then
 	install -m 0755 $FEATURES_DIR/fwinstaller_1c/_root_postboot.sh.tpl $BASE_DIR/_root_postboot.sh.tpl
 	touch $FLAG_DIR/patch_dns
 fi
+
 if [ -f $FLAG_DIR/patch_dns ]; then
 	echo "patching DNS"
 	cat $FEATURES_DIR/nsswitch/nsswitch.conf > $IMG_DIR/etc/nsswitch.conf
@@ -139,6 +140,9 @@ fi
 touch $IMG_DIR/build.txt
 echo "build with firmwarebuilder (https://builder.dontvacuum.me)" > $IMG_DIR/build.txt
 date -u  >> $IMG_DIR/build.txt
+if [ -f $FLAG_DIR/version ]; then
+    cat $FLAG_DIR/version >> $IMG_DIR/build.txt
+fi
 echo "" >> $IMG_DIR/build.txt
 sed -i '$ d' $IMG_DIR/etc/banner
 sed -i '$ d' $IMG_DIR/etc/banner
@@ -154,24 +158,90 @@ md5sum $BASE_DIR/rootfs.img > $BASE_DIR/rootfs_md5sum
 cp parameter.txt parameter
 md5sum ./*.img > $BASE_DIR/firmware.md5sum
 
+echo "check image file size"
+if [ ${FRIENDLYDEVICETYPE} = "dreame.vacuum.mc1808" ]; then
+	echo "mc1808"
+	maximumsize=50000000
+	minimumsize=21000000
+elif [ ${FRIENDLYDEVICETYPE} = "dreame.vacuum.p2009" ]; then
+    echo "p2009"
+	maximumsize=30000000
+	minimumsize=20000000
+elif [ ${FRIENDLYDEVICETYPE} = "dreame.vacuum.p2029" ]; then
+    echo "p2029"
+	maximumsize=44000000
+	minimumsize=30000000
+elif [ ${FRIENDLYDEVICETYPE} = "dreame.vacuum.p2028" ]; then
+    echo "p2028"
+	maximumsize=44000000
+	minimumsize=30000000
+elif [ ${FRIENDLYDEVICETYPE} = "dreame.vacuum.p2041" ]; then
+    echo "p2041"
+	maximumsize=56000000
+	minimumsize=40000000
+else
+	echo "all others"
+	maximumsize=30000000
+	minimumsize=20000000
+fi
+
+actualsize=$(wc -c < $BASE_DIR/rootfs.img)
+if [ "$actualsize" -gt "$maximumsize" ]; then
+	echo "(!!!) rootfs.img looks to big. The size might exceed the available space on the flash."
+	exit 1
+fi
+
+if [ "$actualsize" -le "$minimumsize" ]; then
+	echo "(!!!) rootfs.img looks to small. Maybe something went wrong with the image generation."
+	exit 1
+fi
 
 	echo "create installer package"
+	install -m 0755 $FEATURES_DIR/fwinstaller_1c/install-mcufw.sh $BASE_DIR/install-mcufw.sh
 	if [ -f $FLAG_DIR/valetudo ]; then
 		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1c/install-val.sh > $BASE_DIR/install.sh
+		sed -i "s/# maxsizeplaceholder/maximumsize=${maximumsize}/g" $BASE_DIR/install.sh
+		sed -i "s/# minsizeplaceholder/minimumsize=${minimumsize}/g" $BASE_DIR/install.sh
 		chmod +x install.sh
 		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1c/install-manual.sh > $BASE_DIR/install-manual.sh
+		sed -i "s/# maxsizeplaceholder/maximumsize=${maximumsize}/g" $BASE_DIR/install-manual.sh
+		sed -i "s/# minsizeplaceholder/minimumsize=${minimumsize}/g" $BASE_DIR/install-manual.sh
 		chmod +x install-manual.sh
-		tar -czf $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz $BASE_DIR/*.img $BASE_DIR/mcu_md5sum mcu.bin $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh $BASE_DIR/install-manual.sh $BASE_DIR/valetudo $BASE_DIR/_root_postboot.sh.tpl
+		tar -czf $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz $BASE_DIR/*.img $BASE_DIR/mcu_md5sum mcu.bin $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh $BASE_DIR/install-manual.sh $BASE_DIR/install-mcufw.sh $BASE_DIR/valetudo $BASE_DIR/_root_postboot.sh.tpl
 	else
 		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1c/install.sh > $BASE_DIR/install.sh
+		sed -i "s/# maxsizeplaceholder/maximumsize=${maximumsize}/g" $BASE_DIR/install.sh
+		sed -i "s/# minsizeplaceholder/minimumsize=${minimumsize}/g" $BASE_DIR/install.sh
 		chmod +x install.sh
 		sed "s/DEVICEMODEL=.*/DEVICEMODEL=\"${DEVICETYPE}\"/g" $FEATURES_DIR/fwinstaller_1c/install-manual.sh > $BASE_DIR/install-manual.sh
+		sed -i "s/# maxsizeplaceholder/maximumsize=${maximumsize}/g" $BASE_DIR/install-manual.sh
+		sed -i "s/# minsizeplaceholder/minimumsize=${minimumsize}/g" $BASE_DIR/install-manual.sh
 		chmod +x install-manual.sh
-		tar -czf $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz $BASE_DIR/*.img $BASE_DIR/mcu_md5sum mcu.bin $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh $BASE_DIR/install-manual.sh
+		tar -czf $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz $BASE_DIR/*.img $BASE_DIR/mcu_md5sum mcu.bin $BASE_DIR/firmware.md5sum $BASE_DIR/install.sh $BASE_DIR/install-manual.sh $BASE_DIR/install-mcufw.sh
 	fi
 	md5sum $BASE_DIR/output/${DEVICETYPE}_fw.tar.gz > $BASE_DIR/output/md5.txt
 	echo "${DEVICETYPE}_fw.tar.gz" > $BASE_DIR/filename.txt
 	touch $BASE_DIR/server.txt
 
+if [ -f $FLAG_DIR/diff ]; then
+	echo "unpack original"
+	unsquashfs -d $BASE_DIR/original $BASE_DIR/rootfs.img.template
+	echo "unpack modified"
+	unsquashfs -d $BASE_DIR/modified $BASE_DIR/rootfs.img
+
+	rm $BASE_DIR/original/etc/OTA_Key_pub.pem
+	rm $BASE_DIR/original/etc/adb_keys
+	rm $BASE_DIR/original/etc/publickey.pem
+	rm $BASE_DIR/original/usr/bin/autossh.sh
+	rm $BASE_DIR/original/usr/bin/backup_key.sh
+	rm $BASE_DIR/original/usr/bin/curl_download.sh
+	rm $BASE_DIR/original/usr/bin/curl_upload.sh
+	rm $BASE_DIR/original/usr/bin/packlog.sh
+	sed -i "s/dibEPK917k/Gi29djChze/" $BASE_DIR/original/etc/*
+
+	/usr/bin/git diff --no-index $BASE_DIR/original/ $BASE_DIR/modified/ > $BASE_DIR/output/diff.txt
+	rm -rf $BASE_DIR/original
+	rm -rf $BASE_DIR/modified
+fi
 
 touch $BASE_DIR/output/done

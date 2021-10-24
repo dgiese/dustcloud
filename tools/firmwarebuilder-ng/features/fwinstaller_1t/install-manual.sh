@@ -23,7 +23,9 @@ fi
 echo "check image file size"
 maximumsize=56000000
 minimumsize=20000000
-actualsize=$(wc -c < /tmp/rootfs.img)
+# maxsizeplaceholder
+# minsizeplaceholder
+actualsize=$(wc -c < ./rootfs.img)
 if [ "$actualsize" -ge "$maximumsize" ]; then
 	echo "(!!!) rootfs.img looks too big. The size might exceed the available space on the flash. Aborting the installation"
 	exit 1
@@ -33,8 +35,8 @@ if [ "$actualsize" -le "$minimumsize" ]; then
 	exit 1
 fi
 
-if [[ -f /tmp/boot.img ]]; then
-	if [[ -f /tmp/rootfs.img ]]; then
+if [[ -f ./boot.img ]]; then
+	if [[ -f ./rootfs.img ]]; then
 		echo "Checking integrity"
 		md5sum -c firmware.md5sum
 		if [ $? -ne 0 ]; then
@@ -66,9 +68,9 @@ if [[ -f /tmp/boot.img ]]; then
 				ROOT_PARTITION=rootfs1
 		fi
 		echo "Installing Kernel"
-		dd if=/tmp/boot.img of=${BOOT_PART} bs=8192
+		dd if=./boot.img of=${BOOT_PART} bs=8192
 		echo "Installing OS"
-		dd if=/tmp/rootfs.img of=${ROOT_FS_PART} bs=8192
+		dd if=./rootfs.img of=${ROOT_FS_PART} bs=8192
 
 		if [ $? -eq 0 ]
 		then
@@ -101,8 +103,8 @@ if [[ -f /tmp/boot.img ]]; then
 		fi
 
 	else
-		echo "(!!!) rootfs.img not found in /tmp"
+		echo "(!!!) rootfs.img not found"
 	fi
 else
-	echo "(!!!) boot.img not found in /tmp"
+	echo "(!!!) boot.img not found"
 fi
