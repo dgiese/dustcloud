@@ -7,8 +7,8 @@ FLAG_DIR="."
 IMG_DIR="./squashfs-root"
 FEATURES_DIR="./features"
 
-if [ ! -f $BASE_DIR/update.img ]; then
-    echo "File update.img not found! Decryption and unpacking was apparently unsuccessful."
+if [ ! -f $BASE_DIR/update.zip ]; then
+    echo "File update.zip not found! Decryption and unpacking was apparently unsuccessful."
     exit 1
 fi
 
@@ -35,8 +35,8 @@ jobidmd5=$(cat "$FLAG_DIR/jobid" | md5sum | awk '{print $1}')
 mkdir -p $BASE_DIR/output
 
 echo "creating temp directory and unpacking squashfs"
-unpackfw $BASE_DIR/update.img .
-rm $BASE_DIR/update.img
+unzip $BASE_DIR/update.zip
+rm $BASE_DIR/update.zip
 unsquashfs -d $IMG_DIR $BASE_DIR/rootfs.img
 mv $BASE_DIR/rootfs.img $BASE_DIR/rootfs.img.template
 
