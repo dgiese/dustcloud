@@ -8,7 +8,7 @@ bl_recovery_failed.wav,Odzyskanie awaryjne nie udało się. Proszę spróbuj pon
 bl_recovery_retry.wav,Ponawianie odzyskiwania. Zajmie to około 5 minut. Proszę o cierpliwość.
 bl_recovery_start.wav,Odzyskiwanie awaryjne. Zajmie to około 5 minut. Proszę o cierpliwość.
 bl_recovery_updatefailed.wav,Aktualizacja nie udała się. Odzyskiwanie poprzedniej wersji zajmie około 5 minut. Proszę o cierpliwość.
-charging.wav,Ładuję się.
+charging.wav,Ładowanie.
 clean_bin.wav,Opróżnij pojemnik na kurz.
 clean_finish.wav,Sprzątanie zakończone. Wracam do stacji dokującej.
 di.wav,Dzyń!
@@ -64,21 +64,21 @@ restart_spot_ignore_forbidden_zone.wav,Mam problem z określeniem pozycji. Wirtu
 resume_backtodock.wav,"Błąd pozycjonowania, nieprawidłowa mapa. Kontynuuję powrót do stacji dokującej."
 resume_clean.wav,Ponawiam sprzątanie.
 resume_home.wav,Ponawiam powrót do stacji dokującej.
-resume_room.wav,Wznawiam sprzątania pokoju.
+resume_room.wav,Wznawiam sprzątania pomieszczenia.
 resume_spot.wav,"Błąd pozycjonowania, nieprawidłowa mapa. Kontynuuję sprzątanie miejscowe."
 resume_zone.wav,Ponawiam sprzątanie miejscowe.
 return_no.wav,Nie mogę wrócić do miejsca początkowego.
 return_yes.wav,Nie mogę znaleźć stacji dokującej. Przesuń mnie bliżej niej i spróbuj jeszcze raz.
-room_complete.wav,"Sprzątanie pokoju zakończone, wracam do stacji dokującej."
-room_failed.wav,"Sprzątanie pokoju niekompletne, nie mogłem dotrzeć do wskazanego pokoju, wracam do stacji dokującej."
-room_partialdone.wav,"Sprzątanie pokoju zakończone, wracam do stacji dokującej. Do niektórych miejsc nie udało mi się dotrzeć."
-room.wav,Rozpoczynam sprzątanie pokoju.
+room_complete.wav,"Sprzątanie pomieszczenia zakończone, wracam do stacji dokującej."
+room_failed.wav,"Sprzątanie pomieszczenia niekompletne, nie mogłem dotrzeć do wskazanego pomieszczenia, wracam do stacji dokującej."
+room_partialdone.wav,"Sprzątanie pomieszczenia zakończone, wracam do stacji dokującej. Do niektórych miejsc nie udało mi się dotrzeć."
+room.wav,Rozpoczynam sprzątanie wskazanego pomieszczenia.
 saving_map.wav,"Zapisuję mapę, proszę czekać."
 spot.wav,Rozpoczynam sprzątanie miejscowe.
 start.wav,Rozpoczynam sprzątanie.
 stop_clean.wav,Przerywam sprzątanie.
 stop_goto.wav,Przerywam przemieszczanie się do wyznaczonego miejsca.
-stop_room.wav,Zatrzymuję sprzątanie wyznaczonego pokoju.
+stop_room.wav,Zatrzymuję sprzątanie wyznaczonego pomieszczenia.
 stop_scheduled_clean.wav,Mam problem z określeniem pozycji. Przerywam sprzątanie według harmonogramu.
 stop_spot.wav,Przerywam sprzątanie miejscowe.
 stop_zone.wav,Runda sprzątania wyznaczonej strefy zakończona.
