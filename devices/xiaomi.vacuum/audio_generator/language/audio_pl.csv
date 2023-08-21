@@ -38,7 +38,7 @@ error7.wav,"Błąd 7, Upewnij się że kółka nie są zablokowane, przenieś mn
 error8.wav,"Błąd 8, Usuń przeszkody wokół mnie."
 error9.wav,"Błąd 9, Włóż pojemnik na kurz i filtr."
 findme.wav,"Hej, jestem tutaj!"
-finish.wav,Koniec sprzątania.
+finish.wav,Sprzątanie zakończone.
 goto_complete.wav,Jestem w wyznaczonym miejscu.
 goto_failed.wav,Nie udało się dostać do wyznaczonego miejsca.
 goto.wav,Idę do wyznaczonego miejsca.
@@ -64,7 +64,7 @@ restart_spot_ignore_forbidden_zone.wav,Mam problem z określeniem pozycji. Wirtu
 resume_backtodock.wav,"Błąd pozycjonowania, nieprawidłowa mapa. Kontynuuję powrót do stacji dokującej."
 resume_clean.wav,Ponawiam sprzątanie.
 resume_home.wav,Ponawiam powrót do stacji dokującej.
-resume_room.wav,Wznawiam sprzątania pomieszczenia.
+resume_room.wav,Wznawiam sprzątanie pomieszczenia.
 resume_spot.wav,"Błąd pozycjonowania, nieprawidłowa mapa. Kontynuuję sprzątanie miejscowe."
 resume_zone.wav,Ponawiam sprzątanie miejscowe.
 return_no.wav,Nie mogę wrócić do miejsca początkowego.
@@ -82,15 +82,15 @@ stop_room.wav,Zatrzymuję sprzątanie wyznaczonego pomieszczenia.
 stop_scheduled_clean.wav,Mam problem z określeniem pozycji. Przerywam sprzątanie według harmonogramu.
 stop_spot.wav,Przerywam sprzątanie miejscowe.
 stop_zone.wav,Runda sprzątania wyznaczonej strefy zakończona.
-stop.wav,Zakończyłem sprzątanie.
-sysupd_complete.wav,Aktualizacja udała się.
+stop.wav,Sprzątanie zakończone.
+sysupd_complete.wav,Aktualizacja oprogramowania powiodła się.
 sysupd_failed.wav,Nie udało się zaktualizować oprogramowania. Wracam do poprzedniej wersji.
-sysupd_notready.wav,"Doładuj mnie do przynajmniej 20 procent, by rozpocząć aktualizację."
+sysupd_notready.wav,"Aby rozpocząć aktualizację oprogramowania doładuj mnie przynajmniej do 20 procent."
 sysupd_start.wav,Rozpoczynam aktualizację oprogramowania. Może to zająć pięć do dziesięciu minut.
 sysupd_wip.wav,Poczekaj aż zakończę aktualizację oprogramowania.
 timed_clean.wav,Rozpoczynam zaplanowane sprzątanie.
 wifi_reset.wav,Resetuję Wi-Fi.
-zone_complete.wav,Koniec sprzątania wyznaczonej strefy. Wracam do stacji dokującej.
-zone_failed.wav,"Koniec sprzątania wyznaczonegj strefy, choć nie udało się dostać do niektórych miejsc. Wracam do stacji dokującej."
+zone_complete.wav,Sprzątanie wyznaczonej strefy zakończone. Wracam do stacji dokującej.
+zone_failed.wav,"Sprzątanie wyznaczonej strefy zakończone, choć nie udało się dostać do niektórych miejsc. Wracam do stacji dokującej."
 zone_partialdone.wav,Sprzątanie strefy zakończone. Wracam do stacji dokującej. Do niektórych stref nie udało mi się dotrzeć.
 zone.wav,Rozpoczynam sprzątanie wyznaczonej strefy.
