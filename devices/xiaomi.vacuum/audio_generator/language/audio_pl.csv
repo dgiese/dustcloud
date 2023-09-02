@@ -1,26 +1,20 @@
-back_dock_failed.wav,"Nie mogę dostać się do bazy - usuń przeszkody!"
-back_dock_nearby.wav,"Nie mogę dostać się do bazy - usuń przeszkody!"
-bin_in.wav,"Pojemnik na kurz włożony."
-bin_out.wav,"Pojemnik na kurz wyjęty."
+back_dock_failed.wav,Nie mogę dostać się do stacji dokującej - usuń przeszkody!
+back_dock_nearby.wav,Nie mogę dostać się do stacji dokującej - usuń przeszkody!
+bin_in.wav,Pojemnik na kurz włożony.
+bin_out.wav,Pojemnik na kurz wyjęty.
 binout_error10.wav,"Pojemnik na kurz wyjęty. Proszę, wyczyść filtr!"
-bl_recovery_bootfailed.wav,"Uruchomienie awaryjne nie udało się. Odzyskanie pierwotnej wersji oprogramowania zajmie około 5 minut. Proszę o cierpliwość."
-bl_recovery_failed.wav,"Odzyskanie awaryjne nie udało się. Proszę spróbuj ponownie."
-bl_recovery_retry.wav,"Ponawianie odzyskiwania. Zajmie to około 5 minut. Proszę o cierpliwość."
-bl_recovery_start.wav,"Odzyskiwanie awaryjne. Zajmie to około 5 minut. Proszę o cierpliwość."
-bl_recovery_updatefailed.wav,"Aktualizacja nie udała się. Odzyskiwanie poprzedniej wersji zajmie około 5 minut. Proszę o cierpliwość."
-charging.wav,"Ładowanie."
-clean_bin.wav,"Opróżnij pojemnik na kurz."
-clean_finish.wav,"Sprzątanie zakończone. Wracam do bazy."
-error_internal.wav,"Wystąpił błąd wewnętrzny. Uruchom mnie ponownie."
-error1.wav,"Błąd 1, Spróbuj obrócić pomarańczową głowicę lasera by upewnić się, że nie jest zablokowana."
-error2.wav,"Błąd 2, Oczyść zderzak i go lekko stuknij."
-error3.wav,"Błąd 3, Przenieś mnie w inne miejsce."
-error4.wav,"Błąd 4, Wyczyść czujniki przepaści i przesuń mnie w inne miejsce."
-error5.wav,"Błąd 5, Wyciągnij i wyczyść główną szczotkę."
-error6.wav,"Błąd 6, Wyciągnij i wyczyść szczotkę boczną."
-error7.wav,"Błąd 7, Upewnij się że kółka nie są zablokowane, przenieś mnie w inne miejsce i spróbuj ponownie."
-error8.wav,"Błąd 8, Usuń przeszkody wokół mnie."
-error9.wav,"Błąd 9, Włóż pojemnik na kurz i filtr."
+bl_recovery_bootfailed.wav,Uruchomienie awaryjne nie udało się. Odzyskanie pierwotnej wersji oprogramowania zajmie około 5 minut. Proszę o cierpliwość.
+bl_recovery_failed.wav,Odzyskanie awaryjne nie udało się. Proszę spróbuj ponownie.
+bl_recovery_retry.wav,Ponawianie odzyskiwania. Zajmie to około 5 minut. Proszę o cierpliwość.
+bl_recovery_start.wav,Odzyskiwanie awaryjne. Zajmie to około 5 minut. Proszę o cierpliwość.
+bl_recovery_updatefailed.wav,Aktualizacja nie udała się. Odzyskiwanie poprzedniej wersji zajmie około 5 minut. Proszę o cierpliwość.
+charging.wav,Ładowanie.
+clean_bin.wav,Opróżnij pojemnik na kurz.
+clean_finish.wav,Sprzątanie zakończone. Wracam do stacji dokującej.
+di.wav,Dzyń!
+ding.wav,Dzyń dzyń!
+error_internal.wav,Wystąpił błąd wewnętrzny. Uruchom mnie ponownie.
+error1.wav,"Błąd 1, Spróbuj obrócić pomarańczową głowicę lasera by upewnić się, że nie jest zablokowana."
 error10.wav,"Błąd 10, Wysusz lub wyczyść filtr."
 error11.wav,"Błąd 11, Wykrywam silne pole magnetyczne. Odsuń mnie od wirtualnej ściany i spróbuj jeszcze raz."
 error12.wav,"Błąd 12, Akumulator jest pusty - naładuj mnie."
@@ -31,49 +25,72 @@ error16.wav,"Błąd 16, Umieść mnie na płaskiej, poziomej powierzchni."
 error17.wav,"Błąd 17, Awaria szczotki bocznej. Uruchom mnie ponownie."
 error18.wav,"Błąd 18, Awaria ssania. Uruchom mnie ponownie."
 error19.wav,"Błąd 19, Nie ma prądu w stacji ładowania. Sprawdź jej połączenie z zasilaczem."
+error2.wav,"Błąd 2, Oczyść zderzak i go lekko stuknij."
 error21.wav,"Błąd 21, Sprawdź czy pokrywa laserowego czujnika odległości nie utknęła."
-error22.wav,"Błąd 22, Wyczyść czujnik kontaktu z bazą."
-error23.wav,"Błąd 23, Sprawdź czy emiter sygnału w bazie jest czysty."
+error22.wav,"Błąd 22, Wyczyść czujnik kontaktu ze stacją dokującą."
+error23.wav,"Błąd 23, Sprawdź czy emiter sygnału w stacji dokującej jest czysty."
 error24.wav,"Błąd 24, Jestem w strefie niedozwolonej lub blisko wirtualnej ściany. Przenieś mnie w inne miejsce."
+error3.wav,"Błąd 3, Przenieś mnie w inne miejsce."
+error4.wav,"Błąd 4, Wyczyść czujniki przepaści i przesuń mnie w inne miejsce."
+error5.wav,"Błąd 5, Wyciągnij i wyczyść główną szczotkę."
+error6.wav,"Błąd 6, Wyciągnij i wyczyść szczotkę boczną."
+error7.wav,"Błąd 7, Upewnij się że kółka nie są zablokowane, przenieś mnie w inne miejsce i spróbuj ponownie."
+error8.wav,"Błąd 8, Usuń przeszkody wokół mnie."
+error9.wav,"Błąd 9, Włóż pojemnik na kurz i filtr."
 findme.wav,"Hej, jestem tutaj!"
-finish.wav,"Koniec czyszczenia."
-goto.wav,"Idę do wyznaczonego miejsca."
-goto_complete.wav,"Jestem w wyznaczonym miejscu."
-goto_failed.wav,"Nie udało się dostać do wyznaczonego miejsca."
-home.wav,"Wracam do bazy."
-no_power.wav,"Mało energii w akumulatorze. Wracam do bazy."
-no_power_charging.wav,"Jest jeszcze mało energii w akumulatorze. Potrzebuję więcej czasu na doładowanie."
-no_spot_on_dock.wav,"Umieść mnie w miejscu które mam wyczyścić."
-pause.wav,"Wstrzymuję."
-power_off.wav,"Wyłączam się."
-power_off_rejected.wav,"Odsuń mnie z bazy, zanim mnie wyłączysz."
-power_resume_clean.wav,"Akumulator wystarczająco naładowany. Ponawiam czyszczenie."
-relocate_failed.wav,"Nie bardzo rozumiem gdzie jestem."
-remote.wav,"Używam zdalnego sterowania."
-remote_complete.wav,"Koniec zdalnego sterowania."
-restart_backtodock_ignore_forbidden_zone.wav,"Mam problem z określeniem pozycji. Wirtualna ściana strefy zabronionej jest nieprawidłowa. Kontynuuję ładowanie."
-restart_clean.wav,"Mam problem z określeniem pozycji. Rozpoczynam nowe czyszczenie."
-restart_clean_ignore_forbidden_zone.wav,"Mam problem z określeniem pozycji. Wirtualna ściana strefy zabronionej jest nieprawidłowa. Rozpoczynam nowe czyszczenie."
-restart_spot_ignore_forbidden_zone.wav,"Mam problem z określeniem pozycji. Wirtualna ściana strefy zabronionej jest nieprawidłowa. Kontynuuję czyszczenie miejscowe."
-resume_clean.wav,"Ponawiam czyszczenie."
-resume_home.wav,"Ponawiam powrót do bazy."
-resume_zone.wav,"Ponawiam czyszczenie miejscowe."
-return_no.wav,"Nie mogę wrócić do miejsca początkowego."
-return_yes.wav,"Nie mogę znaleźć bazy. Przesuń mnie bliżej niej i spróbuj jeszcze raz."
-spot.wav,"Rozpoczynam czyszczenie miejscowe."
-start.wav,"Rozpoczynam czyszczenie."
-stop_goto.wav,"Przerywam przemieszczanie się do wyznaczonego miejsca."
-stop_scheduled_clean.wav,"Mam problem z określeniem pozycji. Przerywam czyszczenie według harmonogramu."
-stop_spot.wav,"Przerywam czyszczenie miejscowe."
-stop_zone.wav,"Runda czyszczenia wyznaczonego obszaru zakończona." 
-stop.wav,"Czyszczenie zakończone."
-sysupd_complete.wav,"Aktualizacja udała się."
-sysupd_failed.wav,"Nie udało się zaktualizować oprogramowania. Wracam do poprzedniej wersji."
-sysupd_notready.wav,"Doładuj mnie do przynajmniej 20 procent, by rozpocząć aktualizację."
-sysupd_start.wav,"Rozpoczynam aktualizację oprogramowania. Może to zająć pięć do dziesięciu minut."
-sysupd_wip.wav,"Poczekaj aż zakończę aktualizację oprogramowania."
-timed_clean.wav,"Rozpoczynam zaplanowane czyszczenie."
-wifi_reset.wav,"Resetuję Wi-Fi."
-zone.wav,"Rozpoczynam czyszczenie wyznaczonego obszaru."
-zone_complete.wav,"Koniec czyszczenia wyznaczonego obszaru. Wracam do bazy."
-zone_failed.wav,"Koniec czyszczenia wyznaczonego obszaru, choć nie udało się dostać do niektórych miejsc. Wracam do bazy."
+finish.wav,Sprzątanie zakończone.
+goto_complete.wav,Jestem w wyznaczonym miejscu.
+goto_failed.wav,Nie udało się dostać do wyznaczonego miejsca.
+goto.wav,Idę do wyznaczonego miejsca.
+home.wav,Wracam do stacji dokującej.
+map_restore.wav,Mapa została przywrócona i zaczynam się ładować.
+no_power_charging.wav,Jest jeszcze mało energii w akumulatorze. Potrzebuję więcej czasu na doładowanie.
+no_power.wav,Mało energii w akumulatorze. Wracam do stacji dokującej.
+no_spot_on_dock.wav,"Przenieś mnie do strefy docelowej, a następnie rozpocznij sprzątanie miejscowe."
+pause.wav,Wstrzymuję sprzątanie.
+positioning.wav,"Pozycjonowanie, proszę czekać."
+power_off_rejected.wav,"Usuń mnie ze stacji dokującej, zanim mnie wyłączysz."
+power_off.wav,Wyłączam się.
+power_resume_clean.wav,Akumulator wystarczająco naładowany. Ponawiam sprzątanie.
+relocate_failed.wav,Nie bardzo rozumiem gdzie jestem. Chyba się zgubiłem.
+remote_complete.wav,Koniec zdalnego sterowania.
+remote.wav,Używam zdalnego sterowania.
+restart_backtodock_ignore_forbidden_zone.wav,Mam problem z określeniem pozycji. Wirtualna ściana strefy zabronionej jest nieprawidłowa. Kontynuuję ładowanie.
+restart_clean_fromdock.wav,"Błąd pozycjonowania, rozpoczynam nowe sprzątanie w celu odbudowania mapy."
+restart_clean_ignore_forbidden_zone.wav,Mam problem z określeniem pozycji. Wirtualna ściana strefy zabronionej jest nieprawidłowa. Rozpoczynam nowe sprzątanie.
+restart_clean_nodock.wav,"Błąd pozycjonowania, nieprawidłowa mapa. Rozpoczynam nowe sprzątanie."
+restart_clean.wav,Mam problem z określeniem pozycji. Rozpoczynam nowe sprzątanie.
+restart_spot_ignore_forbidden_zone.wav,Mam problem z określeniem pozycji. Wirtualna ściana strefy zabronionej jest nieprawidłowa. Kontynuuję sprzątanie miejscowe.
+resume_backtodock.wav,"Błąd pozycjonowania, nieprawidłowa mapa. Kontynuuję powrót do stacji dokującej."
+resume_clean.wav,Ponawiam sprzątanie.
+resume_home.wav,Ponawiam powrót do stacji dokującej.
+resume_room.wav,Wznawiam sprzątanie pomieszczenia.
+resume_spot.wav,"Błąd pozycjonowania, nieprawidłowa mapa. Kontynuuję sprzątanie miejscowe."
+resume_zone.wav,Ponawiam sprzątanie miejscowe.
+return_no.wav,Nie mogę wrócić do miejsca początkowego.
+return_yes.wav,Nie mogę znaleźć stacji dokującej. Przesuń mnie bliżej niej i spróbuj jeszcze raz.
+room_complete.wav,"Sprzątanie pomieszczenia zakończone, wracam do stacji dokującej."
+room_failed.wav,"Sprzątanie pomieszczenia niekompletne, nie mogłem dotrzeć do wskazanego pomieszczenia, wracam do stacji dokującej."
+room_partialdone.wav,"Sprzątanie pomieszczenia zakończone, wracam do stacji dokującej. Do niektórych miejsc nie udało mi się dotrzeć."
+room.wav,Rozpoczynam sprzątanie wskazanego pomieszczenia.
+saving_map.wav,"Zapisuję mapę, proszę czekać."
+spot.wav,Rozpoczynam sprzątanie miejscowe.
+start.wav,Rozpoczynam sprzątanie.
+stop_clean.wav,Przerywam sprzątanie.
+stop_goto.wav,Przerywam przemieszczanie się do wyznaczonego miejsca.
+stop_room.wav,Zatrzymuję sprzątanie wyznaczonego pomieszczenia.
+stop_scheduled_clean.wav,Mam problem z określeniem pozycji. Przerywam sprzątanie według harmonogramu.
+stop_spot.wav,Przerywam sprzątanie miejscowe.
+stop_zone.wav,Runda sprzątania wyznaczonej strefy zakończona.
+stop.wav,Sprzątanie zakończone.
+sysupd_complete.wav,Aktualizacja oprogramowania powiodła się.
+sysupd_failed.wav,Nie udało się zaktualizować oprogramowania. Wracam do poprzedniej wersji.
+sysupd_notready.wav,"Aby rozpocząć aktualizację oprogramowania doładuj mnie przynajmniej do 20 procent."
+sysupd_start.wav,Rozpoczynam aktualizację oprogramowania. Może to zająć pięć do dziesięciu minut.
+sysupd_wip.wav,Poczekaj aż zakończę aktualizację oprogramowania.
+timed_clean.wav,Rozpoczynam zaplanowane sprzątanie.
+wifi_reset.wav,Resetuję Wi-Fi.
+zone_complete.wav,Sprzątanie wyznaczonej strefy zakończone. Wracam do stacji dokującej.
+zone_failed.wav,"Sprzątanie wyznaczonej strefy zakończone, choć nie udało się dostać do niektórych miejsc. Wracam do stacji dokującej."
+zone_partialdone.wav,Sprzątanie strefy zakończone. Wracam do stacji dokującej. Do niektórych stref nie udało mi się dotrzeć.
+zone.wav,Rozpoczynam sprzątanie wyznaczonej strefy.
