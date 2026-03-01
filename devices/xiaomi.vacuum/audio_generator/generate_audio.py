@@ -37,8 +37,24 @@ def select_item(welcome_text, items):
         print('Error! Please enter one number between 1-{}'.format(len(items)))
         exit()
 
+available_voice_pack_types = ['language', 'language_s7']
+selected_voice_pack_type = select_item('Choose voice pack type to generate:', available_voice_pack_types)
 
-available_audio = glob.glob('language/audio_*.csv')
+if selected_voice_pack_type == 'language_s7':
+    print('\nNOTE: this tool does not generate native Roborock S7 voice packs.')
+    print('      Instead, it generates a squashfs filesystem image which can be written directly onto the block device')
+    print('      which is mounted under /mnt/resources/audio_custom in the robot.')
+    print('      This can only be done if your robot has been rooted and the block device is large enough to fit the filesystem.')
+    print('      This is dangerous. You should not attempt this unless you understand what you are doing!\n')
+    if os.system('oggenc --version > /dev/null 2>&1') != 0:
+        print('OggEnc is required for encoding Roborock S7 audio files as OGG. Please install it.')
+        exit(0)
+    if (os.system('mksquashfs -version > /dev/null 2>&1') != 0):
+        print('mksquashfs is required for building the squashfs filesystem image for Roborock S7. Please install it.')
+    if (input('Do you want to continue? (y/N)').upper() != 'Y'):
+        exit(0)
+
+available_audio = glob.glob(os.path.join(selected_voice_pack_type, 'audio_*.csv'))
 input_file = select_item('Available localized audio instructions:', available_audio)
 language = input_file.split('_')[-1].split('.')[0]
 output_directory = "generated_{}".format(language)
@@ -141,5 +157,13 @@ for filename, text in filereader:
         os.system("ffmpeg -hide_banner -loglevel panic -i {0}.aiff {0}".format(path))
         os.remove("{}.aiff".format(path))
 
-if os.system('cd {} && tar zc *.wav | ccrypt -e -K "{}" > {}.pkg'.format(output_directory, sound_password, language)) == 0:
-    print("\nGenerated encrypted sound package at {}/{}.pkg".format(output_directory, language))
+if selected_voice_pack_type == 'language':
+    if os.system('cd {} && tar zc *.wav | ccrypt -e -K "{}" > {}.pkg'.format(output_directory, sound_password, language)) == 0:
+        print("\nGenerated encrypted sound package at {}/{}.pkg".format(output_directory, language))
+elif selected_voice_pack_type == 'language_s7':
+    os.system('cd {} && mkdir -p ogg/sounds && echo "-1" > ogg/sounds/sound.info && echo 1 > ogg/sounds/sound.ver && echo {} > ogg/sounds/sound.name'.format(output_directory, language))
+    os.system('cd {} && oggenc --quiet --downmix --bitrate 48 --resample 16000 *.wav && mv *.ogg ogg/sounds'.format(output_directory))
+    os.system('cd {} && mksquashfs ogg/ audio_custom_{}.sqfs -quiet'.format(output_directory, language))
+    print('\nS7 voice pack filesystem image has been generated and written to {}/audio_custom_{}.sqfs.'.format(output_directory, language))
+    print('To use it, copy it to the robot and write it to the block device that is being mounted under /mnt/resources/audio_custom.')
+    print('IMPORTANT: before writing, make sure the the block device in question is large enough to hold this image!!!')
